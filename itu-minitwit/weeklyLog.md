@@ -21,6 +21,7 @@
 
 ## Notes
 We meet on mondays from 10.00 - X.X.X.X (Super agile here!!)
+For next week we need to note everything we do!
 
 ### This is our branching strategy
 PR
