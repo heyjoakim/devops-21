@@ -12,6 +12,11 @@ import (
 // PageData defines data on page whatever
 type PageData map[string]string
 
+type layoutPage struct {
+	Layout string
+	User   string
+}
+
 // configuration
 var (
 	database  = "./tmp/minitwit.db"
@@ -21,7 +26,9 @@ var (
 )
 
 var staticPath string = "/static"
+var cssPath string = "/css"
 var indexPath string = "./templates/timeline.html"
+var layoutPath string = "./templates/layout.html"
 
 // connectDb returns a new connection to the database.
 func connectDb() interface{} { // replace interface return type with whatever golang sqlite lib returns
@@ -71,6 +78,18 @@ func timelineHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func layoutHandler(w http.ResponseWriter, r *http.Request) {
+	t, err := template.ParseFiles(layoutPath, indexPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	data := layoutPage{Layout: "Testing Layout", User: "Jens"}
+
+	t.Execute(w, data)
+	return
+}
+
 func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {}
 
 func userTimelineHandler(w http.ResponseWriter, r *http.Request) {}
@@ -94,7 +113,13 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {}
 
 func main() {
 	router := mux.NewRouter()
-	router.HandleFunc("/", timelineHandler)
+
+	router.HandleFunc("/", layoutHandler)
+	//router.HandleFunc("/", timelineHandler)
+
+	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
+	router.PathPrefix("/static/").Handler(s)
+
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
