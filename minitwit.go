@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // PageData defines data on page whatever
