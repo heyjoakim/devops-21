@@ -6,7 +6,7 @@
     - [Repo](https://github.com/heyjoakim/devops-21)
 - [X] Try to develop a high-level understanding of ITU-MiniTwit.
 - [X] Migrate ITU-MiniTwit to run on a modern computer running Linux
-    - [X] Get python to run
+    - [X] Get python to run  
     - [X] Install deps
     - [X] Recompile flag_tool
     - [X] Install sqlite browser
