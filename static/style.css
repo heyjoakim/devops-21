@@ -12,13 +12,6 @@ a:hover {
     color: #333;
 }
 
-h1 {
-    color : 26776F;
-    margin: 0;
-    text-transform: uppercase;
-    padding-bottom: 5px;
-    border-bottom: 3px solid rgba(58,87,15,0.80);
-}
 
 input[type="text"],
 input[type="password"] {

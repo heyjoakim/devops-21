@@ -19,7 +19,6 @@ type PageData map[string]interface{}
 
 type layoutPage struct {
 	Layout string
-	User   string
 }
 
 // configuration
@@ -33,9 +32,10 @@ var (
 var store *sessions.CookieStore
 var staticPath string = "/static"
 var cssPath string = "/css"
-var indexPath string = "./templates/timeline.html"
+var timelinePath string = "./templates/timeline.html"
 var layoutPath string = "./templates/layout.html"
 var loginPath string = "./templates/login.html"
+var registerPath string = "./templates/register.html"
 
 // connectDb returns a new connection to the database.
 func connectDb() (*sql.DB, error) {
@@ -97,7 +97,7 @@ func afterRequest(next http.Handler) http.Handler {
 // redirect to the public timeline.  This timeline shows the user's
 // messages as well as all the messages of followed users.
 func timelineHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles(indexPath)
+	tmpl, err := template.ParseFiles(timelinePath, layoutPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -108,19 +108,9 @@ func timelineHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func layoutHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles(layoutPath, indexPath)
-	if err != nil {
-		log.Fatal(err)
-	}
+func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
-	data := layoutPage{Layout: "Testing Layout", User: "Jens"}
-
-	t.Execute(w, data)
-	return
 }
-
-func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {}
 
 func userTimelineHandler(w http.ResponseWriter, r *http.Request) {}
 
@@ -166,7 +156,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	tmpl, err := template.ParseFiles(loginPath)
+	tmpl, err := template.ParseFiles(loginPath, layoutPath)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -178,7 +168,18 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func registerHandler(w http.ResponseWriter, r *http.Request) {}
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+	// Only implemented for display NO LOGIC (Joakim)
+	t, err := template.ParseFiles(registerPath, layoutPath)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	data := PageData{
+		"title": "Minitwit",
+	}
+	t.Execute(w, data)
+}
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {}
 
@@ -195,8 +196,7 @@ func init() {
 func main() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/", layoutHandler)
-	//router.HandleFunc("/", timelineHandler)
+	//router.HandleFunc("/", layoutHandler)
 
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
 	router.PathPrefix("/static/").Handler(s)
@@ -207,6 +207,7 @@ func main() {
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
+	router.HandleFunc("/register", registerHandler)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
