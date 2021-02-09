@@ -10,8 +10,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
-	"golang.org/x/crypto/bcrypt"
 	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // PageData defines data on page whatever
@@ -143,6 +143,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			session.AddFlash("You are logged in")
 			session.Values["user-id"] = user_id
+
+			err = session.Save(r, w)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 			http.Redirect(w, r, "timeline", http.StatusPermanentRedirect)
 			return
 		}
