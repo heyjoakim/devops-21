@@ -138,22 +138,22 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		result := queryDb("select * from user where username = ?", r.FormValue("username"), true)
 		if !result.Next() {
 			loginError = "Invalid username"
+
 		}
 		var (
-			user_id  int
+			userID   int
 			username string
 			email    string
-			pw_hash  string
+			pwHash   string
 		)
-		if err := result.Scan(&user_id, &username, &email, &pw_hash); err != nil {
+		if err := result.Scan(&userID, &username, &email, &pwHash); err != nil {
 			log.Fatal(err)
 			loginError = "Invalid username"
-		}
-		if err := bcrypt.CompareHashAndPassword([]byte(pw_hash), []byte(r.FormValue("password"))); err != nil {
+		} else if err := bcrypt.CompareHashAndPassword([]byte(pwHash), []byte(r.FormValue("password"))); err != nil {
 			loginError = "Invalid password"
 		} else {
 			session.AddFlash("You are logged in")
-			session.Values["user-id"] = user_id
+			session.Values["user-id"] = userID
 
 			err = session.Save(r, w)
 			if err != nil {
