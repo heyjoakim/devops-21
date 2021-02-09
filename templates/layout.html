@@ -15,10 +15,10 @@
       {{ end }}
     </div>
     <body>
-        {{template "timeline"}}
+        {{block "body" .}}This is the default body.{{end}}
     </body>
 
     <div class=footer>
-        MiniTwit &mdash; A Flask Application
+      {{block "footer" .}}MiniTwit &mdash; A Flask Application{{end}}
     </div>
 </div>

@@ -10,8 +10,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
-	"golang.org/x/crypto/bcrypt"
 	_ "github.com/mattn/go-sqlite3"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // PageData defines data on page whatever
@@ -195,10 +195,11 @@ func init() {
 func main() {
 	router := mux.NewRouter()
 
-	//router.HandleFunc("/", layoutHandler)
+	router.HandleFunc("/", layoutHandler)
 	//router.HandleFunc("/", timelineHandler)
-	//s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
-  //router.PathPrefix("/static/").Handler(s)
+
+	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
+	router.PathPrefix("/static/").Handler(s)
 
 	router.Use(beforeRequest)
 	router.Use(afterRequest)
