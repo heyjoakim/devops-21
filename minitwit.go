@@ -1,10 +1,8 @@
 package main
 
 import (
-	"crypto/sha1"
 	"crypto/sha256"
 	"database/sql"
-	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -151,12 +149,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		} else if err := bcrypt.CompareHashAndPassword([]byte(pwHash), []byte(r.FormValue("password"))); err != nil {
 			loginError = "Invalid password"
 		} else {
-			hasher := sha1.New()
-			hasher.Write([]byte(username + time.Now().UTC().Local().String()))
-			sha := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 			cookie := http.Cookie{
 				Name:     "_cookie",
-				Value:    sha,
+				Value:    username,
 				HttpOnly: true,
 			}
 			http.SetCookie(w, &cookie)
