@@ -1,11 +1,15 @@
 package main
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"text/template"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/securecookie"
@@ -53,10 +57,17 @@ func getUserID(username string) []interface{} {
 }
 
 // formatDatetime formats a timestamp for display.
-func formatDatetime(timestamp int64) string { return "" }
+func formatDatetime(timestamp int64) string {
+	var timeObject = time.Unix(timestamp, 0)
+	return timeObject.Format("2006-02-01 @ 02:04")
+}
 
 // gravatarURL return the gravatar image for the given email address.
-func gravatarURL(email string, size int) string { return "" }
+func gravatarURL(email string, size int) string {
+	var encodedEmail = hex.EncodeToString([]byte(strings.ToLower(strings.TrimSpace(email))))
+	var hashedEmail = fmt.Sprintf("%x", sha256.Sum256([]byte(encodedEmail)))
+	return fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon&s=%d", hashedEmail, size)
+}
 
 // beforeRequest make sure we are connected to the database each request and look
 // up the current user so that we know he's there.
