@@ -100,10 +100,11 @@ func beforeRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// TODO
 		session, _ := store.Get(r, "_cookie")
-		userID := session.Values["user_id"].(int)
+		userID := session.Values["user_id"]
 		if userID != nil {
-			tmpUser := getUser(userID)
-
+			tmpUser := getUser(userID.(int))
+			session.Values["user_id"] = tmpUser.userID
+			session.Save(r, w)
 		}
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
