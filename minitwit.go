@@ -1,16 +1,17 @@
 package main
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"text/template"
+	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/securecookie"
-	"github.com/gorilla/sessions"
-	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -29,7 +30,6 @@ var (
 	secretKey = "development key"
 )
 
-var store *sessions.CookieStore
 var staticPath string = "/static"
 var cssPath string = "/css"
 var timelinePath string = "./templates/timeline.html"
@@ -60,10 +60,17 @@ func getUserID(username string) []interface{} {
 }
 
 // formatDatetime formats a timestamp for display.
-func formatDatetime(timestamp int64) string { return "" }
+func formatDatetime(timestamp int64) string {
+	timeObject := time.Unix(timestamp, 0)
+	return timeObject.Format("2006-02-01 @ 02:04")
+}
 
 // gravatarURL return the gravatar image for the given email address.
-func gravatarURL(email string, size int) string { return "" }
+func gravatarURL(email string, size int) string {
+	encodedEmail := hex.EncodeToString([]byte(strings.ToLower(strings.TrimSpace(email))))
+	hashedEmail := fmt.Sprintf("%x", sha256.Sum256([]byte(encodedEmail)))
+	return fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon&s=%d", hashedEmail, size)
+}
 
 // beforeRequest make sure we are connected to the database each request and look
 // up the current user so that we know he's there.
@@ -126,34 +133,37 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {}
 func addMessageHandler(w http.ResponseWriter, r *http.Request) {}
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, "user-id")
-	if err != nil {
-		http.Redirect(w, r, "timeline", http.StatusPermanentRedirect)
-		return
+	_, err := r.Cookie("_cookie")
+	if err == nil {
+		http.Redirect(w, r, "timeline", http.StatusFound)
 	}
+
 	var loginError string
 	if r.Method == "POST" {
 		result := queryDb("select * from user where username = ?", r.FormValue("username"), true)
 		if !result.Next() {
 			loginError = "Invalid username"
+
 		}
 		var (
-			user_id  int
+			userID   int
 			username string
 			email    string
-			pw_hash  string
+			pwHash   string
 		)
-		if err := result.Scan(&user_id, &username, &email, &pw_hash); err != nil {
+		if err := result.Scan(&userID, &username, &email, &pwHash); err != nil {
 			log.Fatal(err)
 			loginError = "Invalid username"
-		}
-		if err := bcrypt.CompareHashAndPassword([]byte(pw_hash), []byte(r.FormValue("password"))); err != nil {
+		} else if err := bcrypt.CompareHashAndPassword([]byte(pwHash), []byte(r.FormValue("password"))); err != nil {
 			loginError = "Invalid password"
 		} else {
-			session.AddFlash("You are logged in")
-			session.Values["user-id"] = user_id
-			http.Redirect(w, r, "timeline", http.StatusPermanentRedirect)
-			return
+			cookie := http.Cookie{
+				Name:     "_cookie",
+				Value:    username,
+				HttpOnly: true,
+			}
+			http.SetCookie(w, &cookie)
+			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
 		}
 	}
 	tmpl, err := template.ParseFiles(loginPath, layoutPath)
@@ -182,16 +192,6 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {}
-
-func init() {
-	authKeyOne := securecookie.GenerateRandomKey(64)
-	encryptionKeyOne := securecookie.GenerateRandomKey(32)
-
-	store = sessions.NewCookieStore(
-		authKeyOne,
-		encryptionKeyOne,
-	)
-}
 
 func main() {
 	router := mux.NewRouter()
