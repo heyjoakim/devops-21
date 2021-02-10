@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,17 +20,26 @@ import (
 // PageData defines data on page whatever
 type PageData map[string]interface{}
 
+type User struct {
+	userID   int
+	username string
+	email    string
+	pwHash   string
+}
+
 // configuration
 var (
 	database  = "./tmp/minitwit.db"
 	perPage   = 30
 	debug     = true
-	secretKey = "development key"
+	secretKey = []byte("development key")
+	store     = sessions.NewCookieStore(secretKey)
 )
 
+var db *sql.DB
 var staticPath string = "/static"
 var indexPath string = "./templates/timeline.html"
-var loginPath string = "./templates/login.html"
+var loginTemplatePath string = "./templates/login.html"
 
 // connectDb returns a new connection to the database.
 func connectDb() (*sql.DB, error) {
@@ -66,17 +76,35 @@ func gravatarURL(email string, size int) string {
 	return fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon&s=%d", hashedEmail, size)
 }
 
+func getUser(userID int) User {
+	var (
+		ID       int
+		username string
+		email    string
+		pwHash   string
+	)
+	res := queryDb("select * from user where user_id = ?", userID)
+	res.Scan(&ID, &username, &email, &pwHash)
+
+	return User{
+		userID:   ID,
+		username: username,
+		email:    email,
+		pwHash:   pwHash,
+	}
+}
+
 // beforeRequest make sure we are connected to the database each request and look
 // up the current user so that we know he's there.
 func beforeRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Do stuff here
-		db, err := connectDb()
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(db)
+		// TODO
+		session, _ := store.Get(r, "_cookie")
+		userID := session.Values["user_id"].(int)
+		if userID != nil {
+			tmpUser := getUser(userID)
 
+		}
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})
@@ -85,12 +113,10 @@ func beforeRequest(next http.Handler) http.Handler {
 // Closes the database again at the end of the request.
 func afterRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Do stuff here
-		log.Println(r.RequestURI)
+		// TODO
+
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
-
-		log.Println("Done!")
 	})
 }
 
@@ -125,8 +151,8 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {}
 func addMessageHandler(w http.ResponseWriter, r *http.Request) {}
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := r.Cookie("_cookie")
-	if err == nil {
+	session, err := store.Get(r, "_cookie")
+	if ok := session.Values["user_id"] != nil; ok {
 		http.Redirect(w, r, "timeline", http.StatusFound)
 	}
 
@@ -135,7 +161,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		result := queryDb("select * from user where username = ?", r.FormValue("username"), true)
 		if !result.Next() {
 			loginError = "Invalid username"
-
+			return
 		}
 		var (
 			userID   int
@@ -149,16 +175,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		} else if err := bcrypt.CompareHashAndPassword([]byte(pwHash), []byte(r.FormValue("password"))); err != nil {
 			loginError = "Invalid password"
 		} else {
-			cookie := http.Cookie{
-				Name:     "_cookie",
-				Value:    username,
-				HttpOnly: true,
-			}
-			http.SetCookie(w, &cookie)
-			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
+			session.AddFlash("You were logged in")
+			session.Values["user_id"] = userID
+			session.Save(r, w)
+
+			http.Redirect(w, r, "timeline", http.StatusFound)
 		}
 	}
-	tmpl, err := template.ParseFiles(loginPath)
+	tmpl, err := template.ParseFiles(loginTemplatePath)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -173,6 +197,16 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func registerHandler(w http.ResponseWriter, r *http.Request) {}
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {}
+
+// init is automatically executed on program startup. Can't be called
+// or referenced.
+func init() {
+	database, err := connectDb()
+	if err != nil {
+		panic(err)
+	}
+	db = database
+}
 
 func main() {
 	router := mux.NewRouter()
