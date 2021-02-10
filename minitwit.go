@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -179,12 +180,41 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
+	db, err := connectDb()
+	name := r.FormValue("username")
+	fmt.Println(name)
+	fmt.Println(db)
+
+	log.Println(r.Method)
+
+	fmt.Println("Error")
+
+	if r.Method == "POST" {
+		// Error handling
+		fmt.Println("HEP")
+		test, _ := db.Query("select * from user where username = svopper1", true)
+		fmt.Println(test)
+		statement, _ := db.Prepare(`insert into user (username, email, pw_hash) values(?,?,?)`)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		fmt.Println("HEP2")
+		statement.Exec(r.FormValue("username"), r.FormValue("email"), r.FormValue("password"))
+		statement.Close()
+
+	} else {
+		fmt.Println("Error method not POST")
+
+	}
+
 	// Only implemented for display NO LOGIC (Joakim)
 	t, err := template.ParseFiles(registerPath, layoutPath)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	data := PageData{
 		"title": "Minitwit",
 	}
@@ -201,13 +231,13 @@ func main() {
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
 	router.PathPrefix("/static/").Handler(s)
 
-	router.Use(beforeRequest)
-	router.Use(afterRequest)
+	//router.Use(beforeRequest)
+	//router.Use(afterRequest)
 
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
-	router.HandleFunc("/register", registerHandler)
+	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
