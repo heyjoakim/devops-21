@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/securecookie"
-	"github.com/gorilla/sessions"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -29,7 +27,6 @@ var (
 	secretKey = "development key"
 )
 
-var store *sessions.CookieStore
 var staticPath string = "/static"
 var indexPath string = "./templates/timeline.html"
 var loginPath string = "./templates/login.html"
@@ -128,40 +125,37 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {}
 func addMessageHandler(w http.ResponseWriter, r *http.Request) {}
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, "user-id")
-	if err != nil {
-		http.Redirect(w, r, "timeline", http.StatusPermanentRedirect)
-		return
+	_, err := r.Cookie("_cookie")
+	if err == nil {
+		http.Redirect(w, r, "timeline", http.StatusFound)
 	}
+
 	var loginError string
 	if r.Method == "POST" {
 		result := queryDb("select * from user where username = ?", r.FormValue("username"), true)
 		if !result.Next() {
 			loginError = "Invalid username"
+
 		}
 		var (
-			user_id  int
+			userID   int
 			username string
 			email    string
-			pw_hash  string
+			pwHash   string
 		)
-		if err := result.Scan(&user_id, &username, &email, &pw_hash); err != nil {
+		if err := result.Scan(&userID, &username, &email, &pwHash); err != nil {
 			log.Fatal(err)
 			loginError = "Invalid username"
-		}
-		if err := bcrypt.CompareHashAndPassword([]byte(pw_hash), []byte(r.FormValue("password"))); err != nil {
+		} else if err := bcrypt.CompareHashAndPassword([]byte(pwHash), []byte(r.FormValue("password"))); err != nil {
 			loginError = "Invalid password"
 		} else {
-			session.AddFlash("You are logged in")
-			session.Values["user-id"] = user_id
-
-			err = session.Save(r, w)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
+			cookie := http.Cookie{
+				Name:     "_cookie",
+				Value:    username,
+				HttpOnly: true,
 			}
-			http.Redirect(w, r, "timeline", http.StatusPermanentRedirect)
-			return
+			http.SetCookie(w, &cookie)
+			http.Redirect(w, r, "/", http.StatusPermanentRedirect)
 		}
 	}
 	tmpl, err := template.ParseFiles(loginPath)
@@ -179,16 +173,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func registerHandler(w http.ResponseWriter, r *http.Request) {}
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {}
-
-func init() {
-	authKeyOne := securecookie.GenerateRandomKey(64)
-	encryptionKeyOne := securecookie.GenerateRandomKey(32)
-
-	store = sessions.NewCookieStore(
-		authKeyOne,
-		encryptionKeyOne,
-	)
-}
 
 func main() {
 	router := mux.NewRouter()
