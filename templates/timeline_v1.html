@@ -1,6 +1,9 @@
-{{template "base" .}}
-{{define "title"}} Public Timeline {{end}}
-{{define "body"}}
+{{block "title" .}}
+    <!-- Logic for displaying Public Timeline or My Timeline in the title-->
+    <h1> Timeline title </h1>
+{{end}}
+
+{{block "body" .}}
     <h2>This needs to change accoring to the logic of title (from timeline)</h2>
 
     <p>Hello this is a timeline</p>
