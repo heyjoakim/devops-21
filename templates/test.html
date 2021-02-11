@@ -1,0 +1,24 @@
+<!doctype html>
+<title>Welcome | MiniTwit</title>
+<link rel=stylesheet type="text/css" href="/static/style.css">
+
+<form action="/tryUnfollow" method=post>
+    <dl>
+      <dt>Username:
+      <dd><input type=text name=username size=30 value="userToUnfollow">
+ 
+    </dl>
+    <div class=actions><input type=submit value="Sign Up"></div>
+  </form>
+    <body>
+        {{template "timeline"}}
+
+
+
+
+    </body>
+
+    <div class=footer>
+        MiniTwit &mdash; A Flask Application
+    </div>
+</div>
