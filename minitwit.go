@@ -75,8 +75,10 @@ func queryDbSingleRow(query string, args ...interface{}) *sql.Row {
 }
 
 // getUserID returns user ID for username
-func getUserID(username string) []interface{} {
-	return nil
+func getUserID(username string) (int, error) {
+	var ID int
+	err := db.QueryRow("select user_id from user where username = ?", username).Scan(&ID)
+	return ID, err
 }
 
 // formatDatetime formats a timestamp for display.
@@ -215,14 +217,51 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
-	// Only implemented for display NO LOGIC (Joakim)
+	session, err := store.Get(r, "_cookie")
+	if ok := session.Values["user_id"] != nil; ok {
+		http.Redirect(w, r, "timeline", http.StatusFound)
+	}
+
+	var registerError string
+	if r.Method == "POST" {
+		if len(r.FormValue("username")) == 0 {
+			registerError = "You have to enter a username"
+		} else if len(r.FormValue("email")) == 0 || strings.Contains(r.FormValue("email"), "@") == false {
+			registerError = "You have to enter a valid email address"
+		} else if len(r.FormValue("password")) == 0 {
+			registerError = "You have to enter a password"
+		} else if r.FormValue("password") != r.FormValue("password2") {
+			registerError = "The two passwords do not match"
+		} else if _, err := getUserID(r.FormValue("username")); err == nil {
+			registerError = "The username is already taken"
+		} else {
+			statement, err := db.Prepare(`insert into user (username, email, pw_hash) values(?,?,?)`)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+
+			hash, err := bcrypt.GenerateFromPassword([]byte("test"), bcrypt.DefaultCost)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+
+			statement.Exec(r.FormValue("username"), r.FormValue("email"), hash)
+			statement.Close()
+			session.AddFlash("You are now registered ?", r.FormValue("username"))
+			http.Redirect(w, r, "/login", http.StatusFound)
+		}
+	}
+
 	t, err := template.ParseFiles(registerPath, layoutPath)
 	if err != nil {
-		log.Fatal(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	data := PageData{
-		"title": "Minitwit",
+		"error": registerError,
 	}
 	t.Execute(w, data)
 }
@@ -252,7 +291,7 @@ func main() {
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
-	router.HandleFunc("/register", registerHandler)
+	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
