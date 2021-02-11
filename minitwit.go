@@ -241,7 +241,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			hash, err := bcrypt.GenerateFromPassword([]byte("test"), bcrypt.DefaultCost)
+			hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
 			if err != nil {
 				log.Fatal(err)
 				return
