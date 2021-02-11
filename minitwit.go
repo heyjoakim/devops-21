@@ -222,19 +222,7 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-//Rhea Pollan
-
-// 39 Maribeth Chenot
-
 func addMessageHandler(w http.ResponseWriter, r *http.Request) {}
-
-func out(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "_cookie")
-
-	session.Values["user_id"] = 19
-	session.Save(r, w)
-
-}
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "_cookie")
@@ -357,7 +345,6 @@ func main() {
 	router.HandleFunc("/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
-	router.HandleFunc("/out", out)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
