@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
@@ -19,6 +20,12 @@ import (
 
 // PageData defines data on page whatever
 type PageData map[string]interface{}
+type Message struct {
+	email    string
+	username string
+	text     string
+	pubDate  int
+}
 
 type User struct {
 	userID   int
@@ -159,7 +166,65 @@ func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func userTimelineHandler(w http.ResponseWriter, r *http.Request) {}
+func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
+	//Display's a users tweets.
+	params := mux.Vars(r)
+	userToBeFollowed := params["username"]
+
+	userToBeFollowedID := getUserID(userToBeFollowed)
+	if userToBeFollowedID == -1 { //TODO change this based on the "no user" output of getUserID
+		w.WriteHeader(404)
+	}
+	followed := false
+
+	cookie, err := r.Cookie("_cookie")
+
+	if err == nil { //If there is a user signed in
+		signedInUser := cookie.Value                    //Retrieves their username
+		res := queryDb("select 1 from follower where "+ //Determines if the signed in user is following the user being viewed?
+			"follower.who_id = ? and follower.whom_id = ?",
+			signedInUser, userToBeFollowedID)
+		followed = res.Next() // Checks if the user that is signed in, is currently following the user on the page
+	}
+	tmpl, err := template.ParseFiles(indexPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	messagesAndUsers := queryDb("select message.*, user.* from message, user where "+
+		"user.user_id = message.author_id and user.user_id = ? "+
+		"order by message.pub_date desc limit ?",
+		userToBeFollowedID, perPage)
+
+	data := PageData{"followed": followed}
+	messages := list.New()
+	for messagesAndUsers.Next() {
+		var (
+			messageID int
+			authorID  int
+			text      string
+			pubDate   int
+			flagged   int
+			userId    int
+			username  string
+			email     string
+			pwHash    string
+		)
+		err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userId, &username, &email, pwHash)
+		if err != nil {
+			message := Message{
+				email:    email,
+				username: username,
+				text:     text,
+				pubDate:  pubDate,
+			}
+			messages.PushBack(message)
+		}
+		data["messages"] = messages
+
+	}
+	tmpl.Execute(w, data)
+
+}
 
 func followUserHandler(w http.ResponseWriter, r *http.Request) {
 	// example on extract url params
@@ -342,6 +407,7 @@ func main() {
 	router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
+	router.HandleFunc("/{username}", userTimelineHandler)
 	router.HandleFunc("/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
