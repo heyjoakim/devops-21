@@ -65,6 +65,15 @@ func queryDb(query string, args ...interface{}) *sql.Rows {
 	return res
 }
 
+// query of the database just as above, but only finding us a single row
+func queryDbSingleRow(query string, args ...interface{}) *sql.Row {
+	liteDB, _ := sql.Open("sqlite3", database)
+
+	res := liteDB.QueryRow(query, args...)
+
+	return res
+}
+
 // getUserID returns user ID for username
 func getUserID(username string) []interface{} {
 	return nil
@@ -90,7 +99,7 @@ func getUser(userID int) User {
 		email    string
 		pwHash   string
 	)
-	res := queryDb("select * from user where user_id = ?", userID)
+	res := queryDbSingleRow("select * from user where user_id = ?", userID)
 	res.Scan(&ID, &username, &email, &pwHash)
 
 	return User{
@@ -109,6 +118,7 @@ func beforeRequest(next http.Handler) http.Handler {
 		session, _ := store.Get(r, "_cookie")
 		userID := session.Values["user_id"]
 		if userID != nil {
+			fmt.Println("userID:", userID)
 			tmpUser := getUser(userID.(int))
 			session.Values["user_id"] = tmpUser.userID
 			session.Save(r, w)
@@ -239,7 +249,6 @@ func main() {
 
 	router.Use(beforeRequest)
 	router.Use(afterRequest)
-
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
