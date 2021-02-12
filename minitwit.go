@@ -218,7 +218,59 @@ func followUserHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(username)
 }
 
-func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {}
+// relies on a query string
+
+func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "_cookie")
+	loggedInUser := session.Values["user_id"]
+	var unfollowError string // keeping this so as to able to display an error message on the timeline
+	// if we wanted one there
+	if session.Values["user_id"] == nil {
+		unfollowError = "no user was logged in "
+		fmt.Println(unfollowError)
+		http.Redirect(w, r, "timeline", http.StatusFound)
+		return
+	}
+	v := r.URL.Query()
+	p := v.Get("user")
+	if p == "" {
+		unfollowError = "the query parameter is empty"
+		fmt.Println(unfollowError)
+		http.Redirect(w, r, "timeline", http.StatusFound)
+		return
+	}
+	if p == "" {
+		unfollowError = "the query parameter is empty"
+		fmt.Println(unfollowError)
+		http.Redirect(w, r, "timeline", http.StatusFound)
+		return
+	}
+
+	id2, user2Err := getUserID(p)
+
+	if user2Err != nil {
+		unfollowError = "no such user "
+		fmt.Println(unfollowError)
+		http.Redirect(w, r, "timeline", http.StatusFound)
+		return
+	}
+
+	statement, er := db.Prepare("delete from follower where who_id= ? and whom_id= ?") // Prepare statement.
+
+	if er != nil {
+		fmt.Println("fuck fuck")
+	}
+
+	_, error := statement.Exec(id2, loggedInUser)
+	statement.Close()
+	if error != nil {
+		unfollowError = "error during database operation "
+		fmt.Println(unfollowError)
+		http.Redirect(w, r, "timeline", http.StatusFound)
+		return
+	}
+
+}
 
 func addMessageHandler(w http.ResponseWriter, r *http.Request) {}
 
@@ -291,7 +343,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			hash, err := bcrypt.GenerateFromPassword([]byte("test"), bcrypt.DefaultCost)
+			hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
 			if err != nil {
 				log.Fatal(err)
 				return
@@ -340,6 +392,7 @@ func main() {
 	router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
+	router.HandleFunc("/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
 	router.HandleFunc("/public", publicTimelineHandler)
