@@ -20,6 +20,18 @@ import (
 // PageData defines data on page whatever
 type PageData map[string]interface{}
 
+type Message struct {
+	MessageID   int
+	AuthorID    int
+	Text        string
+	PubDate     string
+	Flagged     int
+	UserID      int
+	Username    string
+	GravatarURL string
+	PwHash      string
+}
+
 type User struct {
 	userID   int
 	username string
@@ -156,7 +168,45 @@ func timelineHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles(timelinePath, layoutPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	res := queryDb("select message.*, user.* from message, user where message.flagged = 0 and message.author_id = user.user_id order by message.pub_date desc limit ?", perPage)
+	var msgs []Message
 
+	for res.Next() {
+		var (
+			messageID int
+			authorID  int
+			text      string
+			pubDate   int
+			flagged   int
+			userID    int
+			username  string
+			email     string
+			pwHash    string
+		)
+
+		err = res.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userID, &username, &email, &pwHash)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		msgs = append(msgs, Message{
+			Text:        text,
+			PubDate:     formatDatetime(int64(pubDate)),
+			Username:    username,
+			GravatarURL: gravatarURL(email, 48),
+		})
+	}
+
+	data := PageData{
+		"messages": msgs,
+		"msgCount": len(msgs),
+	}
+
+	tmpl.Execute(w, data)
 }
 
 func userTimelineHandler(w http.ResponseWriter, r *http.Request) {}
@@ -175,7 +225,7 @@ func addMessageHandler(w http.ResponseWriter, r *http.Request) {}
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "_cookie")
 	if ok := session.Values["user_id"] != nil; ok {
-		http.Redirect(w, r, "timeline", http.StatusFound)
+		http.Redirect(w, r, "/timeline", http.StatusFound)
 	}
 
 	var loginError string
@@ -292,6 +342,7 @@ func main() {
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
+	router.HandleFunc("/public", publicTimelineHandler)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }

@@ -8,14 +8,25 @@
 
 
     <ul class=messages>
-        <!-- {% for message in messages %} -->
-          <li><img src="/static/dev.png" width="48" height="48"><p>
-            <strong><a href="test_messages
-            }}">message username</a></strong>
-            lorem ipusm capsu utcha norem disento kamentura.
-            <small>&mdash; 2021-02-01 @ 07.51</small>
-        <!-- {% else %} -->
-          <li><em>There's no message so far.</em>
-        <!-- {% endfor %} -->
-        </ul>
+      {{if gt .msgCount 0}}
+      {{range .messages}}
+      <li>
+        <img src="{{.GravatarURL}}" width="48" height="48">
+        <p>
+          <strong>
+            <a href="test_messages">{{.Username}}</a>
+          </strong>
+        {{.Text}}
+        </p>
+        <small>&mdash;{{.PubDate}}</small>
+      </li>
+      {{end}}
+      {{else}}
+      <li><em>There's no message so far.</em>
+      {{end}}
+    
+      
+    
+    
+    </ul>
 {{end}}
