@@ -1,7 +1,6 @@
 package main
 
 import (
-	"container/list"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
@@ -169,61 +168,63 @@ func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	//Display's a users tweets.
 	params := mux.Vars(r)
-	userToBeFollowed := params["username"]
+	profileUsername := params["username"]
 
-	userToBeFollowedID := getUserID(userToBeFollowed)
-	if userToBeFollowedID == -1 { //TODO change this based on the "no user" output of getUserID
+	profileUserID, err := getUserID(profileUsername)
+	if err != nil {
 		w.WriteHeader(404)
+		return
 	}
 	followed := false
 
-	cookie, err := r.Cookie("_cookie")
-
-	if err == nil { //If there is a user signed in
-		signedInUser := cookie.Value                    //Retrieves their username
+	session, err := store.Get(r, "_cookie")
+	if ok := session.Values["user_id"] != nil; ok {
+		sessionUserId := session.Values["user_id"]      //Retrieves their username
 		res := queryDb("select 1 from follower where "+ //Determines if the signed in user is following the user being viewed?
 			"follower.who_id = ? and follower.whom_id = ?",
-			signedInUser, userToBeFollowedID)
+			sessionUserId, profileUserID)
 		followed = res.Next() // Checks if the user that is signed in, is currently following the user on the page
 	}
-	tmpl, err := template.ParseFiles(indexPath)
+
+	tmpl, err := template.ParseFiles(timelinePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	messagesAndUsers := queryDb("select message.*, user.* from message, user where "+
+	messagesAndUsers, err := db.Query("select message.*, user.* from message, user where "+
 		"user.user_id = message.author_id and user.user_id = ? "+
 		"order by message.pub_date desc limit ?",
-		userToBeFollowedID, perPage)
+		profileUserID, perPage)
 
 	data := PageData{"followed": followed}
-	messages := list.New()
-	for messagesAndUsers.Next() {
-		var (
-			messageID int
-			authorID  int
-			text      string
-			pubDate   int
-			flagged   int
-			userId    int
-			username  string
-			email     string
-			pwHash    string
-		)
-		err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userId, &username, &email, pwHash)
-		if err != nil {
-			message := Message{
-				email:    email,
-				username: username,
-				text:     text,
-				pubDate:  pubDate,
+	var messages []Message
+	if err == nil {
+		for messagesAndUsers.Next() {
+			var (
+				messageID int
+				authorID  int
+				text      string
+				pubDate   int
+				flagged   int
+				userId    int
+				username  string
+				email     string
+				pwHash    string
+			)
+			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userId, &username, &email, &pwHash)
+			if err == nil {
+				message := Message{
+					email:    email,
+					username: username,
+					text:     text,
+					pubDate:  pubDate,
+				}
+				messages = append(messages, message)
 			}
-			messages.PushBack(message)
 		}
-		data["messages"] = messages
-
 	}
+	data["messages"] = messages
+	data["title"] = fmt.Sprintf("%s's Timeline", profileUsername)
 	tmpl.Execute(w, data)
-
 }
 
 func followUserHandler(w http.ResponseWriter, r *http.Request) {
