@@ -157,7 +157,7 @@ func messagesHandler(w http.ResponseWriter, r *http.Request) {
 			)
 			err = messages.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userID, &username, &email, &pwHash)
 			if err != nil {
-				http.Error(w, "Error happened", http.StatusInternalServerError)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 
 			filteredMsgs = append(filteredMsgs, Message{
