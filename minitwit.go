@@ -17,13 +17,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// PageData defines data on page whatever
+// PageData defines data on page whatever and request
 type PageData map[string]interface{}
+
 type Message struct {
-	email    string
-	username string
-	text     string
-	pubDate  int
+	Email    string
+	Username string
+	Text     string
+	PubDate  string
 }
 
 type User struct {
@@ -165,7 +166,45 @@ func timelineHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles(timelinePath, layoutPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	res := queryDb("select message.*, user.* from message, user where message.flagged = 0 and message.author_id = user.user_id order by message.pub_date desc limit ?", perPage)
+	var msgs []Message
 
+	for res.Next() {
+		var (
+			messageID int
+			authorID  int
+			text      string
+			pubDate   int
+			flagged   int
+			userID    int
+			username  string
+			email     string
+			pwHash    string
+		)
+
+		err = res.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userID, &username, &email, &pwHash)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+		msgs = append(msgs, Message{
+			Text:     text,
+			PubDate:  formatDatetime(int64(pubDate)),
+			Username: username,
+			Email:    gravatarURL(email, 48),
+		})
+	}
+
+	data := PageData{
+		"messages": msgs,
+		"msgCount": len(msgs),
+	}
+
+	tmpl.Execute(w, data)
 }
 
 func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
@@ -216,10 +255,10 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userID, &username, &email, &pwHash)
 			if err == nil {
 				message := Message{
-					email:    email,
-					username: username,
-					text:     text,
-					pubDate:  pubDate,
+					Email:    email,
+					Username: username,
+					Text:     text,
+					PubDate:  formatDatetime(int64(pubDate)),
 				}
 				messages = append(messages, message)
 			}
@@ -397,7 +436,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {}
 func init() {
 	database, err := connectDb()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	db = database
 }
@@ -415,6 +454,7 @@ func main() {
 	router.HandleFunc("/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
+	router.HandleFunc("/public", publicTimelineHandler)
 	router.HandleFunc("/{username}", userTimelineHandler)
 
 	fmt.Println("Server running on port http://localhost:8000")
