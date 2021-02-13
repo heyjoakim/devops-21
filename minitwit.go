@@ -303,10 +303,15 @@ func followUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	statement, err := db.Prepare(`insert into follower (who_id,whom_id) values(?,?)`)
 	if err != nil {
+		fmt.Println("GARSE error")
 		log.Fatal(err)
 		return
 	}
-	statement.Exec(currentUserID, userToFollowID)
+	_, error := statement.Exec(currentUserID, userToFollowID)
+	statement.Close()
+	if error != nil {
+		fmt.Println("database error: ", error)
+	}
 	statement.Close()
 	routeName := fmt.Sprintf("/%s", username)
 	http.Redirect(w, r, routeName, http.StatusFound)
@@ -315,6 +320,7 @@ func followUserHandler(w http.ResponseWriter, r *http.Request) {
 // relies on a query string
 
 func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
+
 	session, _ := store.Get(r, "_cookie")
 	loggedInUser := session.Values["user_id"]
 	var unfollowError string // keeping this so as to able to display an error message on the timeline
@@ -422,6 +428,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
+		result.Close()
 	}
 
 	tmpl, err := template.ParseFiles(loginPath, layoutPath)
@@ -525,6 +532,7 @@ func main() {
 	router.Use(beforeRequest)
 	router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
+	router.HandleFunc("/{username}/unfollow", unfollowUserHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/{username}/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")

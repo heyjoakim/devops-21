@@ -20,7 +20,7 @@
 
 
 
-{{ if .profileOwner}}
+  {{ if and .profileOwner .username}}
 <div class=followstatus>
   {{ if .ownProfile }}
   This is you!
