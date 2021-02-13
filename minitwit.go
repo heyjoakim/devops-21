@@ -155,6 +155,7 @@ func timelineHandler(w http.ResponseWriter, r *http.Request) {
 	if session.Values["user_id"] != nil {
 		routeName := fmt.Sprintf("/%s", session.Values["username"])
 		http.Redirect(w, r, routeName, http.StatusFound)
+		return
 	}
 
 	http.Redirect(w, r, "/public", http.StatusFound)
