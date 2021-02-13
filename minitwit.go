@@ -154,7 +154,7 @@ func timelineHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "_cookie")
 	if session.Values["user_id"] != nil {
 		routeName := fmt.Sprintf("/%s", session.Values["username"])
-		http.Redirect(w, r,routeName, http.StatusFound)
+		http.Redirect(w, r, routeName, http.StatusFound)
 	}
 
 	http.Redirect(w, r, "/public", http.StatusFound)
@@ -265,7 +265,7 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	data["messages"] = messages
 	data["title"] = fmt.Sprintf("%s's Timeline", profileUsername)
 	data["profileOwner"] = profileUsername
-	data["followed"] = false;
+	data["followed"] = false
 
 	if session.Values["username"] == profileUsername {
 		data["ownProfile"] = true
@@ -276,14 +276,14 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "User does not exist", 400)
 			return
 		}
-		res := queryDbSingleRow("select 1 from follower where who_id= ? and whom_id= ?", otherUser,currentUser)
+		res := queryDbSingleRow("select 1 from follower where who_id= ? and whom_id= ?", otherUser, currentUser)
 		var (
-			whoID      int
-			whomID   	int
+			whoID  int
+			whomID int
 		)
 		res.Scan(&whoID, &whomID)
 		if whoID != 0 && whomID != 0 {
-			data["followed"] = true;
+			data["followed"] = true
 		}
 	}
 
@@ -367,7 +367,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "_cookie")
 	if ok := session.Values["user_id"] != nil; ok {
 		routeName := fmt.Sprintf("/%s", session.Values["username"])
-		http.Redirect(w, r,routeName, http.StatusFound)
+		http.Redirect(w, r, routeName, http.StatusFound)
 	}
 
 	var loginError string
@@ -403,7 +403,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := PageData{
-		"error": loginError,
+		"error":    loginError,
 		"username": session.Values["username"],
 	}
 	tmpl.Execute(w, data)
@@ -473,8 +473,8 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = session.Save(r, w)
 	if err != nil {
-			http.Error(w, err.Error(), 400)
-			return
+		http.Error(w, err.Error(), 400)
+		return
 	}
 	http.Redirect(w, r, "/", http.StatusFound)
 }

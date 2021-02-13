@@ -1,0 +1,22 @@
+basePath: /
+host: localhost:8001
+info:
+  contact: {}
+  description: This API is comsumed by the simulator for the course DevOps, Software
+    Evolution and Software Maintenance @ ITU Spring 2021
+  termsOfService: http://swagger.io/terms/
+  title: Minitwit API
+  version: "1.0"
+paths:
+  /latest:
+    get:
+      description: Get the latest x
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: Get the latest x
+swagger: "2.0"
