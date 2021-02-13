@@ -276,12 +276,13 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "User does not exist", 400)
 			return
 		}
-		res := queryDbSingleRow("select 1 from follower where who_id= ? and whom_id= ?", otherUser,currentUser)
+		res := queryDbSingleRow("select * from follower where who_id= ? and whom_id= ?", currentUser, otherUser)
 		var (
-			whoID      int
+			whoID     int
 			whomID   	int
 		)
 		res.Scan(&whoID, &whomID)
+
 		if whoID != 0 && whomID != 0 {
 			data["followed"] = true;
 		}
@@ -295,15 +296,20 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 func followUserHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "_cookie")
-	fmt.Println(session)
-	fmt.Println("Here")
+	currentUserID := session.Values["user_id"]
+	params := mux.Vars(r)
+	username := params["username"]
+	userToFollowID,_ := getUserID(username)
 
-	// example on extract url params
-	// params := mux.Vars(r)
-	// username := params["username"]
-	queryParams := r.URL.Query()
-	usernameParam := queryParams.Get("user")
-	fmt.Println(usernameParam)
+	statement, err := db.Prepare(`insert into follower (who_id,whom_id) values(?,?)`)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	statement.Exec(currentUserID, userToFollowID)
+	statement.Close()
+	routeName := fmt.Sprintf("/%s", username)
+	http.Redirect(w, r,routeName, http.StatusFound)
 }
 
 // relies on a query string
@@ -498,8 +504,8 @@ func main() {
 	router.Use(beforeRequest)
 	router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
-	router.HandleFunc("{username}/follow", followUserHandler)
-	router.HandleFunc("{username}/unfollow", unfollowUserHandler)
+	router.HandleFunc("/{username}/follow", followUserHandler)
+	router.HandleFunc("/{username}/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/logout", logoutHandler)
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
