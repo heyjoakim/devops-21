@@ -51,14 +51,6 @@ func serialize(input interface{}) ([]byte, error) {
 	return js, nil
 }
 
-func getQueryParam(r *http.Request, name string, fallback interface{}) interface{} {
-	res := r.URL.Query().Get(name)
-	if res == "" {
-		return fallback
-	}
-	return res
-}
-
 func notReqFromSimulator(r *http.Request) []byte {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader != "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh" {
