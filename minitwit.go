@@ -408,10 +408,10 @@ func main() {
 	router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
-	router.HandleFunc("/{username}", userTimelineHandler)
 	router.HandleFunc("/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
+	router.HandleFunc("/{username}", userTimelineHandler)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
