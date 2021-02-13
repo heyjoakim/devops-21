@@ -409,10 +409,10 @@ func main() {
 	router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
-	// router.HandleFunc("/{username}", userTimelineHandler)
 	router.HandleFunc("/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
+	router.HandleFunc("/{username}", userTimelineHandler)
 
 	fmt.Println("Server running on port http://localhost:8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
