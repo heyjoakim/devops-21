@@ -179,10 +179,10 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 	session, err := store.Get(r, "_cookie")
 	if ok := session.Values["user_id"] != nil; ok {
-		sessionUserId := session.Values["user_id"]      //Retrieves their username
+		sessionUserID := session.Values["user_id"]      //Retrieves their username
 		res := queryDb("select 1 from follower where "+ //Determines if the signed in user is following the user being viewed?
 			"follower.who_id = ? and follower.whom_id = ?",
-			sessionUserId, profileUserID)
+			sessionUserID, profileUserID)
 		followed = res.Next() // Checks if the user that is signed in, is currently following the user on the page
 	}
 
@@ -205,12 +205,12 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 				text      string
 				pubDate   int
 				flagged   int
-				userId    int
+				userID    int
 				username  string
 				email     string
 				pwHash    string
 			)
-			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userId, &username, &email, &pwHash)
+			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userID, &username, &email, &pwHash)
 			if err == nil {
 				message := Message{
 					email:    email,
@@ -236,61 +236,63 @@ func followUserHandler(w http.ResponseWriter, r *http.Request) {
 
 // relies on a query string
 
-func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "_cookie")
-	loggedInUser := session.Values["user_id"]
-	var unfollowError string // keeping this so as to able to display an error message on the timeline
-	// if we wanted one there
-	if session.Values["user_id"] == nil {
-		unfollowError = "no user was logged in "
-		fmt.Println(unfollowError)
-		http.Redirect(w, r, "timeline", http.StatusFound)
-		return
-	}
-	v := r.URL.Query()
-	p := v.Get("user")
-	if p == "" {
-		unfollowError = "the query parameter is empty"
-		fmt.Println(unfollowError)
-		http.Redirect(w, r, "timeline", http.StatusFound)
-		return
-	}
-	if p == "" {
-		unfollowError = "the query parameter is empty"
-		fmt.Println(unfollowError)
-		http.Redirect(w, r, "timeline", http.StatusFound)
-		return
-	}
+// func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
+// 	session, _ := store.Get(r, "_cookie")
+// 	loggedInUser := session.Values["user_id"]
+// 	var unfollowError string // keeping this so as to able to display an error message on the timeline
+// 	// if we wanted one there
+// 	if session.Values["user_id"] == nil {
+// 		unfollowError = "no user was logged in "
+// 		fmt.Println(unfollowError)
+// 		http.Redirect(w, r, "timeline", http.StatusFound)
+// 		return
+// 	}
+// 	v := r.URL.Query()
+// 	p := v.Get("user")
+// 	if p == "" {
+// 		unfollowError = "the query parameter is empty"
+// 		fmt.Println(unfollowError)
+// 		http.Redirect(w, r, "timeline", http.StatusFound)
+// 		return
+// 	}
+// 	if p == "" {
+// 		unfollowError = "the query parameter is empty"
+// 		fmt.Println(unfollowError)
+// 		http.Redirect(w, r, "timeline", http.StatusFound)
+// 		return
+// 	}
 
-	id2, user2Err := getUserID(p)
+// 	id2, user2Err := getUserID(p)
 
-	if user2Err != nil {
-		unfollowError = "no such user "
-		fmt.Println(unfollowError)
-		http.Redirect(w, r, "timeline", http.StatusFound)
-		return
-	}
+// 	if user2Err != nil {
+// 		unfollowError = "no such user "
+// 		fmt.Println(unfollowError)
+// 		http.Redirect(w, r, "timeline", http.StatusFound)
+// 		return
+// 	}
 
-	statement, er := db.Prepare("delete from follower where who_id= ? and whom_id= ?") // Prepare statement.
+// 	statement, er := db.Prepare("delete from follower where who_id= ? and whom_id= ?") // Prepare statement.
 
-	if er != nil {
-		fmt.Println("fuck fuck")
-	}
+// 	if er != nil {
+// 		fmt.Println("fuck fuck")
+// 	}
 
-	_, error := statement.Exec(id2, loggedInUser)
-	statement.Close()
-	if error != nil {
-		unfollowError = "error during database operation "
-		fmt.Println(unfollowError)
-		http.Redirect(w, r, "timeline", http.StatusFound)
-		return
-	}
+// 	_, error := statement.Exec(id2, loggedInUser)
+// 	statement.Close()
+// 	if error != nil {
+// 		unfollowError = "error during database operation "
+// 		fmt.Println(unfollowError)
+// 		http.Redirect(w, r, "timeline", http.StatusFound)
+// 		return
+// 	}
 
-}
+// }
 
 func addMessageHandler(w http.ResponseWriter, r *http.Request) {}
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Here 2")
+
 	session, err := store.Get(r, "_cookie")
 	if ok := session.Values["user_id"] != nil; ok {
 		http.Redirect(w, r, "timeline", http.StatusFound)
@@ -322,6 +324,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/timeline", http.StatusFound)
 		}
 	}
+	fmt.Println("Here")
+
 	tmpl, err := template.ParseFiles(loginPath, layoutPath)
 	if err != nil {
 		log.Fatal(err)
@@ -409,9 +413,10 @@ func main() {
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/{username}", userTimelineHandler)
-	router.HandleFunc("/unfollow", unfollowUserHandler)
+	// router.HandleFunc("/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
 
+	fmt.Println("Server running on port http://localhost:8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
