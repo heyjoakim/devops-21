@@ -401,17 +401,16 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	var loginError string
 	if r.Method == "POST" {
 		result := queryDb("select * from user where username = ?", r.FormValue("username"), true)
-		if !result.Next() {
-			loginError = "Invalid username"
-			return
-		}
+
 		var (
 			userID   int
 			username string
 			email    string
 			pwHash   string
 		)
-		if err := result.Scan(&userID, &username, &email, &pwHash); err != nil {
+		if !result.Next() {
+			loginError = "Invalid username"
+		} else if err := result.Scan(&userID, &username, &email, &pwHash); err != nil {
 			log.Fatal(err)
 			loginError = "Invalid username"
 		} else if err := bcrypt.CompareHashAndPassword([]byte(pwHash), []byte(r.FormValue("password"))); err != nil {
