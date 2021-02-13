@@ -151,8 +151,13 @@ func afterRequest(next http.Handler) http.Handler {
 // redirect to the public timeline.  This timeline shows the user's
 // messages as well as all the messages of followed users.
 func timelineHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "_cookie")
+	if session.Values["user_id"] != nil {
+		routeName := fmt.Sprintf("/%s", session.Values["username"])
+		http.Redirect(w, r,routeName, http.StatusFound)
+	}
+
 	http.Redirect(w, r, "/public", http.StatusFound)
-	return
 }
 
 func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
@@ -189,7 +194,10 @@ func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	session, _ := store.Get(r, "_cookie")
+
 	data := PageData{
+		"username": session.Values["username"],
 		"messages": msgs,
 		"msgCount": len(msgs),
 	}
@@ -257,6 +265,8 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	data["messages"] = messages
 	data["title"] = fmt.Sprintf("%s's Timeline", profileUsername)
 	data["msgCount"] = len(messages)
+	data["username"] = session.Values["username"]
+
 	tmpl.Execute(w, data)
 }
 
@@ -327,7 +337,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	session, err := store.Get(r, "_cookie")
 	if ok := session.Values["user_id"] != nil; ok {
-		http.Redirect(w, r, "/", http.StatusFound)
+		routeName := fmt.Sprintf("/%s", session.Values["username"])
+		http.Redirect(w, r,routeName, http.StatusFound)
 	}
 
 	var loginError string
@@ -427,7 +438,10 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	session.Values["user_id"] = ""
+	session.Values["username"] = ""
 	session.Options.MaxAge = -1
+
 	err = session.Save(r, w)
 	if err != nil {
 			http.Error(w, err.Error(), 400)
