@@ -366,7 +366,29 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func addMessageHandler(w http.ResponseWriter, r *http.Request) {}
+func addMessageHandler(w http.ResponseWriter, r *http.Request) {
+
+	message := r.FormValue("text")
+	user := r.FormValue("token")
+
+	statement, err := db.Prepare(`insert into message (author_id, text, pub_date, flagged)
+	values (?, ?, ?, 0)`)
+	if err != nil {
+		fmt.Println("db error during message creation") // probably needing some error handling
+	}
+
+	userID, _ := getUserID(user)
+
+	fmt.Println("time", time.Now().Unix())
+	_, error := statement.Exec(userID, message, time.Now().Unix())
+	if error != nil {
+		fmt.Println("Cannot execute message request")
+	}
+	statement.Close()
+
+	http.Redirect(w, r, "/"+user, http.StatusFound)
+
+}
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -508,6 +530,7 @@ func main() {
 	router.HandleFunc("/{username}/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/logout", logoutHandler)
+	router.HandleFunc("/addMessage", addMessageHandler).Methods("GET", "POST")
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
 	router.HandleFunc("/public", publicTimelineHandler)
 	router.HandleFunc("/{username}", userTimelineHandler)
