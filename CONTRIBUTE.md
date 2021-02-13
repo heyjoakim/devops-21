@@ -3,7 +3,7 @@
 We love open source and would happily invite you to contribute to this project.
 
 #### How to contribute to this project
-All changes, submissions or suggestions happens through github pull requests. Pleasre read below section about our branching model.
+All changes, submissions or suggestions happens through github pull requests. Please read below section about our branching model.
 
 1. Make a fork of the repository and create a branch from `main`
 2. Add your changes, features etc. but only 1 feature pr. PR 
@@ -32,4 +32,5 @@ The branch structure will therefore be as following :
 #### Reviewing contributions
 Contributions are to be reviewed by atleast 1 direct access contributor. Please do direct any bugs, issues through github and not to the direct access contributers.
 
-Which distributed development workflow will we use?
+#### Which distributed development workflow will we use?
+To be answered!
