@@ -127,9 +127,9 @@ func beforeRequest(next http.Handler) http.Handler {
 		session, _ := store.Get(r, "_cookie")
 		userID := session.Values["user_id"]
 		if userID != nil {
-			fmt.Println("userID:", userID)
 			tmpUser := getUser(userID.(int))
 			session.Values["user_id"] = tmpUser.userID
+			session.Values["username"] = tmpUser.username
 			session.Save(r, w)
 		}
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
@@ -151,15 +151,13 @@ func afterRequest(next http.Handler) http.Handler {
 // redirect to the public timeline.  This timeline shows the user's
 // messages as well as all the messages of followed users.
 func timelineHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles(timelinePath, layoutPath)
-	if err != nil {
-		log.Fatal(err)
+	session, _ := store.Get(r, "_cookie")
+	if session.Values["user_id"] != nil {
+		routeName := fmt.Sprintf("/%s", session.Values["username"])
+		http.Redirect(w, r,routeName, http.StatusFound)
 	}
-	data := PageData{
-		"title": "Minitwit",
-	}
-	tmpl.Execute(w, data)
-	return
+
+	http.Redirect(w, r, "/public", http.StatusFound)
 }
 
 func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
@@ -196,7 +194,10 @@ func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	session, _ := store.Get(r, "_cookie")
+
 	data := PageData{
+		"username": session.Values["username"],
 		"messages": msgs,
 		"msgCount": len(msgs),
 	}
@@ -218,14 +219,14 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 	session, err := store.Get(r, "_cookie")
 	if ok := session.Values["user_id"] != nil; ok {
-		sessionUserId := session.Values["user_id"]      //Retrieves their username
+		sessionUserID := session.Values["user_id"]      //Retrieves their username
 		res := queryDb("select 1 from follower where "+ //Determines if the signed in user is following the user being viewed?
 			"follower.who_id = ? and follower.whom_id = ?",
-			sessionUserId, profileUserID)
+			sessionUserID, profileUserID)
 		followed = res.Next() // Checks if the user that is signed in, is currently following the user on the page
 	}
 
-	tmpl, err := template.ParseFiles(timelinePath)
+	tmpl, err := template.ParseFiles(timelinePath, layoutPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -244,15 +245,15 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 				text      string
 				pubDate   int
 				flagged   int
-				userId    int
+				userID    int
 				username  string
 				email     string
 				pwHash    string
 			)
-			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userId, &username, &email, &pwHash)
+			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userID, &username, &email, &pwHash)
 			if err == nil {
 				message := Message{
-					Email:    email,
+					Email:    gravatarURL(email, 48),
 					Username: username,
 					Text:     text,
 					PubDate:  formatDatetime(int64(pubDate)),
@@ -263,6 +264,9 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data["messages"] = messages
 	data["title"] = fmt.Sprintf("%s's Timeline", profileUsername)
+	data["msgCount"] = len(messages)
+	data["username"] = session.Values["username"]
+
 	tmpl.Execute(w, data)
 }
 
@@ -321,7 +325,7 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	if error != nil {
 		unfollowError = "error during database operation "
 		fmt.Println(unfollowError)
-		http.Redirect(w, r, "timeline", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
@@ -330,9 +334,11 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 func addMessageHandler(w http.ResponseWriter, r *http.Request) {}
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
+
 	session, err := store.Get(r, "_cookie")
 	if ok := session.Values["user_id"] != nil; ok {
-		http.Redirect(w, r, "/", http.StatusFound)
+		routeName := fmt.Sprintf("/%s", session.Values["username"])
+		http.Redirect(w, r,routeName, http.StatusFound)
 	}
 
 	var loginError string
@@ -361,6 +367,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
 	}
+
 	tmpl, err := template.ParseFiles(loginPath, layoutPath)
 	if err != nil {
 		log.Fatal(err)
@@ -368,6 +375,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := PageData{
 		"error": loginError,
+		"username": session.Values["username"],
 	}
 	tmpl.Execute(w, data)
 
@@ -376,7 +384,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "_cookie")
 	if ok := session.Values["user_id"] != nil; ok {
-		http.Redirect(w, r, "timeline", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 
 	var registerError string
@@ -423,7 +431,24 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, data)
 }
 
-func logoutHandler(w http.ResponseWriter, r *http.Request) {}
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "_cookie")
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	session.Values["user_id"] = ""
+	session.Values["username"] = ""
+	session.Options.MaxAge = -1
+
+	err = session.Save(r, w)
+	if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+	}
+	http.Redirect(w, r, "/", http.StatusFound)
+}
 
 // init is automatically executed on program startup. Can't be called
 // or referenced.
@@ -438,8 +463,6 @@ func init() {
 func main() {
 	router := mux.NewRouter()
 
-	//router.HandleFunc("/", layoutHandler)
-
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
 	router.PathPrefix("/static/").Handler(s)
 
@@ -449,9 +472,11 @@ func main() {
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
+	router.HandleFunc("/logout", logoutHandler)
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
 	router.HandleFunc("/public", publicTimelineHandler)
 	router.HandleFunc("/{username}", userTimelineHandler)
 
+	fmt.Println("Server running on port http://localhost:8000")
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
