@@ -443,8 +443,8 @@ func main() {
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
 	router.PathPrefix("/static/").Handler(s)
 
-	// router.Use(beforeRequest)
-	// router.Use(afterRequest)
+	router.Use(beforeRequest)
+	router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/unfollow", unfollowUserHandler)
