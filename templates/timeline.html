@@ -14,7 +14,7 @@
 <div class=followstatus>
   {{ if .ownProfile }}
   This is you!
-  {{else if .follow }}
+  {{else if .followed }}
   You are currently following this user.
   <a class=unfollow href="{{.profileOwner}}/unfollow">Unfollow user</a>.
   {{else}}
