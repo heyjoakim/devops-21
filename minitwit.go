@@ -430,7 +430,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {}
 func init() {
 	database, err := connectDb()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	db = database
 }
@@ -443,8 +443,8 @@ func main() {
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
 	router.PathPrefix("/static/").Handler(s)
 
-	router.Use(beforeRequest)
-	router.Use(afterRequest)
+	// router.Use(beforeRequest)
+	// router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/{username}", userTimelineHandler)
