@@ -1,25 +1,25 @@
 {{template "base" .}}
-{{define "title"}} Public Timeline {{end}}
+{{define "title"}} {{end}}
 {{define "body"}}
-    <h2>This needs to change accoring to the logic of title (from timeline)</h2>
-    <p>Hello this is a timeline</p>
-    <h1>{{.msgCount}}</h1>
-    <ul class=messages>
-      {{if gt .msgCount 0}}
-      {{range .messages}}
-      <li>
-        <img src="{{.Email}}" width="48" height="48">
-        <p>
-          <strong>
-            <a href="test_messages">{{.Username}}</a>
-          </strong>
-        {{.Text}}
-        </p>
-        <small>&mdash;{{.PubDate}}</small>
-      </li>
-      {{end}}
-      {{else}}
-        <li><em>There's no message so far.</em>
-      {{end}}
-    </ul>
+
+<h2>Public Timeline</h2>
+
+<ul class=messages>
+  {{if gt .msgCount 0}}
+  {{range .messages}}
+  <li>
+    <img src="{{.Email}}" width="48" height="48">
+    <p>
+      <strong>
+        <a href="test_messages">{{.Username}}</a>
+      </strong>
+      {{.Text}}
+    </p>
+    <small>&mdash;{{.PubDate}}</small>
+  </li>
+  {{end}}
+  {{else}}
+  <li><em>There's no message so far.</em>
+    {{end}}
+</ul>
 {{end}}

@@ -2,37 +2,30 @@
 <!doctype html>
 <title>Welcome | MiniTwit</title>
 <link rel=stylesheet type="text/css" href="/static/style.css">
-<div class =page>
-   <h1> {{template "title" .}} </h1>
+<div class=page>
+    <h1> {{template "title" .}} </h1>
+
+    {{ if .username }}
+    <div class=navigation>
+        <a href="/">my timeline</a> |
+        <a href="/">public timeline</a> |
+        <a href="/logout">sign out [{{ .username }}]</a> |
+    </div>
+    {{else}}
     <div class=navigation>
         <a href="/public">public timeline</a> |
         <a href="/register">sign up</a> |
         <a href="/login">sign in</a>
     </div>
-
+    {{end}}
     <!-- Need some logic for flashed messages -->
-
     <div class=body>
         {{template "body" .}}
     </div>
 
     <div class=footer>
-      MiniTwit &mdash; A Gorilla Mux Application
+        MiniTwit &mdash; A Gorilla Mux Application
     </div>
+
 </div>
 {{end}}
-
-
-
-<!-- Logic needed when we can access global  
-<div class=navigation>
-  {{if .User}} 
-    <a href="Timeline">my timeline</a> |
-    <a href="public_timeline">public timeline</a> |
-    <a href="logout">sign out </a>
-  {{ else }}
-    <a href="PTimeline">public timeline</a> |
-    <a href="register">sign up</a> |
-    <a href="login">sign in</a>
-  {{ end }}
-</div> -->

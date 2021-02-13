@@ -199,7 +199,7 @@ def login():
             flash('You were logged in')
             session['user_id'] = user['user_id']
             return redirect(url_for('timeline'))
-    return render_template('login.html', error=error)
+    return render_template('login_old.html', error=error)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -228,7 +228,7 @@ def register():
             g.db.commit()
             flash('You were successfully registered and can login now')
             return redirect(url_for('login'))
-    return render_template('register.html', error=error)
+    return render_template('register_old.html', error=error)
 
 
 @app.route('/logout')
