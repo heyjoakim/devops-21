@@ -235,6 +235,12 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		"order by message.pub_date desc limit ?",
 		profileUserID, perPage)
 
+	followlist := getFOllowedUsers(session.Values["user_id"].(int))
+	var msgS []Message
+	for _, v := range followlist {
+		msgS = append(getPostsForuser(v), msgS...)
+	}
+
 	data := PageData{"followed": followed}
 	var messages []Message
 	if err == nil {
@@ -262,10 +268,10 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	messages = append(msgS, messages...)
 	data["messages"] = messages
 	data["title"] = fmt.Sprintf("%s's Timeline", profileUsername)
 	data["profileOwner"] = profileUsername
-	data["followed"] = false
 
 	if session.Values["username"] == profileUsername {
 		data["ownProfile"] = true
@@ -293,7 +299,64 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 	tmpl.Execute(w, data)
 }
+func getPostsForuser(id int) []Message {
+	messagesAndUsers, err := db.Query("select message.*, user.* from message, user where "+
+		"user.user_id = message.author_id and user.user_id = ? "+
+		"order by message.pub_date desc limit ?",
+		id, perPage)
+	var messages []Message
+	if err == nil {
+		for messagesAndUsers.Next() {
+			var (
+				messageID int
+				authorID  int
+				text      string
+				pubDate   int
+				flagged   int
+				userID    int
+				username  string
+				email     string
+				pwHash    string
+			)
+			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userID, &username, &email, &pwHash)
+			if err == nil {
+				message := Message{
+					Email:    gravatarURL(email, 48),
+					Username: username,
+					Text:     text,
+					PubDate:  formatDatetime(int64(pubDate)),
+				}
+				messages = append(messages, message)
+			}
+		}
+	}
+	return messages
 
+}
+
+// get ID's of all users that are followed by some user
+func getFOllowedUsers(id int) []int {
+	followedIDs, err := db.Query("select * from follower where  who_id= ?", id)
+	if err != nil {
+		fmt.Println("ERROR: ", err)
+	} else {
+		fmt.Println(followedIDs)
+	}
+	var followlist []int
+	for followedIDs.Next() {
+		var (
+			from int
+			to   int
+		)
+		err := followedIDs.Scan(&from, &to)
+		if err == nil {
+			followID := to
+			followlist = append(followlist, followID)
+		}
+	}
+
+	return followlist
+}
 func followUserHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "_cookie")
 	currentUserID := session.Values["user_id"]
@@ -306,7 +369,11 @@ func followUserHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 		return
 	}
-	statement.Exec(currentUserID, userToFollowID)
+	_, error := statement.Exec(currentUserID, userToFollowID)
+	statement.Close()
+	if error != nil {
+		fmt.Println("database error: ", error)
+	}
 	statement.Close()
 	routeName := fmt.Sprintf("/%s", username)
 	http.Redirect(w, r, routeName, http.StatusFound)
@@ -315,27 +382,21 @@ func followUserHandler(w http.ResponseWriter, r *http.Request) {
 // relies on a query string
 
 func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
+
 	session, _ := store.Get(r, "_cookie")
 	loggedInUser := session.Values["user_id"]
 	var unfollowError string // keeping this so as to able to display an error message on the timeline
 	// if we wanted one there
 	if session.Values["user_id"] == nil {
 		unfollowError = "no user was logged in "
-		fmt.Println(unfollowError)
 		http.Redirect(w, r, "timeline", http.StatusFound)
 		return
 	}
-	v := r.URL.Query()
-	p := v.Get("user")
+
+	params := mux.Vars(r)
+	p := params["username"]
 	if p == "" {
 		unfollowError = "the query parameter is empty"
-		fmt.Println(unfollowError)
-		http.Redirect(w, r, "timeline", http.StatusFound)
-		return
-	}
-	if p == "" {
-		unfollowError = "the query parameter is empty"
-		fmt.Println(unfollowError)
 		http.Redirect(w, r, "timeline", http.StatusFound)
 		return
 	}
@@ -359,7 +420,7 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	statement.Close()
 	if error != nil {
 		unfollowError = "error during database operation "
-		fmt.Println(unfollowError)
+		fmt.Println("db error: ", error)
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
@@ -379,7 +440,6 @@ func addMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := getUserID(user)
 
-	fmt.Println("time", time.Now().Unix())
 	_, error := statement.Exec(userID, message, time.Now().Unix())
 	if error != nil {
 		fmt.Println("Cannot execute message request")
@@ -422,6 +482,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
+		result.Close()
 	}
 
 	tmpl, err := template.ParseFiles(loginPath, layoutPath)
@@ -525,8 +586,8 @@ func main() {
 	router.Use(beforeRequest)
 	router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
-	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/{username}/unfollow", unfollowUserHandler)
+	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/logout", logoutHandler)
 	router.HandleFunc("/addMessage", addMessageHandler).Methods("GET", "POST")
