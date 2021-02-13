@@ -264,6 +264,29 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data["messages"] = messages
 	data["title"] = fmt.Sprintf("%s's Timeline", profileUsername)
+	data["profileOwner"] = profileUsername
+	data["followed"] = false;
+
+	if session.Values["username"] == profileUsername {
+		data["ownProfile"] = true
+	} else {
+		currentUser := session.Values["user_id"]
+		otherUser, err := getUserID(profileUsername)
+		if err != nil {
+			http.Error(w, "User does not exist", 400)
+			return
+		}
+		res := queryDbSingleRow("select 1 from follower where who_id= ? and whom_id= ?", otherUser,currentUser)
+		var (
+			whoID      int
+			whomID   	int
+		)
+		res.Scan(&whoID, &whomID)
+		if whoID != 0 && whomID != 0 {
+			data["followed"] = true;
+		}
+	}
+
 	data["msgCount"] = len(messages)
 	data["username"] = session.Values["username"]
 
@@ -271,10 +294,16 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func followUserHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "_cookie")
+	fmt.Println(session)
+	fmt.Println("Here")
+
 	// example on extract url params
-	params := mux.Vars(r)
-	username := params["username"]
-	fmt.Println(username)
+	// params := mux.Vars(r)
+	// username := params["username"]
+	queryParams := r.URL.Query()
+	usernameParam := queryParams.Get("user")
+	fmt.Println(usernameParam)
 }
 
 // relies on a query string
@@ -469,8 +498,8 @@ func main() {
 	router.Use(beforeRequest)
 	router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
-	router.HandleFunc("/{username}/follow", followUserHandler)
-	router.HandleFunc("/unfollow", unfollowUserHandler)
+	router.HandleFunc("{username}/follow", followUserHandler)
+	router.HandleFunc("{username}/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/logout", logoutHandler)
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
