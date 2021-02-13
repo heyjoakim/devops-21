@@ -151,17 +151,7 @@ func afterRequest(next http.Handler) http.Handler {
 // redirect to the public timeline.  This timeline shows the user's
 // messages as well as all the messages of followed users.
 func timelineHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles(timelinePath, layoutPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	session, err := store.Get(r, "_cookie")
-
-	data := PageData{
-		"title": "Minitwit",
-		"username": session.Values["username"],
-	}
-	tmpl.Execute(w, data)
+	http.Redirect(w, r, "/public", http.StatusFound)
 	return
 }
 
