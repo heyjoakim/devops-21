@@ -218,7 +218,7 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		followed = res.Next() // Checks if the user that is signed in, is currently following the user on the page
 	}
 
-	tmpl, err := template.ParseFiles(timelinePath)
+	tmpl, err := template.ParseFiles(timelinePath, layoutPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -245,7 +245,7 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userID, &username, &email, &pwHash)
 			if err == nil {
 				message := Message{
-					Email:    email,
+					Email:    gravatarURL(email, 48),
 					Username: username,
 					Text:     text,
 					PubDate:  formatDatetime(int64(pubDate)),
@@ -256,6 +256,7 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data["messages"] = messages
 	data["title"] = fmt.Sprintf("%s's Timeline", profileUsername)
+	data["msgCount"] = len(messages)
 	tmpl.Execute(w, data)
 }
 
