@@ -1,23 +1,24 @@
 {{template "base" .}}
-{{define "title"}} {{end}}
+{{define "title"}} MiniTwit {{end}}
 {{define "body"}}
 
-{{ if .ownProfile }}
-<h2>My Timeline</h2>
-<div class=twitbox>
-  <h3>What's on your mind {{ .username }}?</h3>
-  <form action="/addMessage" method=post>
-    <p><input type=text name=text size=60>
-      <input type="hidden" name="token" value="{{.username}}" /><!--
-      
-    --><input type=submit value="Share">
-  </form>
-</div>
-{{else if .title }}
-<h2>{{.title}}</h2>
-{{else}}
-<h2>Public Timeline</h2>
-{{end}}
+  {{ if .ownProfile }}
+  <h2>My Timeline</h2>
+  <div class=twitbox>
+    <h3>What's on your mind {{ .username }}?</h3>
+    <form action="/addMessage" method=post>
+      <p><input type=text name=text size=60>
+        <input type="hidden" name="token" value="{{.username}}" />
+        <input type=submit value="Share">
+    </form>
+  </div>
+  {{else if .title }}
+  <h2>{{.title}}</h2>
+  {{else}}
+  <h2>Public Timeline</h2>
+  {{end}}
+
+
 
 {{ if .profileOwner}}
 <div class=followstatus>
