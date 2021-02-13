@@ -18,21 +18,13 @@ import (
 )
 
 // PageData defines data on page whatever and request
-type PageData struct {
-	data    map[string]interface{}
-	request *http.Request
-}
+type PageData map[string]interface{}
 
 type Message struct {
-	MessageID   int
-	AuthorID    int
-	Text        string
-	PubDate     string
-	Flagged     int
-	UserID      int
-	Username    string
-	GravatarURL string
-	PwHash      string
+	email    string
+	username string
+	text     string
+	pubDate  string
 }
 
 type User struct {
@@ -164,11 +156,7 @@ func timelineHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	data := PageData{
-
-		data: map[string]interface{}{
-			"title": "Minitwit",
-		},
-		request: r,
+		"title": "Minitwit",
 	}
 	tmpl.Execute(w, data)
 	return
@@ -201,25 +189,82 @@ func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 		msgs = append(msgs, Message{
-			Text:        text,
-			PubDate:     formatDatetime(int64(pubDate)),
-			Username:    username,
-			GravatarURL: gravatarURL(email, 48),
+			text:     text,
+			pubDate:  formatDatetime(int64(pubDate)),
+			username: username,
+			email:    gravatarURL(email, 48),
 		})
 	}
 
 	data := PageData{
-		data: map[string]interface{}{
-			"messages": msgs,
-			"msgCount": len(msgs),
-		},
-		request: r,
+		"messages": msgs,
+		"msgCount": len(msgs),
 	}
 
 	tmpl.Execute(w, data)
 }
 
-func userTimelineHandler(w http.ResponseWriter, r *http.Request) {}
+func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
+	//Display's a users tweets.
+	params := mux.Vars(r)
+	profileUsername := params["username"]
+
+	profileUserID, err := getUserID(profileUsername)
+	if err != nil {
+		w.WriteHeader(404)
+		return
+	}
+	followed := false
+
+	session, err := store.Get(r, "_cookie")
+	if ok := session.Values["user_id"] != nil; ok {
+		sessionUserId := session.Values["user_id"]      //Retrieves their username
+		res := queryDb("select 1 from follower where "+ //Determines if the signed in user is following the user being viewed?
+			"follower.who_id = ? and follower.whom_id = ?",
+			sessionUserId, profileUserID)
+		followed = res.Next() // Checks if the user that is signed in, is currently following the user on the page
+	}
+
+	tmpl, err := template.ParseFiles(timelinePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	messagesAndUsers, err := db.Query("select message.*, user.* from message, user where "+
+		"user.user_id = message.author_id and user.user_id = ? "+
+		"order by message.pub_date desc limit ?",
+		profileUserID, perPage)
+
+	data := PageData{"followed": followed}
+	var messages []Message
+	if err == nil {
+		for messagesAndUsers.Next() {
+			var (
+				messageID int
+				authorID  int
+				text      string
+				pubDate   int
+				flagged   int
+				userId    int
+				username  string
+				email     string
+				pwHash    string
+			)
+			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userId, &username, &email, &pwHash)
+			if err == nil {
+				message := Message{
+					email:    email,
+					username: username,
+					text:     text,
+					pubDate:  formatDatetime(int64(pubDate)),
+				}
+				messages = append(messages, message)
+			}
+		}
+	}
+	data["messages"] = messages
+	data["title"] = fmt.Sprintf("%s's Timeline", profileUsername)
+	tmpl.Execute(w, data)
+}
 
 func followUserHandler(w http.ResponseWriter, r *http.Request) {
 	// example on extract url params
@@ -322,10 +367,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := PageData{
-		data: map[string]interface{}{
-			"error": loginError,
-		},
-		request: r,
+		"error": loginError,
 	}
 	tmpl.Execute(w, data)
 
@@ -405,6 +447,7 @@ func main() {
 	router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
+	router.HandleFunc("/{username}", userTimelineHandler)
 	router.HandleFunc("/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
