@@ -294,12 +294,16 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func followUserHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "_cookie")
+	fmt.Println(session)
 	fmt.Println("Here")
 
 	// example on extract url params
-	params := mux.Vars(r)
-	username := params["username"]
-	fmt.Println(username)
+	// params := mux.Vars(r)
+	// username := params["username"]
+	queryParams := r.URL.Query()
+	usernameParam := queryParams.Get("user")
+	fmt.Println(usernameParam)
 }
 
 // relies on a query string
