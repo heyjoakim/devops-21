@@ -2,14 +2,10 @@
 {{define "title"}} Public Timeline {{end}}
 {{define "body"}}
     <h2>This needs to change accoring to the logic of title (from timeline)</h2>
-
     <p>Hello this is a timeline</p>
-
-
-
     <ul class=messages>
-      {{if gt .msgCount 0}}
-      {{range .messages}}
+      {{if gt .data.msgCount 0}}
+      {{range .data.messages}}
       <li>
         <img src="{{.GravatarURL}}" width="48" height="48">
         <p>
@@ -22,11 +18,7 @@
       </li>
       {{end}}
       {{else}}
-      <li><em>There's no message so far.</em>
+        <li><em>There's no message so far.</em>
       {{end}}
-    
-      
-    
-    
     </ul>
 {{end}}

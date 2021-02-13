@@ -17,8 +17,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// PageData defines data on page whatever
-type PageData map[string]interface{}
+// PageData defines data on page whatever and request
+type PageData struct {
+	data    map[string]interface{}
+	request *http.Request
+}
 
 type Message struct {
 	MessageID   int
@@ -161,7 +164,11 @@ func timelineHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	data := PageData{
-		"title": "Minitwit",
+
+		data: map[string]interface{}{
+			"title": "Minitwit",
+		},
+		request: r,
 	}
 	tmpl.Execute(w, data)
 	return
@@ -202,8 +209,11 @@ func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := PageData{
-		"messages": msgs,
-		"msgCount": len(msgs),
+		data: map[string]interface{}{
+			"messages": msgs,
+			"msgCount": len(msgs),
+		},
+		request: r,
 	}
 
 	tmpl.Execute(w, data)
@@ -312,7 +322,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := PageData{
-		"error": loginError,
+		data: map[string]interface{}{
+			"error": loginError,
+		},
+		request: r,
 	}
 	tmpl.Execute(w, data)
 
