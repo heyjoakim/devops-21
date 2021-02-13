@@ -126,9 +126,9 @@ func beforeRequest(next http.Handler) http.Handler {
 		session, _ := store.Get(r, "_cookie")
 		userID := session.Values["user_id"]
 		if userID != nil {
-			fmt.Println("userID:", userID)
 			tmpUser := getUser(userID.(int))
 			session.Values["user_id"] = tmpUser.userID
+			session.Values["username"] = tmpUser.username
 			session.Save(r, w)
 		}
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
@@ -154,8 +154,11 @@ func timelineHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	session, err := store.Get(r, "_cookie")
+
 	data := PageData{
 		"title": "Minitwit",
+		"username": session.Values["username"],
 	}
 	tmpl.Execute(w, data)
 	return
@@ -282,7 +285,7 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	if error != nil {
 		unfollowError = "error during database operation "
 		fmt.Println(unfollowError)
-		http.Redirect(w, r, "timeline", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
@@ -291,9 +294,10 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 func addMessageHandler(w http.ResponseWriter, r *http.Request) {}
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
+
 	session, err := store.Get(r, "_cookie")
 	if ok := session.Values["user_id"] != nil; ok {
-		http.Redirect(w, r, "/timeline", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 
 	var loginError string
@@ -319,7 +323,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			session.Values["user_id"] = userID
 			session.Save(r, w)
 
-			http.Redirect(w, r, "/timeline", http.StatusFound)
+			http.Redirect(w, r, "/", http.StatusFound)
 		}
 	}
 
@@ -330,6 +334,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := PageData{
 		"error": loginError,
+		"username": session.Values["username"],
 	}
 	tmpl.Execute(w, data)
 
@@ -338,7 +343,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 func registerHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "_cookie")
 	if ok := session.Values["user_id"] != nil; ok {
-		http.Redirect(w, r, "timeline", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 
 	var registerError string
@@ -399,8 +404,6 @@ func init() {
 
 func main() {
 	router := mux.NewRouter()
-
-	//router.HandleFunc("/", layoutHandler)
 
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
 	router.PathPrefix("/static/").Handler(s)
