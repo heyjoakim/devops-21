@@ -19,4 +19,24 @@ paths:
           schema:
             type: object
       summary: Get the latest x
+  /msgs:
+    get:
+      description: Gets the latest messages in descending order.
+      parameters:
+      - description: Number of results returned
+        in: query
+        name: "no"
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "403":
+          description: unauthorized
+          schema:
+            type: string
+      summary: Gets the latest messages
 swagger: "2.0"
