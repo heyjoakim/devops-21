@@ -429,7 +429,21 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, data)
 }
 
-func logoutHandler(w http.ResponseWriter, r *http.Request) {}
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "_cookie")
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	session.Options.MaxAge = -1
+	err = session.Save(r, w)
+	if err != nil {
+			http.Error(w, err.Error(), 400)
+			return
+	}
+	http.Redirect(w, r, "/", http.StatusFound)
+}
 
 // init is automatically executed on program startup. Can't be called
 // or referenced.
@@ -453,6 +467,7 @@ func main() {
 	router.HandleFunc("/{username}/follow", followUserHandler)
 	router.HandleFunc("/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
+	router.HandleFunc("/logout", logoutHandler)
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
 	router.HandleFunc("/public", publicTimelineHandler)
 	router.HandleFunc("/{username}", userTimelineHandler)
