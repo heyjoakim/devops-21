@@ -41,6 +41,37 @@ var doc = `{
                     }
                 }
             }
+        },
+        "/msgs": {
+            "get": {
+                "description": "Gets the latest messages in descending order.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets the latest messages",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of results returned",
+                        "name": "no",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "403": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     }
 }`
