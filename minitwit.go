@@ -21,10 +21,10 @@ import (
 type PageData map[string]interface{}
 
 type Message struct {
-	email    string
-	username string
-	text     string
-	pubDate  string
+	Email    string
+	Username string
+	Text     string
+	PubDate  string
 }
 
 type User struct {
@@ -189,10 +189,10 @@ func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 		msgs = append(msgs, Message{
-			text:     text,
-			pubDate:  formatDatetime(int64(pubDate)),
-			username: username,
-			email:    gravatarURL(email, 48),
+			Text:     text,
+			PubDate:  formatDatetime(int64(pubDate)),
+			Username: username,
+			Email:    gravatarURL(email, 48),
 		})
 	}
 
@@ -252,10 +252,10 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userId, &username, &email, &pwHash)
 			if err == nil {
 				message := Message{
-					email:    email,
-					username: username,
-					text:     text,
-					pubDate:  formatDatetime(int64(pubDate)),
+					Email:    email,
+					Username: username,
+					Text:     text,
+					PubDate:  formatDatetime(int64(pubDate)),
 				}
 				messages = append(messages, message)
 			}
@@ -332,7 +332,7 @@ func addMessageHandler(w http.ResponseWriter, r *http.Request) {}
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "_cookie")
 	if ok := session.Values["user_id"] != nil; ok {
-		http.Redirect(w, r, "/timeline", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 
 	var loginError string
@@ -358,7 +358,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			session.Values["user_id"] = userID
 			session.Save(r, w)
 
-			http.Redirect(w, r, "/timeline", http.StatusFound)
+			http.Redirect(w, r, "/", http.StatusFound)
 		}
 	}
 	tmpl, err := template.ParseFiles(loginPath, layoutPath)
@@ -447,11 +447,11 @@ func main() {
 	// router.Use(afterRequest)
 	router.HandleFunc("/", timelineHandler)
 	router.HandleFunc("/{username}/follow", followUserHandler)
-	router.HandleFunc("/{username}", userTimelineHandler)
 	router.HandleFunc("/unfollow", unfollowUserHandler)
 	router.HandleFunc("/login", loginHandler).Methods("GET", "POST")
 	router.HandleFunc("/register", registerHandler).Methods("GET", "POST")
 	router.HandleFunc("/public", publicTimelineHandler)
+	router.HandleFunc("/{username}", userTimelineHandler)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
