@@ -23,4 +23,5 @@ go get -u github.com/swaggo/swag/cmd/swag
 go get -u github.com/swaggo/http-swagger
 go get -u github.com/alecthomas/template
 ```
+[alt text](https://giphy.com/embed/L12g7V0J62bf2)
 <iframe src="https://giphy.com/embed/L12g7V0J62bf2" width="480" height="360" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/dancing-wtf-swag-L12g7V0J62bf2">via GIPHY</a></p>
