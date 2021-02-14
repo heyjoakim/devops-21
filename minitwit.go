@@ -137,7 +137,8 @@ func getUser(userID int) User {
 // up the current user so that we know he's there.
 func beforeRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO
+		database, _ := connectDb()
+		db = database
 		session, _ := store.Get(r, "_cookie")
 		userID := session.Values["user_id"]
 		if userID != nil {
@@ -154,10 +155,10 @@ func beforeRequest(next http.Handler) http.Handler {
 // Closes the database again at the end of the request.
 func afterRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO
 		fmt.Println("Entered: " + r.RequestURI)
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
+		db.Close()
 	})
 }
 
@@ -239,6 +240,7 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		res := queryDb("select 1 from follower where "+ //Determines if the signed in user is following the user being viewed?
 			"follower.who_id = ? and follower.whom_id = ?",
 			sessionUserID, profileUserID)
+		defer res.Close()
 		followed = res.Next() // Checks if the user that is signed in, is currently following the user on the page
 	}
 
@@ -255,7 +257,7 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	if ok := session.Values["user_id"] != nil; ok {
 		sessionUserID := session.Values["user_id"].(int)
 		if sessionUserID == profileUserID {
-			followlist := getFOllowedUsers(sessionUserID)
+			followlist := getFollowedUsers(sessionUserID)
 			for _, v := range followlist {
 				msgS = append(getPostsForuser(v), msgS...)
 			}
@@ -303,13 +305,13 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "User does not exist", 400)
 			return
 		}
+
 		res := queryDbSingleRow("select 1 from follower where who_id= ? and whom_id= ?", otherUser, currentUser)
 		var (
 			whoID  int
 			whomID int
 		)
 		res.Scan(&whoID, &whomID)
-
 		if whoID != 0 && whomID != 0 {
 			data["followed"] = true
 		}
@@ -317,9 +319,13 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 	data["msgCount"] = len(messages)
 	data["username"] = session.Values["username"]
+	data["MsgInfo"] = session.Flashes("Info")
+	data["MsgWarn"] = session.Flashes("Warn")
+	session.Save(r,w)
 
 	tmpl.Execute(w, data)
 }
+
 func getPostsForuser(id int) []Message {
 	messagesAndUsers, err := db.Query("select message.*, user.* from message, user where "+
 		"user.user_id = message.author_id and user.user_id = ? "+
@@ -352,17 +358,11 @@ func getPostsForuser(id int) []Message {
 		}
 	}
 	return messages
-
 }
 
 // get ID's of all users that are followed by some user
 func getFollowedUsers(id int) []int {
-	followedIDs, err := db.Query("select * from follower where  who_id= ?", id)
-	if err != nil {
-		fmt.Println("ERROR: ", err)
-	} else {
-		fmt.Println(followedIDs)
-	}
+	followedIDs, _ := db.Query("select * from follower where  who_id= ?", id)
 	var followlist []int
 	for followedIDs.Next() {
 		var (
@@ -395,53 +395,51 @@ func followUserHandler(w http.ResponseWriter, r *http.Request) {
 	if error != nil {
 		fmt.Println("database error: ", error)
 	}
-	// statement.Close()
+
 	routeName := fmt.Sprintf("/%s", username)
+	session.AddFlash("You are now following " + username, "Info")
+	session.Save(r, w)
+
 	http.Redirect(w, r, routeName, http.StatusFound)
 }
 
 // relies on a query string
 
 func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
-
 	session, _ := store.Get(r, "_cookie")
 	loggedInUser := session.Values["user_id"]
-	var unfollowError string // keeping this so as to able to display an error message on the timeline
-	// if we wanted one there
-	if session.Values["user_id"] == nil {
-		unfollowError = "no user was logged in "
-		http.Redirect(w, r, "timeline", http.StatusFound)
-		return
-	}
-
 	params := mux.Vars(r)
-	p := params["username"]
-	if p == "" {
-		unfollowError = "the query parameter is empty"
+	username := params["username"]
+	if username == "" {
+		session.AddFlash("No query parameter present","Warn")
+		session.Save(r, w)
 		http.Redirect(w, r, "timeline", http.StatusFound)
 		return
 	}
 
-	id2, user2Err := getUserID(p)
-
+	id2, user2Err := getUserID(username)
 	if user2Err != nil {
-		unfollowError = "no such user "
-		fmt.Println(unfollowError)
-		http.Redirect(w, r, "timeline", http.StatusFound)
+		session.AddFlash("User does not exist", "Warn")
+		session.Save(r, w)
+		http.Redirect(w, r, "timeline", http.StatusFound,)
 		return
 	}
-		fmt.Println("Here")
 
 	statement, _ := db.Prepare("delete from follower where who_id= ? and whom_id= ?") // Prepare statement.
-	_, error := statement.Exec(id2, loggedInUser)
+	_, error := statement.Exec(loggedInUser, id2)
 	statement.Close()
 	if error != nil {
-		unfollowError = "error during database operation "
+		session.AddFlash("Error following user", "Warn")
+		session.Save(r, w)
 		fmt.Println("db error: ", error)
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 
+	session.AddFlash("You are no longer following " + username, "Info")
+	session.Save(r, w)
+	http.Redirect(w, r, "/"+username, http.StatusFound)
+	return
 }
 
 func addMessageHandler(w http.ResponseWriter, r *http.Request) {
