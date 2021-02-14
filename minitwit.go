@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -61,7 +62,20 @@ func connectDb() (*sql.DB, error) {
 }
 
 // initDb creates the database tables.
-func initDb() {}
+func initDb() {
+	file, err := ioutil.ReadFile("./schema.sql")
+	if err != nil {
+		log.Print(err.Error())
+	}
+	tx, _ := db.Begin()
+	_, err = db.Exec(string(file))
+	if err != nil {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+			log.Fatalf("Unable to rollback initDb: %v", rollbackErr)
+		}
+		log.Fatal(err)
+	}
+}
 
 // queryDb queries the database and returns a list of dictionaries.
 func queryDb(query string, args ...interface{}) *sql.Rows {
