@@ -152,6 +152,7 @@ func afterRequest(next http.Handler) http.Handler {
 // messages as well as all the messages of followed users.
 func timelineHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "_cookie")
+
 	if session.Values["user_id"] != nil {
 		routeName := fmt.Sprintf("/%s", session.Values["username"])
 		http.Redirect(w, r, routeName, http.StatusFound)
@@ -236,7 +237,7 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		"order by message.pub_date desc limit ?",
 		profileUserID, perPage)
 
-	followlist := getFOllowedUsers(session.Values["user_id"].(int))
+	followlist := getFollowedUsers(session.Values["user_id"].(int))
 	var msgS []Message
 	for _, v := range followlist {
 		msgS = append(getPostsForuser(v), msgS...)
@@ -336,7 +337,7 @@ func getPostsForuser(id int) []Message {
 }
 
 // get ID's of all users that are followed by some user
-func getFOllowedUsers(id int) []int {
+func getFollowedUsers(id int) []int {
 	followedIDs, err := db.Query("select * from follower where  who_id= ?", id)
 	if err != nil {
 		fmt.Println("ERROR: ", err)
@@ -375,7 +376,7 @@ func followUserHandler(w http.ResponseWriter, r *http.Request) {
 	if error != nil {
 		fmt.Println("database error: ", error)
 	}
-	statement.Close()
+	// statement.Close()
 	routeName := fmt.Sprintf("/%s", username)
 	http.Redirect(w, r, routeName, http.StatusFound)
 }
@@ -410,13 +411,9 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "timeline", http.StatusFound)
 		return
 	}
+		fmt.Println("Here")
 
-	statement, er := db.Prepare("delete from follower where who_id= ? and whom_id= ?") // Prepare statement.
-
-	if er != nil {
-		fmt.Println("fuck fuck")
-	}
-
+	statement, _ := db.Prepare("delete from follower where who_id= ? and whom_id= ?") // Prepare statement.
 	_, error := statement.Exec(id2, loggedInUser)
 	statement.Close()
 	if error != nil {
@@ -448,7 +445,6 @@ func addMessageHandler(w http.ResponseWriter, r *http.Request) {
 	statement.Close()
 
 	http.Redirect(w, r, "/"+user, http.StatusFound)
-
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -504,7 +500,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	if ok := session.Values["user_id"] != nil; ok {
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
-
+	fmt.Println("here")
 	var registerError string
 	if r.Method == "POST" {
 		if len(r.FormValue("username")) == 0 {
