@@ -80,7 +80,17 @@ func afterRequest(next http.Handler) http.Handler {
 		// Insert here
 	})
 }
-func updateLatest(r *http.Request) {}
+
+func updateLatest(r *http.Request) {
+	tryLatestQuery := r.URL.Query().Get("latest")
+
+	if tryLatestQuery == "" {
+		latest = -1
+	} else {
+		tryLatest, _ := strconv.Atoi(tryLatestQuery)
+		latest = tryLatest
+	}
+}
 
 // GetLatest godoc
 // @Summary Get the latest x
@@ -127,7 +137,7 @@ func messagesHandler(w http.ResponseWriter, r *http.Request) {
 	var noMsgs int
 	var err error
 	noMsgsQuery := r.URL.Query().Get("no")
-	if noMsgsQuery != "" {
+	if noMsgsQuery == "" {
 		noMsgs = 100
 	} else {
 		noMsgs, err = strconv.Atoi(noMsgsQuery)
