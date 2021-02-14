@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -61,7 +62,20 @@ func connectDb() (*sql.DB, error) {
 }
 
 // initDb creates the database tables.
-func initDb() {}
+func initDb() {
+	file, err := ioutil.ReadFile("./schema.sql")
+	if err != nil {
+		log.Print(err.Error())
+	}
+	tx, _ := db.Begin()
+	_, err = db.Exec(string(file))
+	if err != nil {
+		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+			log.Fatalf("Unable to rollback initDb: %v", rollbackErr)
+		}
+		log.Fatal(err)
+	}
+}
 
 // queryDb queries the database and returns a list of dictionaries.
 func queryDb(query string, args ...interface{}) *sql.Rows {
@@ -236,10 +250,15 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		"order by message.pub_date desc limit ?",
 		profileUserID, perPage)
 
-	followlist := getFOllowedUsers(session.Values["user_id"].(int))
 	var msgS []Message
-	for _, v := range followlist {
-		msgS = append(getPostsForuser(v), msgS...)
+	if ok := session.Values["user_id"] != nil; ok {
+		sessionUserID := session.Values["user_id"].(int)
+		if sessionUserID == profileUserID {
+			followlist := getFOllowedUsers(sessionUserID)
+			for _, v := range followlist {
+				msgS = append(getPostsForuser(v), msgS...)
+			}
+		}
 	}
 
 	data := PageData{"followed": followed}
