@@ -250,10 +250,15 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		"order by message.pub_date desc limit ?",
 		profileUserID, perPage)
 
-	followlist := getFOllowedUsers(session.Values["user_id"].(int))
 	var msgS []Message
-	for _, v := range followlist {
-		msgS = append(getPostsForuser(v), msgS...)
+	if ok := session.Values["user_id"] != nil; ok {
+		sessionUserID := session.Values["user_id"].(int)
+		if sessionUserID == profileUserID {
+			followlist := getFOllowedUsers(sessionUserID)
+			for _, v := range followlist {
+				msgS = append(getPostsForuser(v), msgS...)
+			}
+		}
 	}
 
 	data := PageData{"followed": followed}
