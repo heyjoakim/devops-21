@@ -1,0 +1,25 @@
+{{block "title" .}}
+<!-- Logic for displaying Public Timeline or My Timeline in the title-->
+<h1> Timeline title </h1>
+{{end}}
+
+{{block "body" .}}
+<h2>This needs to change accoring to the logic of title (from timeline)</h2>
+
+<p>Hello this is a timeline</p>
+
+
+
+<ul class=messages>
+  <!-- {% for message in messages %} -->
+  <li><img src="/static/dev.png" width="48" height="48">
+    <p>
+      <strong><a href="test_messages
+            }}">message username</a></strong>
+      lorem ipusm capsu utcha norem disento kamentura.
+      <small>&mdash; 2021-02-01 @ 07.51</small>
+      <!-- {% else %} -->
+  <li><em>There's no message so far.</em>
+    <!-- {% endfor %} -->
+</ul>
+{{end}}

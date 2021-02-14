@@ -1,0 +1,62 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This API is comsumed by the simulator for the course DevOps, Software Evolution and Software Maintenance @ ITU Spring 2021",
+        "title": "Minitwit API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8001",
+    "basePath": "/",
+    "paths": {
+        "/latest": {
+            "get": {
+                "description": "Get the latest x",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the latest x",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/msgs": {
+            "get": {
+                "description": "Gets the latest messages in descending order.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets the latest messages",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of results returned",
+                        "name": "no",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "403": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
