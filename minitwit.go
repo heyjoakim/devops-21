@@ -14,26 +14,13 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/heyjoakim/devops-21/models"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // PageData defines data on page whatever and request
 type PageData map[string]interface{}
-
-type Message struct {
-	Email    string
-	Username string
-	Text     string
-	PubDate  string
-}
-
-type User struct {
-	userID   int
-	username string
-	email    string
-	pwHash   string
-}
 
 type layoutPage struct {
 	Layout string
@@ -115,7 +102,7 @@ func gravatarURL(email string, size int) string {
 	return fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon&s=%d", hashedEmail, size)
 }
 
-func getUser(userID int) User {
+func getUser(userID int) models.User {
 	var (
 		ID       int
 		username string
@@ -125,11 +112,11 @@ func getUser(userID int) User {
 	res := queryDbSingleRow("select * from user where user_id = ?", userID)
 	res.Scan(&ID, &username, &email, &pwHash)
 
-	return User{
-		userID:   ID,
-		username: username,
-		email:    email,
-		pwHash:   pwHash,
+	return models.User{
+		UserID:   ID,
+		Username: username,
+		Email:    email,
+		PwHash:   pwHash,
 	}
 }
 
@@ -143,8 +130,8 @@ func beforeRequest(next http.Handler) http.Handler {
 		userID := session.Values["user_id"]
 		if userID != nil {
 			tmpUser := getUser(userID.(int))
-			session.Values["user_id"] = tmpUser.userID
-			session.Values["username"] = tmpUser.username
+			session.Values["user_id"] = tmpUser.UserID
+			session.Values["username"] = tmpUser.Username
 			session.Save(r, w)
 		}
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
@@ -183,7 +170,7 @@ func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	res := queryDb("select message.*, user.* from message, user where message.flagged = 0 and message.author_id = user.user_id order by message.pub_date desc limit ?", perPage)
-	var msgs []Message
+	var msgs []models.Message
 
 	for res.Next() {
 		var (
@@ -203,7 +190,7 @@ func publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		msgs = append(msgs, Message{
+		msgs = append(msgs, models.Message{
 			Text:     text,
 			PubDate:  formatDatetime(int64(pubDate)),
 			Username: username,
@@ -253,7 +240,7 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		"order by message.pub_date desc limit ?",
 		profileUserID, perPage)
 
-	var msgS []Message
+	var msgS []models.Message
 	if ok := session.Values["user_id"] != nil; ok {
 		sessionUserID := session.Values["user_id"].(int)
 		if sessionUserID == profileUserID {
@@ -265,7 +252,7 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := PageData{"followed": followed}
-	var messages []Message
+	var messages []models.Message
 	if err == nil {
 		for messagesAndUsers.Next() {
 			var (
@@ -281,7 +268,7 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			)
 			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userID, &username, &email, &pwHash)
 			if err == nil {
-				message := Message{
+				message := models.Message{
 					Email:    gravatarURL(email, 48),
 					Username: username,
 					Text:     text,
@@ -321,17 +308,17 @@ func userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	data["username"] = session.Values["username"]
 	data["MsgInfo"] = session.Flashes("Info")
 	data["MsgWarn"] = session.Flashes("Warn")
-	session.Save(r,w)
+	session.Save(r, w)
 
 	tmpl.Execute(w, data)
 }
 
-func getPostsForuser(id int) []Message {
+func getPostsForuser(id int) []models.Message {
 	messagesAndUsers, err := db.Query("select message.*, user.* from message, user where "+
 		"user.user_id = message.author_id and user.user_id = ? "+
 		"order by message.pub_date desc limit ?",
 		id, perPage)
-	var messages []Message
+	var messages []models.Message
 	if err == nil {
 		for messagesAndUsers.Next() {
 			var (
@@ -347,7 +334,7 @@ func getPostsForuser(id int) []Message {
 			)
 			err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userID, &username, &email, &pwHash)
 			if err == nil {
-				message := Message{
+				message := models.Message{
 					Email:    gravatarURL(email, 48),
 					Username: username,
 					Text:     text,
@@ -397,7 +384,7 @@ func followUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	routeName := fmt.Sprintf("/%s", username)
-	session.AddFlash("You are now following " + username, "Info")
+	session.AddFlash("You are now following "+username, "Info")
 	session.Save(r, w)
 
 	http.Redirect(w, r, routeName, http.StatusFound)
@@ -411,7 +398,7 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	username := params["username"]
 	if username == "" {
-		session.AddFlash("No query parameter present","Warn")
+		session.AddFlash("No query parameter present", "Warn")
 		session.Save(r, w)
 		http.Redirect(w, r, "timeline", http.StatusFound)
 		return
@@ -421,7 +408,7 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	if user2Err != nil {
 		session.AddFlash("User does not exist", "Warn")
 		session.Save(r, w)
-		http.Redirect(w, r, "timeline", http.StatusFound,)
+		http.Redirect(w, r, "timeline", http.StatusFound)
 		return
 	}
 
@@ -436,7 +423,7 @@ func unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.AddFlash("You are no longer following " + username, "Info")
+	session.AddFlash("You are no longer following "+username, "Info")
 	session.Save(r, w)
 	http.Redirect(w, r, "/"+username, http.StatusFound)
 	return
