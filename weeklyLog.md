@@ -34,8 +34,8 @@ Branch out from develop into a feature / bug and then create a pr to merge back 
 - [X] Choose language and technology for refractoring
     - [X] And why
 - [X] Choose branching strategy
-- [ ] Refractor
-- [ ] Commitment guidelines?
+- [X] Refractor
+- [X] Commitment guidelines?
 - [ ] Implement API for simulator
 
 ### Choose language and technology
