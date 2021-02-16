@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	_ "github.com/mattn/go-sqlite3"
@@ -16,7 +19,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var data url.Values = url.Values{
+var usrData url.Values = url.Values{
 	"username":  {"Richard"},
 	"email":     {"richard@stallman.org"},
 	"password":  {"secret"},
@@ -27,6 +30,12 @@ var usr = &User{
 	username: "Richard",
 	email:    "richard@stallman.org",
 	pwHash:   "secret",
+}
+
+var msgData url.Values = url.Values{
+	"id":    {"hest"},
+	"text":  {"Test message"},
+	"token": {usr.username},
 }
 
 func Setup() (*sql.DB, sqlmock.Sqlmock) {
@@ -66,7 +75,7 @@ func TestRegisterHandler(t *testing.T) {
 	defer app.db.Close()
 
 	// Create new request and record it
-	req, _ := http.NewRequest("POST", "/register", strings.NewReader(data.Encode()))
+	req, _ := http.NewRequest("POST", "/register", strings.NewReader(usrData.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
 
@@ -96,7 +105,7 @@ func TestLoginHandler(t *testing.T) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(usr.pwHash), bcrypt.DefaultCost)
 
 	// Create new request and record it
-	req, _ := http.NewRequest("POST", "/login", strings.NewReader(data.Encode()))
+	req, _ := http.NewRequest("POST", "/login", strings.NewReader(usrData.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
 
@@ -155,5 +164,43 @@ func TestLogoutHandler(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("All expectations were not met: %s", err)
 	}
+
+}
+
+func TestAddMessage(t *testing.T) {
+	tdb, mock := Setup()
+	app := &App{tdb}
+	defer app.db.Close()
+
+	// Create new request and record it
+	req, _ := http.NewRequest("POST", "/addMessage", strings.NewReader(msgData.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+
+	// Mock user to db
+	// hash, _ := bcrypt.GenerateFromPassword([]byte(usr.pwHash), bcrypt.DefaultCost)
+
+	// sqlmock.NewRows([]string{"user_id", "username", "email", "pw_hash"}).AddRow(usr.userID, usr.username, usr.email, hash)
+
+	// Check for expected prepare statement
+	query := regexp.QuoteMeta(`insert into message (author_id, text, pub_date, flagged)
+	values (?, ?, ?, 0)`)
+	prep := mock.ExpectPrepare(query)
+	tmp := usr.userID
+	fmt.Println(tmp)
+	prep.ExpectExec().WithArgs(42, "Test message", time.Now().Unix()).WillReturnResult(sqlmock.NewResult(0, 1))
+
+	// Handle request
+	handler := http.HandlerFunc(app.addMessageHandler)
+	handler.ServeHTTP(w, req)
+	resp := w.Result()
+
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	fmt.Println(resp.Header.Get("Content-Type"))
+	fmt.Println(string(body))
+
+	// Assert that we get a reddirect (statuscode 302)
+	assert.Equal(t, resp.StatusCode, 302)
 
 }

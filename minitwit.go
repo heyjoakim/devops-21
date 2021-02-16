@@ -454,7 +454,7 @@ func (d *App) addMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	message := r.FormValue("text")
 	user := r.FormValue("token")
-
+	S
 	statement, err := d.db.Prepare(`insert into message (author_id, text, pub_date, flagged)
 	values (?, ?, ?, 0)`)
 	if err != nil {
@@ -465,9 +465,9 @@ func (d *App) addMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, error := statement.Exec(userID, message, time.Now().Unix())
 	if error != nil {
-		fmt.Println("Cannot execute message request")
+		fmt.Println("Cannot execute message request: ", error)
 	}
-	statement.Close()
+	// statement.Close()
 
 	http.Redirect(w, r, "/"+user, http.StatusFound)
 }
@@ -500,7 +500,7 @@ func (d *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 			session.Values["user_id"] = userID
 			session.Save(r, w)
 
-			http.Redirect(w, r, "/", http.StatusFound)
+			http.Redirect(w, r, "/"+username, http.StatusFound)
 		}
 		d.db.Close()
 	}
