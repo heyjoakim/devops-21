@@ -140,7 +140,7 @@ func TestLogoutHandler(t *testing.T) {
 	// Assert that a cookie is actually set
 	assert.Equal(t, cookie, usr.userID)
 
-	// Server request
+	// Serve request
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	handler := http.HandlerFunc(app.logoutHandler)
 	handler.ServeHTTP(w, req)
