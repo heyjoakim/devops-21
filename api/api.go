@@ -81,7 +81,7 @@ func getUserID(username string) (int, error) {
 func beforeRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Insert here
-		log.Println(r.RequestURI)
+		log.Println(fmt.Sprintf("[%s] --> %s", r.Method, r.RequestURI))
 		next.ServeHTTP(w, r)
 	})
 }
