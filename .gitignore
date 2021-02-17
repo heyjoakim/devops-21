@@ -1,2 +1,4 @@
 bin/
 gin-bin
+.metals
+__pycache__/
