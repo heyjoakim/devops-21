@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -14,8 +13,11 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
-	"github.com/heyjoakim/devops-21/models"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/heyjoakim/devops-21/models" //ORM models
+	"gorm.io/driver/sqlite"                 //ORM
+	"gorm.io/gorm"                          //ORM
+
+	// _ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -35,7 +37,7 @@ var (
 	store     = sessions.NewCookieStore(secretKey)
 )
 
-var db *sql.DB
+var db *gorm.DB
 var staticPath string = "/static"
 var cssPath string = "/css"
 var timelinePath string = "./templates/timeline.html"
@@ -44,25 +46,27 @@ var loginPath string = "./templates/login.html"
 var registerPath string = "./templates/register.html"
 
 // connectDb returns a new connection to the database.
-func connectDb() (*sql.DB, error) {
-	return sql.Open("sqlite3", database)
+func connectDb() (*gorm.DB, error) {
+	  return gorm.Open(sqlite.Open(database), &gorm.Config{})
+
+	// return sql.Open("sqlite3", database)
 }
 
 // initDb creates the database tables.
-func initDb() {
-	file, err := ioutil.ReadFile("./schema.sql")
-	if err != nil {
-		log.Print(err.Error())
-	}
-	tx, _ := db.Begin()
-	_, err = db.Exec(string(file))
-	if err != nil {
-		if rollbackErr := tx.Rollback(); rollbackErr != nil {
-			log.Fatalf("Unable to rollback initDb: %v", rollbackErr)
-		}
-		log.Fatal(err)
-	}
-}
+// func initDb() {
+// 	file, err := ioutil.ReadFile("./schema.sql")
+// 	if err != nil {
+// 		log.Print(err.Error())
+// 	}
+// 	tx, _ := db.Begin()
+// 	_, err = db.Exec(string(file))
+// 	if err != nil {
+// 		if rollbackErr := tx.Rollback(); rollbackErr != nil {
+// 			log.Fatalf("Unable to rollback initDb: %v", rollbackErr)
+// 		}
+// 		log.Fatal(err)
+// 	}
+// }
 
 // queryDb queries the database and returns a list of dictionaries.
 func queryDb(query string, args ...interface{}) *sql.Rows {
@@ -85,11 +89,11 @@ func queryDbSingleRow(query string, args ...interface{}) *sql.Row {
 // getUserID returns user ID for username
 func getUserID(username string) (int, error) {
 	var ID int
-	err := db.QueryRow("select user_id from user where username = ?", username).Scan(&ID)
+	err := db.First(models.User, username).Scan(&ID)
 	return ID, err
 }
 
-// formatDatetime formats a timestamp for display.
+// formatDatetime formats ga timestamp for display.
 func formatDatetime(timestamp int64) string {
 	timeObject := time.Unix(timestamp, 0)
 	return timeObject.Format("2006-02-01 @ 02:04")

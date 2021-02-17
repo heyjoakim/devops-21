@@ -10,4 +10,6 @@ require (
 	github.com/swaggo/http-swagger v1.0.0
 	github.com/swaggo/swag v1.7.0
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+	gorm.io/driver/sqlite v1.1.4
+	gorm.io/gorm v1.20.12
 )
