@@ -81,6 +81,7 @@ func getUserID(username string) (int, error) {
 func beforeRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Insert here
+		log.Println(r.RequestURI)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -478,6 +479,7 @@ func init() {
 func main() {
 	router := mux.NewRouter()
 
+	router.Use(beforeRequest)
 	router.HandleFunc("/latest", getLatestHandler)
 	router.HandleFunc("/register", registerHandler).Methods("POST")
 	router.HandleFunc("/msgs", messagesHandler)
