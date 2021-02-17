@@ -260,7 +260,8 @@ func messagesHandler(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} interface{}
 // @Failure 401 {string} string "unauthorized"
 // @Failure 500 {string} string response.Error
-// @Router /msgs/{username} [get, post]
+// @Router /msgs/{username} [get]
+// @Router /msgs/{username} [post]
 func messagesPerUserHandler(w http.ResponseWriter, r *http.Request) {
 	updateLatest(r)
 	params := mux.Vars(r)
@@ -360,7 +361,8 @@ func messagesPerUserHandler(w http.ResponseWriter, r *http.Request) {
 // @Success 204 {object} interface{}
 // @Failure 401 {string} string "unauthorized"
 // @Failure 500 {string} string response.Error
-// @Router /fllws/{username} [get, post]
+// @Router /fllws/{username} [get]
+// @Router /fllws/{username} [post]
 func followHandler(w http.ResponseWriter, r *http.Request) {
 	updateLatest(r)
 

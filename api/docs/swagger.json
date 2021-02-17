@@ -10,6 +10,58 @@
     "host": "localhost:8001",
     "basePath": "/",
     "paths": {
+        "/fllws/{username}": {
+            "post": {
+                "description": "Eiter follows a user, unfollows a user or returns a list of users's followers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Follow, unfollow or get followers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of results returned",
+                        "name": "no",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Something about latest",
+                        "name": "latest",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/latest": {
             "get": {
                 "description": "Get the latest x",
@@ -49,7 +101,73 @@
                             "type": "object"
                         }
                     },
-                    "403": {
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/msgs/{username}": {
+            "post": {
+                "description": "Gets the latest messages per user",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets the latest messages per user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Number of results returned",
+                        "name": "no",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Something about latest",
+                        "name": "latest",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "description": "Registers a user, provided that the given info passes all checks.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Registers a user",
+                "responses": {
+                    "203": {
+                        "description": ""
+                    },
+                    "400": {
                         "description": "unauthorized",
                         "schema": {
                             "type": "string"
