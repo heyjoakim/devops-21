@@ -2,152 +2,144 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"regexp"
 	"strings"
 	"testing"
-	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/crypto/bcrypt"
 )
 
-var usrData url.Values = url.Values{
-	"username":  {"Richard"},
-	"email":     {"richard@stallman.org"},
+var defaultUserData url.Values = url.Values{
+	"username":  {"Rob"},
+	"email":     {"rob@go.com"},
 	"password":  {"secret"},
-	"password2": {"secret"}}
+	"password2": {"secret"},
+}
 
-var usr = &User{
-	userID:   244,
-	username: "Richard",
-	email:    "richard@stallman.org",
+var defaultUser = &User{
+	username: "Rob",
+	email:    "rob@go.com",
 	pwHash:   "secret",
 }
 
-var msgData url.Values = url.Values{
-	"id":    {"hest"},
-	"text":  {"Test message"},
-	"token": {usr.username},
+func MemorySetup() *App {
+	db, _ := sql.Open("sqlite3", "file::memory:?cache=shared")
+	// db, _ := sql.Open("sqlite3", "./tmp/minitwit3.db")
+	app := &App{db}
+	app.initDb()
+	return app
 }
 
-func Setup() (*sql.DB, sqlmock.Sqlmock) {
-	tdb, mock, err := sqlmock.New()
-	if err != nil {
-		log.Fatalf("Failed to initialize mock db with error '%s'", err)
-	}
+func MemoryRegisterHelper(data url.Values) (*http.Response, *App) {
+	app := MemorySetup()
 
-	return tdb, mock
-}
-
-func TestGetUserID(t *testing.T) {
-	tdb, mock := Setup()
-	app := &App{tdb}
-	defer app.db.Close()
-
-	// Check for expected query
-	query := regexp.QuoteMeta(`select user_id from user where username = ?`)
-	rows := sqlmock.NewRows([]string{"user_id"}).AddRow(usr.userID)
-	mock.ExpectQuery(query).WithArgs(usr.username).WillReturnRows(rows)
-
-	// Get ID of user
-	ID, err := app.getUserID(usr.username)
-
-	// Assert that userID gotten from mock db is same as returned
-	assert.NoError(t, err)
-	assert.Equal(t, usr.userID, ID, "IDs should be equal")
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("All expectations were not met: %s", err)
-	}
-}
-
-func TestRegisterHandler(t *testing.T) {
-	tdb, mock := Setup()
-	app := &App{tdb}
-	defer app.db.Close()
-
-	// Create new request and record it
-	req, _ := http.NewRequest("POST", "/register", strings.NewReader(usrData.Encode()))
+	req, _ := http.NewRequest("POST", "/register", strings.NewReader(data.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
-
-	// Check for expected prepare statement
-	query := regexp.QuoteMeta(`insert into user (username, email, pw_hash) values(?,?,?)`)
-	prep := mock.ExpectPrepare(query)
-	prep.ExpectExec() // TODO: find out if we can make expected result for a even more robust test
-
-	// Handle request
 	handler := http.HandlerFunc(app.registerHandler)
 	handler.ServeHTTP(w, req)
-	resp := w.Result()
+	return w.Result(), app
 
-	// Assert that we get a reddirect (statuscode 302)
-	assert.Equal(t, resp.StatusCode, 302)
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("All expectations were not met: %s", err)
-	}
 }
 
-func TestLoginHandler(t *testing.T) {
-	tdb, mock := Setup()
-	app := &App{tdb}
-	defer app.db.Close()
+func MemoryLoginRegisterHelper(data url.Values) (*http.Response, *App) {
+	_, app := MemoryRegisterHelper(defaultUserData)
+	req, _ := http.NewRequest("POST", "/login", strings.NewReader(data.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	handler := http.HandlerFunc(app.loginHandler)
+	handler.ServeHTTP(w, req)
+	return w.Result(), app
+}
 
-	hash, _ := bcrypt.GenerateFromPassword([]byte(usr.pwHash), bcrypt.DefaultCost)
-
-	// Create new request and record it
-	req, _ := http.NewRequest("POST", "/login", strings.NewReader(usrData.Encode()))
+func MemoryAddMessageHelper(data url.Values) (*http.Response, *App) {
+	_, app := MemoryLoginRegisterHelper(defaultUserData)
+	req, _ := http.NewRequest("POST", "/addMessageHandler", strings.NewReader(data.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
 
-	// Check for expected query statement
-	query := regexp.QuoteMeta(`select * from user where username = ?`)
-	rows := sqlmock.NewRows([]string{"user_id", "username", "email", "pw_hash"}).AddRow(usr.userID, usr.username, usr.email, hash)
-	mock.ExpectQuery(query).WithArgs(usr.username).WillReturnRows(rows)
-
-	// Handle request
-	handler := http.HandlerFunc(app.loginHandler)
+	handler := http.HandlerFunc(app.addMessageHandler)
 	handler.ServeHTTP(w, req)
-	resp := w.Result()
+	return w.Result(), app
+}
 
-	// Assert that we get a reddirect (statuscode 302)
-	assert.Equal(t, resp.StatusCode, 302)
+func TestMemoryRegister(t *testing.T) {
+	var resp *http.Response
+	var body []byte
+	mock := url.Values{}
 
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("All expectations were not met: %s", err)
-	}
+	// Test missing username
+	resp, _ = MemoryRegisterHelper(mock)
+	body, _ = ioutil.ReadAll(resp.Body)
+	assert.Contains(t, string(body), "You have to enter a username")
+
+	// Test wrong email
+	mock.Add("username", defaultUser.username)
+	mock.Add("email", "wrong_email")
+	resp, _ = MemoryRegisterHelper(mock)
+	body, _ = ioutil.ReadAll(resp.Body)
+	assert.Contains(t, string(body), "You have to enter a valid email address")
+
+	// Test missing and/or non matching passwords
+	mock.Set("email", defaultUser.email)
+	mock.Add("password", defaultUser.pwHash)
+	mock.Add("password2", "wrong"+defaultUser.pwHash)
+	resp, _ = MemoryRegisterHelper(mock)
+	body, _ = ioutil.ReadAll(resp.Body)
+	assert.Contains(t, string(body), "The two passwords do not match")
+
+	// Test successful register
+	mock.Set("password2", defaultUser.pwHash)
+	resp, _ = MemoryRegisterHelper(mock)
+	assert.Equal(t, resp.StatusCode, 302, "A successful register should redirrect")
+	assert.Equal(t, "/login", resp.Header.Get("Location"))
 
 }
 
-func TestLogoutHandler(t *testing.T) {
-	tdb, mock := Setup()
-	app := &App{tdb}
-	defer app.db.Close()
+func TestMemoryLoginHelper(t *testing.T) {
+	var resp *http.Response
+	var body []byte
+	mock := url.Values{}
+
+	// Test wrong username
+	mock.Add("username", "wrong_username")
+	resp, _ = MemoryLoginRegisterHelper(mock)
+	body, _ = ioutil.ReadAll(resp.Body)
+	assert.Contains(t, string(body), "Invalid username")
+
+	// Test missing password
+	mock.Set("username", defaultUser.username)
+	mock.Add("password", "")
+	resp, _ = MemoryLoginRegisterHelper(mock)
+	body, _ = ioutil.ReadAll(resp.Body)
+	assert.Contains(t, string(body), "Invalid password")
+
+	// Test successful login
+	mock.Set("password", defaultUser.pwHash)
+	resp, _ = MemoryLoginRegisterHelper(mock)
+	assert.Equal(t, resp.StatusCode, 302, "A successful login should redirrect")
+
+	// fmt.Println(string(body))
+}
+
+func TestMemoryLogout(t *testing.T) {
+	_, app := MemoryLoginRegisterHelper(defaultUserData)
 
 	// Setup cookie
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/login", nil)
-	session, err := store.Get(req, "_cookie")
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
-
-	session.Values["user_id"] = usr.userID
+	session, _ := store.Get(req, "_cookie")
+	session.Values["user_id"] = defaultUser.userID
 	session.Save(req, w)
 	cookie := session.Values["user_id"]
 
 	// Assert that a cookie is actually set
-	assert.Equal(t, cookie, usr.userID)
+	assert.Equal(t, cookie, defaultUser.userID)
 
 	// Serve request
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -155,52 +147,83 @@ func TestLogoutHandler(t *testing.T) {
 	handler.ServeHTTP(w, req)
 	emptyCookie := session.Values["user_id"]
 
-	resp := w.Result()
+	logoutResponse := w.Result()
 
 	// Assert that the cookie is now empty and redirrect
-	assert.NotEqual(t, emptyCookie, usr.userID)
+	assert.NotEqual(t, emptyCookie, defaultUser.userID)
+	assert.Equal(t, logoutResponse.StatusCode, 302)
+}
+
+func TestMemoryAddMessage(t *testing.T) {
+	var resp *http.Response
+
+	// Expected message
+	var msg string = "Test message personal page"
+	var msgData url.Values = url.Values{
+		"text":  {msg},
+		"token": {defaultUser.username},
+	}
+
+	// Add message
+	resp, app := MemoryAddMessageHelper(msgData)
+
+	// Assert that adding a message redirects
 	assert.Equal(t, resp.StatusCode, 302)
 
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("All expectations were not met: %s", err)
-	}
+	// Beigin new request to check the users page for the added message
+	req, _ := http.NewRequest("GET", "/username", nil)
+	w := httptest.NewRecorder()
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	// Set URL vars to be retrieved by mux.Vars
+	req = mux.SetURLVars(req, map[string]string{"username": defaultUser.username})
+
+	// Set session values
+	session, _ := store.Get(req, "_cookie")
+	session.Values["user_id"] = defaultUser.userID
+	session.Values["username"] = defaultUser.username
+	session.Save(req, w)
+
+	// Handle request
+	handler := http.HandlerFunc(app.userTimelineHandler)
+	handler.ServeHTTP(w, req)
+	checkResp := w.Result()
+	body, _ := ioutil.ReadAll(checkResp.Body)
+
+	// Assert that new message is added to the page
+	assert.Contains(t, string(body), msg)
 
 }
 
-func TestAddMessage(t *testing.T) {
-	tdb, mock := Setup()
-	app := &App{tdb}
-	defer app.db.Close()
+func TestMemoryTimeline(t *testing.T) {
 
-	// Create new request and record it
-	req, _ := http.NewRequest("POST", "/addMessage", strings.NewReader(msgData.Encode()))
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	// Expected message
+	var msg string = "Test message on timeline"
+	var msgData url.Values = url.Values{
+		"text":  {msg},
+		"token": {defaultUser.username},
+	}
+
+	// Add message
+	_, app := MemoryAddMessageHelper(msgData)
+
+	// Beigin new request to check the public page for message
+	req, _ := http.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	// Mock user to db
-	// hash, _ := bcrypt.GenerateFromPassword([]byte(usr.pwHash), bcrypt.DefaultCost)
+	// Set session values
+	session, _ := store.Get(req, "_cookie")
+	session.Values["user_id"] = defaultUser.userID
+	session.Values["username"] = defaultUser.username
+	session.Save(req, w)
 
-	// sqlmock.NewRows([]string{"user_id", "username", "email", "pw_hash"}).AddRow(usr.userID, usr.username, usr.email, hash)
-
-	// Check for expected prepare statement
-	query := regexp.QuoteMeta(`insert into message (author_id, text, pub_date, flagged)
-	values (?, ?, ?, 0)`)
-	prep := mock.ExpectPrepare(query)
-	tmp := usr.userID
-	fmt.Println(tmp)
-	prep.ExpectExec().WithArgs(42, "Test message", time.Now().Unix()).WillReturnResult(sqlmock.NewResult(0, 1))
-
-	// Handle request
-	handler := http.HandlerFunc(app.addMessageHandler)
+	handler := http.HandlerFunc(app.publicTimelineHandler)
 	handler.ServeHTTP(w, req)
-	resp := w.Result()
+	checkResp := w.Result()
+	body, _ := ioutil.ReadAll(checkResp.Body)
 
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	fmt.Println(resp.Header.Get("Content-Type"))
-	fmt.Println(string(body))
-
-	// Assert that we get a reddirect (statuscode 302)
-	assert.Equal(t, resp.StatusCode, 302)
+	// Assert that new message is added to the page
+	assert.Contains(t, string(body), msg)
 
 }

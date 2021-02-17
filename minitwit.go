@@ -87,10 +87,7 @@ func (d *App) initDb() {
 
 // queryDb queries the database and returns a list of dictionaries.
 func (d *App) queryDb(query string, args ...interface{}) *sql.Rows {
-	liteDB, _ := sql.Open("sqlite3", database)
-
-	res, _ := liteDB.Query(query, args...)
-
+	res, _ := d.db.Query(query, args...)
 	return res
 }
 
@@ -238,6 +235,7 @@ func (d *App) userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	profileUserID, err := d.getUserID(profileUsername)
 	if err != nil {
 		w.WriteHeader(404)
+		fmt.Println(err)
 		return
 	}
 	followed := false
@@ -260,6 +258,9 @@ func (d *App) userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		"user.user_id = message.author_id and user.user_id = ? "+
 		"order by message.pub_date desc limit ?",
 		profileUserID, perPage)
+	if err != nil {
+		fmt.Println("Err retrieving messages", err)
+	}
 
 	var msgS []Message
 	if ok := session.Values["user_id"] != nil; ok {
@@ -451,25 +452,22 @@ func (d *App) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *App) addMessageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		statement, err := d.db.
+			Prepare(`insert into message (author_id, text, pub_date, flagged) values(?,?,?,0)`)
 
-	message := r.FormValue("text")
-	user := r.FormValue("token")
-	S
-	statement, err := d.db.Prepare(`insert into message (author_id, text, pub_date, flagged)
-	values (?, ?, ?, 0)`)
-	if err != nil {
-		fmt.Println("db error during message creation") // probably needing some error handling
+		if err != nil {
+			fmt.Println("db error during message creation") // probably needing some error handling
+			log.Fatal(err)
+			return
+		}
+
+		userID, _ := d.getUserID(r.FormValue("token"))
+		statement.Exec(userID, r.FormValue("text"), time.Now().Unix())
+		statement.Close()
+
+		http.Redirect(w, r, "/"+r.FormValue("token"), http.StatusFound)
 	}
-
-	userID, _ := d.getUserID(user)
-
-	_, error := statement.Exec(userID, message, time.Now().Unix())
-	if error != nil {
-		fmt.Println("Cannot execute message request: ", error)
-	}
-	// statement.Close()
-
-	http.Redirect(w, r, "/"+user, http.StatusFound)
 }
 
 func (d *App) loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -489,7 +487,10 @@ func (d *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	var loginError string
 	if r.Method == "POST" {
-		d.db.QueryRow("select * from user where username = ?", r.FormValue("username")).Scan(&userID, &username, &email, &pwHash)
+		err := d.db.QueryRow("select * from user where username = ?", r.FormValue("username")).Scan(&userID, &username, &email, &pwHash)
+		if err != nil {
+			loginError = "User does not exist"
+		}
 
 		if r.FormValue("username") != username {
 			loginError = "Invalid username"
@@ -502,7 +503,7 @@ func (d *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 
 			http.Redirect(w, r, "/"+username, http.StatusFound)
 		}
-		d.db.Close()
+		// d.db.Close()
 	}
 
 	tmpl, err := template.ParseFiles(loginPath, layoutPath)
