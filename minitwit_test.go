@@ -310,7 +310,7 @@ func TestMemoryFollow(t *testing.T) {
 	// Set URL vars to be retrieved by mux.Vars, session already set to bar
 	newReq = mux.SetURLVars(newReq, map[string]string{"username": bar.username})
 
-	// Set current user to bar
+	// New request, need to set session vars again
 	session, _ = store.Get(newReq, "_cookie")
 	session.Values["user_id"] = bar.userID
 	session.Values["username"] = bar.username
