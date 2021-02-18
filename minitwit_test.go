@@ -29,15 +29,14 @@ var defaultUser = &User{
 
 func MemorySetup() *App {
 	db, _ := sql.Open("sqlite3", "file::memory:?cache=shared")
-	// db, _ := sql.Open("sqlite3", "./tmp/minitwit3.db")
 	app := &App{db}
 	app.initDb()
 	return app
 }
 
+// Register a user from a new App
 func MemoryRegisterHelper(data url.Values) (*http.Response, *App) {
 	app := MemorySetup()
-
 	req, _ := http.NewRequest("POST", "/register", strings.NewReader(data.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
@@ -47,8 +46,19 @@ func MemoryRegisterHelper(data url.Values) (*http.Response, *App) {
 
 }
 
-func MemoryLoginRegisterHelper(data url.Values) (*http.Response, *App) {
-	_, app := MemoryRegisterHelper(defaultUserData)
+// Register a user on an existing given app
+func RegisterAppHelper(data url.Values, app *App) (*http.Response, *App) {
+	req, _ := http.NewRequest("POST", "/register", strings.NewReader(data.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	handler := http.HandlerFunc(app.registerHandler)
+	handler.ServeHTTP(w, req)
+	return w.Result(), app
+
+}
+
+// Login user in a existing given app
+func MemoryLoginHelper(data url.Values, app *App) (*http.Response, *App) {
 	req, _ := http.NewRequest("POST", "/login", strings.NewReader(data.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
@@ -57,12 +67,34 @@ func MemoryLoginRegisterHelper(data url.Values) (*http.Response, *App) {
 	return w.Result(), app
 }
 
-func MemoryAddMessageHelper(data url.Values) (*http.Response, *App) {
-	_, app := MemoryLoginRegisterHelper(defaultUserData)
+// Register and Login in a new app
+func MemoryLoginRegisterHelper(data url.Values) (*http.Response, *App) {
+	_, a := MemoryRegisterHelper(data)
+	resp, app := MemoryLoginHelper(data, a)
+	return resp, app
+}
+
+// Add message in a new app
+func MemoryAddMessageHelper(data url.Values, registeredUser url.Values) (*http.Response, *App) {
+	_, app := MemoryLoginRegisterHelper(registeredUser)
 	req, _ := http.NewRequest("POST", "/addMessageHandler", strings.NewReader(data.Encode()))
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
+	handler := http.HandlerFunc(app.addMessageHandler)
+	handler.ServeHTTP(w, req)
+	return w.Result(), app
+}
 
+// Add message from user x and user y in a new app
+func MemoryTimelineHelper(x url.Values, xdata url.Values, y url.Values, ydata url.Values) (*http.Response, *App) {
+	var app *App
+	_, app = MemoryAddMessageHelper(xdata, x)
+	_, app = RegisterAppHelper(y, app)
+	_, app = MemoryLoginHelper(y, app)
+
+	req, _ := http.NewRequest("POST", "/addMessageHandler", strings.NewReader(ydata.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
 	handler := http.HandlerFunc(app.addMessageHandler)
 	handler.ServeHTTP(w, req)
 	return w.Result(), app
@@ -106,25 +138,26 @@ func TestMemoryLoginHelper(t *testing.T) {
 	var body []byte
 	mock := url.Values{}
 
+	// Need to register a user to test error message
+	_, app := MemoryRegisterHelper(defaultUserData)
+
 	// Test wrong username
 	mock.Add("username", "wrong_username")
-	resp, _ = MemoryLoginRegisterHelper(mock)
+	resp, _ = MemoryLoginHelper(mock, app)
 	body, _ = ioutil.ReadAll(resp.Body)
 	assert.Contains(t, string(body), "Invalid username")
 
 	// Test missing password
 	mock.Set("username", defaultUser.username)
-	mock.Add("password", "")
-	resp, _ = MemoryLoginRegisterHelper(mock)
+	mock.Add("password", "wrong_password")
+	resp, _ = MemoryLoginHelper(mock, app)
 	body, _ = ioutil.ReadAll(resp.Body)
 	assert.Contains(t, string(body), "Invalid password")
 
 	// Test successful login
 	mock.Set("password", defaultUser.pwHash)
-	resp, _ = MemoryLoginRegisterHelper(mock)
+	resp, _ = MemoryLoginHelper(mock, app)
 	assert.Equal(t, resp.StatusCode, 302, "A successful login should redirrect")
-
-	// fmt.Println(string(body))
 }
 
 func TestMemoryLogout(t *testing.T) {
@@ -165,7 +198,7 @@ func TestMemoryAddMessage(t *testing.T) {
 	}
 
 	// Add message
-	resp, app := MemoryAddMessageHelper(msgData)
+	resp, app := MemoryAddMessageHelper(msgData, defaultUserData)
 
 	// Assert that adding a message redirects
 	assert.Equal(t, resp.StatusCode, 302)
@@ -190,7 +223,7 @@ func TestMemoryAddMessage(t *testing.T) {
 	checkResp := w.Result()
 	body, _ := ioutil.ReadAll(checkResp.Body)
 
-	// Assert that new message is added to the page
+	// Assert that new message is added to the personal page
 	assert.Contains(t, string(body), msg)
 
 }
@@ -205,9 +238,9 @@ func TestMemoryTimeline(t *testing.T) {
 	}
 
 	// Add message
-	_, app := MemoryAddMessageHelper(msgData)
+	_, app := MemoryAddMessageHelper(msgData, defaultUserData)
 
-	// Beigin new request to check the public page for message
+	// Begin new request to check the public page for message
 	req, _ := http.NewRequest("GET", "/", nil)
 	w := httptest.NewRecorder()
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -225,5 +258,72 @@ func TestMemoryTimeline(t *testing.T) {
 
 	// Assert that new message is added to the page
 	assert.Contains(t, string(body), msg)
+
+}
+
+func TestMemoryFollow(t *testing.T) {
+	// Setup two mock users
+	foo := &User{userID: 1, username: "Foo", email: "foo@baz.com", pwHash: "off"}
+	bar := &User{userID: 2, username: "Bar", email: "bar@baz.com", pwHash: "rab"}
+	fooData := url.Values{"username": {foo.username}, "email": {foo.email}, "password": {foo.pwHash}, "password2": {foo.pwHash}}
+	barData := url.Values{"username": {bar.username}, "email": {bar.email}, "password": {bar.pwHash}, "password2": {bar.pwHash}}
+
+	_, app := MemoryTimelineHelper(
+		fooData,
+		url.Values{
+			"text":  {"Foo test message"},
+			"token": {foo.username},
+		},
+		barData,
+		url.Values{
+			"text":  {"Bar test message"},
+			"token": {bar.username},
+		},
+	)
+
+	// Sequp request to follow user foo
+	req, _ := http.NewRequest("POST", "/username/follow", nil)
+	w := httptest.NewRecorder()
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	// Set current user to bar
+	session, _ := store.Get(req, "_cookie")
+	session.Values["user_id"] = bar.userID
+	session.Values["username"] = bar.username
+	session.Save(req, w)
+
+	// Set URL vars to be retrieved by mux.Vars
+	// Expected params["username"] = foo
+	req = mux.SetURLVars(req, map[string]string{"username": foo.username})
+
+	handler := http.HandlerFunc(app.followUserHandler)
+	handler.ServeHTTP(w, req)
+	resp := w.Result()
+	assert.Equal(t, resp.StatusCode, 302)
+
+	// Beigin new request to check the users page for the added message
+	newReq, _ := http.NewRequest("GET", "/username", nil)
+	newW := httptest.NewRecorder()
+	newReq.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	// Set URL vars to be retrieved by mux.Vars, session already set to bar
+	newReq = mux.SetURLVars(newReq, map[string]string{"username": bar.username})
+
+	// Set current user to bar
+	session, _ = store.Get(newReq, "_cookie")
+	session.Values["user_id"] = bar.userID
+	session.Values["username"] = bar.username
+	session.Save(newReq, newW)
+
+	// Handle request
+	newHandler := http.HandlerFunc(app.userTimelineHandler)
+	newHandler.ServeHTTP(newW, newReq)
+	newResp := newW.Result()
+	newBody, _ := ioutil.ReadAll(newResp.Body)
+
+	// Assert that new message is added to the personal page
+	assert.Contains(t, string(newBody), "Foo test message")
+	assert.Contains(t, string(newBody), "Bar test message")
 
 }
