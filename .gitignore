@@ -1,2 +1,3 @@
 bin/
 gin-bin
+tmp/minitwit.db
