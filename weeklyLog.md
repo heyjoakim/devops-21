@@ -67,3 +67,20 @@ The branch structure will therefore be as following :
 - `main` The production branch reflects the current deployment in production. The production branch is merged with the develop branch every time a new version deployed to production.
 - `feature/{feature-name}` New features are developed on feature branches following the *feature / feature name branch* structure.
 -  `hotfix\{hotfix-name}` New hot fixes are developed on seperate hot fix branches following the *hotfix / hotfix branch name*
+
+
+## Choice of orm
+
+
+So far, the application had been constructing it's own sql statements, and executing them as prepared statements, using sqlite3. However, we need to find a way to best prepare ourselves and minitwit for any changes that may have to be done. 
+Now we wanted to move on, and start to add on an abstraction layer.
+
+As suggested deciding on using the orm, Gorm. Gorm makes it possible for us to use the golang structs that we already have been working with, in such a way that we can save our objects directly to the database, thereby also having a more explicit struct-strategy in our code.
+We also expect that later in the course, it might become necessary to do some refractoring of the database, which is easier with the code-first workflow of Gorm. In that respect, we expect to be able to more dynamically manipulate our database codefirst. Creating primary keys, columns and rows can all be manipulated and created code first. 
+We also hope to be able to get rid of some repetetive boilerplate sql, and thus make the code more readable, to the non sql initiated developer.
+
+Another positive benefit could be that changing to another dbms, could require less work in terms of rewriting code, thus improving modifiability.
+
+## Staying with sqlite
+
+There was also
