@@ -1,13 +1,17 @@
 package main
 
 import (
-	"database/sql"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/heyjoakim/devops-21/models"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
@@ -21,14 +25,17 @@ var defaultUserData url.Values = url.Values{
 	"password2": {"secret"},
 }
 
-var defaultUser = &User{
-	username: "Rob",
-	email:    "rob@go.com",
-	pwHash:   "secret",
+var defaultUser = &models.User{
+	Username: "Rob",
+	Email:    "rob@go.com",
+	PwHash:   "secret",
 }
 
 func MemorySetup() *App {
-	db, _ := sql.Open("sqlite3", "file::memory:?cache=shared")
+	db, _ := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+			NamingStrategy: schema.NamingStrategy {
+        SingularTable: true,
+    	},})
 	app := &App{db}
 	app.initDb()
 	return app
@@ -111,22 +118,22 @@ func TestMemoryRegister(t *testing.T) {
 	assert.Contains(t, string(body), "You have to enter a username")
 
 	// Test wrong email
-	mock.Add("username", defaultUser.username)
+	mock.Add("username", defaultUser.Username)
 	mock.Add("email", "wrong_email")
 	resp, _ = MemoryRegisterHelper(mock)
 	body, _ = ioutil.ReadAll(resp.Body)
 	assert.Contains(t, string(body), "You have to enter a valid email address")
 
 	// Test missing and/or non matching passwords
-	mock.Set("email", defaultUser.email)
-	mock.Add("password", defaultUser.pwHash)
-	mock.Add("password2", "wrong"+defaultUser.pwHash)
+	mock.Set("email", defaultUser.Email)
+	mock.Add("password", defaultUser.PwHash)
+	mock.Add("password2", "wrong"+defaultUser.PwHash)
 	resp, _ = MemoryRegisterHelper(mock)
 	body, _ = ioutil.ReadAll(resp.Body)
 	assert.Contains(t, string(body), "The two passwords do not match")
 
 	// Test successful register
-	mock.Set("password2", defaultUser.pwHash)
+	mock.Set("password2", defaultUser.PwHash)
 	resp, _ = MemoryRegisterHelper(mock)
 	assert.Equal(t, resp.StatusCode, 302, "A successful register should redirrect")
 	assert.Equal(t, "/login", resp.Header.Get("Location"))
@@ -148,14 +155,14 @@ func TestMemoryLoginHelper(t *testing.T) {
 	assert.Contains(t, string(body), "Invalid username")
 
 	// Test missing password
-	mock.Set("username", defaultUser.username)
+	mock.Set("username", defaultUser.Username)
 	mock.Add("password", "wrong_password")
 	resp, _ = MemoryLoginHelper(mock, app)
 	body, _ = ioutil.ReadAll(resp.Body)
 	assert.Contains(t, string(body), "Invalid password")
 
 	// Test successful login
-	mock.Set("password", defaultUser.pwHash)
+	mock.Set("password", defaultUser.PwHash)
 	resp, _ = MemoryLoginHelper(mock, app)
 	assert.Equal(t, resp.StatusCode, 302, "A successful login should redirrect")
 }
@@ -167,12 +174,12 @@ func TestMemoryLogout(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/login", nil)
 	session, _ := store.Get(req, "_cookie")
-	session.Values["user_id"] = defaultUser.userID
+	session.Values["user_id"] = defaultUser.UserID
 	session.Save(req, w)
 	cookie := session.Values["user_id"]
 
 	// Assert that a cookie is actually set
-	assert.Equal(t, cookie, defaultUser.userID)
+	assert.Equal(t, cookie, defaultUser.UserID)
 
 	// Serve request
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -183,7 +190,7 @@ func TestMemoryLogout(t *testing.T) {
 	logoutResponse := w.Result()
 
 	// Assert that the cookie is now empty and redirrect
-	assert.NotEqual(t, emptyCookie, defaultUser.userID)
+	assert.NotEqual(t, emptyCookie, defaultUser.UserID)
 	assert.Equal(t, logoutResponse.StatusCode, 302)
 }
 
@@ -194,7 +201,7 @@ func TestMemoryAddMessage(t *testing.T) {
 	var msg string = "Test message personal page"
 	var msgData url.Values = url.Values{
 		"text":  {msg},
-		"token": {defaultUser.username},
+		"token": {defaultUser.Username},
 	}
 
 	// Add message
@@ -209,12 +216,12 @@ func TestMemoryAddMessage(t *testing.T) {
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	// Set URL vars to be retrieved by mux.Vars
-	req = mux.SetURLVars(req, map[string]string{"username": defaultUser.username})
+	req = mux.SetURLVars(req, map[string]string{"username": defaultUser.Username})
 
 	// Set session values
 	session, _ := store.Get(req, "_cookie")
-	session.Values["user_id"] = defaultUser.userID
-	session.Values["username"] = defaultUser.username
+	session.Values["user_id"] = defaultUser.UserID
+	session.Values["username"] = defaultUser.Username
 	session.Save(req, w)
 
 	// Handle request
@@ -234,7 +241,7 @@ func TestMemoryTimeline(t *testing.T) {
 	var msg string = "Test message on timeline"
 	var msgData url.Values = url.Values{
 		"text":  {msg},
-		"token": {defaultUser.username},
+		"token": {defaultUser.Username},
 	}
 
 	// Add message
@@ -247,8 +254,8 @@ func TestMemoryTimeline(t *testing.T) {
 
 	// Set session values
 	session, _ := store.Get(req, "_cookie")
-	session.Values["user_id"] = defaultUser.userID
-	session.Values["username"] = defaultUser.username
+	session.Values["user_id"] = defaultUser.UserID
+	session.Values["username"] = defaultUser.Username
 	session.Save(req, w)
 
 	handler := http.HandlerFunc(app.publicTimelineHandler)
@@ -263,21 +270,21 @@ func TestMemoryTimeline(t *testing.T) {
 
 func TestMemoryFollow(t *testing.T) {
 	// Setup two mock users
-	foo := &User{userID: 1, username: "Foo", email: "foo@baz.com", pwHash: "off"}
-	bar := &User{userID: 2, username: "Bar", email: "bar@baz.com", pwHash: "rab"}
-	fooData := url.Values{"username": {foo.username}, "email": {foo.email}, "password": {foo.pwHash}, "password2": {foo.pwHash}}
-	barData := url.Values{"username": {bar.username}, "email": {bar.email}, "password": {bar.pwHash}, "password2": {bar.pwHash}}
+	foo := &models.User{UserID: 1, Username: "Foo", Email: "foo@baz.com", PwHash: "off"}
+	bar := &models.User{UserID: 2, Username: "Bar", Email: "bar@baz.com", PwHash: "rab"}
+	fooData := url.Values{"username": {foo.Username}, "email": {foo.Email}, "password": {foo.PwHash}, "password2": {foo.PwHash}}
+	barData := url.Values{"username": {bar.Username}, "email": {bar.Email}, "password": {bar.PwHash}, "password2": {bar.PwHash}}
 
 	_, app := MemoryTimelineHelper(
 		fooData,
 		url.Values{
 			"text":  {"Foo test message"},
-			"token": {foo.username},
+			"token": {foo.Username},
 		},
 		barData,
 		url.Values{
 			"text":  {"Bar test message"},
-			"token": {bar.username},
+			"token": {bar.Username},
 		},
 	)
 
@@ -289,13 +296,13 @@ func TestMemoryFollow(t *testing.T) {
 
 	// Set current user to bar
 	session, _ := store.Get(req, "_cookie")
-	session.Values["user_id"] = bar.userID
-	session.Values["username"] = bar.username
+	session.Values["user_id"] = bar.UserID
+	session.Values["username"] = bar.Username
 	session.Save(req, w)
 
 	// Set URL vars to be retrieved by mux.Vars
 	// Expected params["username"] = foo
-	req = mux.SetURLVars(req, map[string]string{"username": foo.username})
+	req = mux.SetURLVars(req, map[string]string{"username": foo.Username})
 
 	handler := http.HandlerFunc(app.followUserHandler)
 	handler.ServeHTTP(w, req)
@@ -308,12 +315,12 @@ func TestMemoryFollow(t *testing.T) {
 	newReq.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	// Set URL vars to be retrieved by mux.Vars, session already set to bar
-	newReq = mux.SetURLVars(newReq, map[string]string{"username": bar.username})
+	newReq = mux.SetURLVars(newReq, map[string]string{"username": bar.Username})
 
 	// New request, need to set session vars again
 	session, _ = store.Get(newReq, "_cookie")
-	session.Values["user_id"] = bar.userID
-	session.Values["username"] = bar.username
+	session.Values["user_id"] = bar.UserID
+	session.Values["username"] = bar.Username
 	session.Save(newReq, newW)
 
 	// Handle request

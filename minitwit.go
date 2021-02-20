@@ -12,36 +12,24 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
-	"github.com/heyjoakim/devops-21/models" //ORM models
-	"gorm.io/driver/sqlite"                 //ORM
-	"gorm.io/gorm"                          //ORM
+	"github.com/heyjoakim/devops-21/models"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
-	// _ "github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // PageData defines data on page whatever and request
 type PageData map[string]interface{}
-
-// Message defines message
-type Message struct {
-	Email    string
-	Username string
-	Text     string
-	PubDate  string
-}
-
-// User defines a user
-type User struct {
-	userID   int
-	username string
-	email    string
-	pwHash   string
-}
-
 type layoutPage struct {
 	Layout string
+}
+type Result struct {
+		Text string
+		PubDate int64
+		Email string
+		Username string
 }
 
 // configuration
@@ -142,8 +130,6 @@ func (d *App) afterRequest(next http.Handler) http.Handler {
 		fmt.Println("Entered: " + r.RequestURI)
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
-		// FIXME: check if needed
-		// d.db.Close()
 	})
 }
 
@@ -168,15 +154,6 @@ func (d *App) publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	// //FIXME:
-	// res := d.queryDb("select message.*, user.* from message, user where message.flagged = 0 and message.author_id = user.user_id order by message.pub_date desc limit ?", perPage)
-	type Result struct {
-		Text string
-		PubDate int64
-		Email string
-		Username string
-	}
-
 	var results []Result
 	d.db.Model(&models.Message{}).Select("message.text, message.pub_date, user.email, user.username").Joins("left join user on user.user_id = message.author_id").Where("message.flagged=0").Order("pub_date desc").Limit(perPage).Scan(&results)
 
@@ -186,8 +163,7 @@ func (d *App) publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 			Email:    d.gravatarURL(result.Email, 48),
 			User: 		result.Username,
 			Content:  result.Text,
-			// PubDate:  d.formatDatetime(int64(pubDate)),
-			PubDate: int(result.PubDate),
+			PubDate:  d.formatDatetime(result.PubDate),
 		}
 		messages = append(messages, message)
 	}
@@ -246,33 +222,6 @@ func (d *App) userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// var messages []models.MessageResponse
-	// if err == nil {
-	// 	for messagesAndUsers.Next() {
-	// 		var (
-	// 			messageID int
-	// 			authorID  int
-	// 			text      string
-	// 			pubDate   int
-	// 			flagged   int
-	// 			userID    int
-	// 			username  string
-	// 			email     string
-	// 			pwHash    string
-	// 		)
-	// 		err := messagesAndUsers.Scan(&messageID, &authorID, &text, &pubDate, &flagged, &userID, &username, &email, &pwHash)
-	// 		if err == nil {
-	// 			message := models.MessageResponse{
-	// 				Email:    d.gravatarURL(email, 48),
-	// 				User: 		username,
-	// 				Content:     text,
-	// 				// PubDate:  d.formatDatetime(int64(pubDate)),
-	// 				PubDate: pubDate,
-	// 			}
-	// 			messages = append(messages, message)
-	// 		}
-	// 	}
-	// }
 	messages = append(msgS, messages...)
 	data["messages"] = messages
 	data["title"] = fmt.Sprintf("%s's Timeline", profileUsername)
@@ -305,28 +254,16 @@ func (d *App) userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *App) getPostsForUser(id uint) []models.MessageResponse {
-	type Result struct {
-		Text string
-		PubDate int64
-		Email string
-		Username string
-	}
-
 	var results []Result
-	d.db.Model(models.Message{}).Order("pub_date desc").Limit(perPage).Select("message.*").Joins("left join user on user.user_id = message.author_id").Where("user.user_id=?", id).Scan(&results)
+	d.db.Model(models.Message{}).Order("pub_date desc").Limit(perPage).Select("message.text,message.pub_date, user.email, user.username").Joins("left join user on user.user_id = message.author_id").Where("user.user_id=?", id).Scan(&results)
 
-	// messagesAndUsers, err := d.db.Query("select message.*, user.* from message, user where "+
-	// 	"user.user_id = message.author_id and user.user_id = ? "+
-	// 	"order by message.pub_date desc limit ?",
-	// 	id, perPage)
 	var messages []models.MessageResponse
 	for _,result := range results{
 			message := models.MessageResponse{
 				Email:    d.gravatarURL(result.Email, 48),
 				User: 		result.Username,
 				Content:  result.Text,
-				// PubDate:  d.formatDatetime(int64(pubDate)),
-				PubDate: int(result.PubDate),
+				PubDate:  d.formatDatetime(result.PubDate),
 			}
 			messages = append(messages, message)
 		}
@@ -339,7 +276,6 @@ func (d *App) getFollowedUsers(id uint) []uint {
 	var followers []models.Follower
 	d.db.Where("who_id = ?", id).Find(&followers)
 
-	// followedIDs, _ := d.db.Query("select * from follower where  who_id= ?", id)
 	var followlist []uint
 	for _, follower := range followers {
 			followlist = append(followlist, follower.WhomID)
@@ -347,6 +283,8 @@ func (d *App) getFollowedUsers(id uint) []uint {
 
 	return followlist
 }
+
+// follow user
 func (d *App) followUserHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "_cookie")
 	currentUserID := session.Values["user_id"].(uint)
@@ -367,7 +305,7 @@ func (d *App) followUserHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/" + username, http.StatusFound)
 }
 
-// relies on a query string
+// Unfollow user - relies on a query string
 func (d *App) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "_cookie")
 	loggedInUser := session.Values["user_id"].(uint)

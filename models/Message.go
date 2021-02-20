@@ -1,6 +1,6 @@
 package models
 
-// Message model
+// Message model structure
 type Message struct {
 	MessageID 	uint  	`gorm:"primaryKey;column:message_id"`
 	AuthorID    uint 	  `gorm:"column:author_id"`
