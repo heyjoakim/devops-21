@@ -75,10 +75,7 @@ func (d *App) initDb() {
 func (d *App) getUserID(username string) (uint, error) {
 	var user models.User
   err := d.db.First(&user, "username = ?", username).Error
-	if err != nil {
-		log.Panic(err)
-	}
-	return user.UserID, nil
+	return user.UserID, err
 }
 
 // formatDatetime formats a timestamp for display.
