@@ -171,25 +171,23 @@ func (d *App) publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	// //FIXME:
 	// res := d.queryDb("select message.*, user.* from message, user where message.flagged = 0 and message.author_id = user.user_id order by message.pub_date desc limit ?", perPage)
 	type Result struct {
-		text string
-		pub_date int
-		email string
-		username string
+		Text string
+		PubDate int64
+		Email string
+		Username string
 	}
 
 	var results []Result
 	d.db.Model(&models.Message{}).Select("message.text, message.pub_date, user.email, user.username").Joins("left join user on user.user_id = message.author_id").Where("message.flagged=0").Order("pub_date desc").Limit(perPage).Scan(&results)
-	fmt.Println(results)
-
 
 	var messages []models.MessageResponse
 	for _,result := range results{
 		message := models.MessageResponse{
-			Email:    d.gravatarURL(result.email, 48),
-			User: 		result.username,
-			Content:  result.text,
+			Email:    d.gravatarURL(result.Email, 48),
+			User: 		result.Username,
+			Content:  result.Text,
 			// PubDate:  d.formatDatetime(int64(pubDate)),
-			PubDate: int(result.pub_date),
+			PubDate: int(result.PubDate),
 		}
 		messages = append(messages, message)
 	}
@@ -236,17 +234,7 @@ func (d *App) userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-
-	// messagesAndUsers, err := d.db.Query("select message.*, user.* from message, user where "+
-	// 	"user.user_id = message.author_id and user.user_id = ? "+
-	// 	"order by message.pub_date desc limit ?",
-	// 	profileUserID, perPage)
-	// if err != nil {
-	// 	fmt.Println("Err retrieving messages", err)
-	// }
-
 	messages := d.getPostsForUser(profileUserID)
-
 
 	var msgS []models.MessageResponse
 	if sessionUserID != 0 {
@@ -318,12 +306,14 @@ func (d *App) userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 func (d *App) getPostsForUser(id uint) []models.MessageResponse {
 	type Result struct {
-		message models.Message
-		user models.User
+		Text string
+		PubDate int64
+		Email string
+		Username string
 	}
 
 	var results []Result
-	d.db.Model(models.Message{}).Order("pub_date desc").Limit(perPage).Select("message.*").Joins("left join user on user.user_id = message.author_id").Where("user.user_id=?", id).Scan(&Result{})
+	d.db.Model(models.Message{}).Order("pub_date desc").Limit(perPage).Select("message.*").Joins("left join user on user.user_id = message.author_id").Where("user.user_id=?", id).Scan(&results)
 
 	// messagesAndUsers, err := d.db.Query("select message.*, user.* from message, user where "+
 	// 	"user.user_id = message.author_id and user.user_id = ? "+
@@ -332,11 +322,11 @@ func (d *App) getPostsForUser(id uint) []models.MessageResponse {
 	var messages []models.MessageResponse
 	for _,result := range results{
 			message := models.MessageResponse{
-				Email:    d.gravatarURL(result.user.Email, 48),
-				User: 		result.user.Username,
-				Content:  result.message.Text,
+				Email:    d.gravatarURL(result.Email, 48),
+				User: 		result.Username,
+				Content:  result.Text,
 				// PubDate:  d.formatDatetime(int64(pubDate)),
-				PubDate: int(result.message.PubDate),
+				PubDate: int(result.PubDate),
 			}
 			messages = append(messages, message)
 		}
