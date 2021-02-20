@@ -26,10 +26,10 @@ type layoutPage struct {
 	Layout string
 }
 type Result struct {
-		Text string
-		PubDate int64
-		Email string
-		Username string
+	Text     string
+	PubDate  int64
+	Email    string
+	Username string
 }
 
 // configuration
@@ -54,11 +54,11 @@ var loginPath string = "./templates/login.html"
 var registerPath string = "./templates/register.html"
 
 func (d *App) connectDb() (*gorm.DB, error) {
-	  return gorm.Open(sqlite.Open(database), &gorm.Config{
-			NamingStrategy: schema.NamingStrategy {
-        SingularTable: true,
-    	},
-		})
+	return gorm.Open(sqlite.Open(database), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	})
 }
 
 // initDb creates the database tables.
@@ -70,11 +70,13 @@ func (d *App) initDb() {
 	d.db.AutoMigrate(&user, &follower, &message)
 }
 
-
 // getUserID returns user ID for username
 func (d *App) getUserID(username string) (uint, error) {
 	var user models.User
-  err := d.db.First(&user, "username = ?", username).Error
+	err := d.db.First(&user, "username = ?", username).Error
+	if err != nil {
+		fmt.Println(err)
+	}
 	return user.UserID, err
 }
 
@@ -94,7 +96,7 @@ func (d *App) gravatarURL(email string, size int) string {
 func (d *App) getUser(userID uint) models.User {
 	var user models.User
 	err := d.db.First(&user, "user_id = ?", userID).Error
-	if(err != nil) {
+	if err != nil {
 		fmt.Println(err)
 
 	}
@@ -155,12 +157,12 @@ func (d *App) publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	d.db.Model(&models.Message{}).Select("message.text, message.pub_date, user.email, user.username").Joins("left join user on user.user_id = message.author_id").Where("message.flagged=0").Order("pub_date desc").Limit(perPage).Scan(&results)
 
 	var messages []models.MessageResponse
-	for _,result := range results{
+	for _, result := range results {
 		message := models.MessageResponse{
-			Email:    d.gravatarURL(result.Email, 48),
-			User: 		result.Username,
-			Content:  result.Text,
-			PubDate:  d.formatDatetime(result.PubDate),
+			Email:   d.gravatarURL(result.Email, 48),
+			User:    result.Username,
+			Content: result.Text,
+			PubDate: d.formatDatetime(result.PubDate),
 		}
 		messages = append(messages, message)
 	}
@@ -255,15 +257,15 @@ func (d *App) getPostsForUser(id uint) []models.MessageResponse {
 	d.db.Model(models.Message{}).Order("pub_date desc").Limit(perPage).Select("message.text,message.pub_date, user.email, user.username").Joins("left join user on user.user_id = message.author_id").Where("user.user_id=?", id).Scan(&results)
 
 	var messages []models.MessageResponse
-	for _,result := range results{
-			message := models.MessageResponse{
-				Email:    d.gravatarURL(result.Email, 48),
-				User: 		result.Username,
-				Content:  result.Text,
-				PubDate:  d.formatDatetime(result.PubDate),
-			}
-			messages = append(messages, message)
+	for _, result := range results {
+		message := models.MessageResponse{
+			Email:   d.gravatarURL(result.Email, 48),
+			User:    result.Username,
+			Content: result.Text,
+			PubDate: d.formatDatetime(result.PubDate),
 		}
+		messages = append(messages, message)
+	}
 
 	return messages
 }
@@ -275,7 +277,7 @@ func (d *App) getFollowedUsers(id uint) []uint {
 
 	var followlist []uint
 	for _, follower := range followers {
-			followlist = append(followlist, follower.WhomID)
+		followlist = append(followlist, follower.WhomID)
 	}
 
 	return followlist
@@ -289,17 +291,17 @@ func (d *App) followUserHandler(w http.ResponseWriter, r *http.Request) {
 	username := params["username"]
 	userToFollowID, _ := d.getUserID(username)
 
-	follower := models.Follower{WhoID: currentUserID , WhomID: userToFollowID}
+	follower := models.Follower{WhoID: currentUserID, WhomID: userToFollowID}
 	result := d.db.Create(&follower)
 	if result.Error != nil {
 		log.Fatal(result.Error)
 		fmt.Println("database error: ", result.Error)
-	  return
+		return
 	}
 
-	session.AddFlash("You are now following " + username, "Info")
+	session.AddFlash("You are now following "+username, "Info")
 	session.Save(r, w)
-	http.Redirect(w, r, "/" + username, http.StatusFound)
+	http.Redirect(w, r, "/"+username, http.StatusFound)
 }
 
 // Unfollow user - relies on a query string
@@ -344,7 +346,7 @@ func (d *App) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 func (d *App) addMessageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		userID, _ := d.getUserID(r.FormValue("token"))
-		message := models.Message{AuthorID: userID , Text:r.FormValue("text"),  PubDate: time.Now().Unix(), Flagged: 0}
+		message := models.Message{AuthorID: userID, Text: r.FormValue("text"), PubDate: time.Now().Unix(), Flagged: 0}
 		err := d.db.Create(&message).Error
 		if err != nil {
 			log.Fatal(err)
@@ -370,6 +372,7 @@ func (d *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 		err := d.db.Where("username = ?", r.FormValue("username")).First(&user).Error
 		if err != nil {
 			loginError = "User does not exist"
+			fmt.Println(err)
 		}
 
 		if r.FormValue("username") != user.Username {

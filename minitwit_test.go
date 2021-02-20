@@ -33,9 +33,9 @@ var defaultUser = &models.User{
 
 func MemorySetup() *App {
 	db, _ := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
-			NamingStrategy: schema.NamingStrategy {
-        SingularTable: true,
-    	},})
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		}})
 	app := &App{db}
 	app.initDb()
 	return app
