@@ -1,3 +1,5 @@
 bin/
 gin-bin
+.metals
+__pycache__/
 tmp/minitwit.db
