@@ -171,28 +171,28 @@ func (d *App) publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	// //FIXME:
 	// res := d.queryDb("select message.*, user.* from message, user where message.flagged = 0 and message.author_id = user.user_id order by message.pub_date desc limit ?", perPage)
 	type Result struct {
-		message models.Message
-		user models.User
+		text string
+		pub_date int
+		email string
+		username string
 	}
 
 	var results []Result
-	d.db.Find(&models.Message{}).Order("pub_date desc").Limit(perPage).Select("message.*").Joins("left join user on user.user_id = message.author_id").Where("message.flagged=0")
-
+	d.db.Model(&models.Message{}).Select("message.text, message.pub_date, user.email, user.username").Joins("left join user on user.user_id = message.author_id").Where("message.flagged=0").Order("pub_date desc").Limit(perPage).Scan(&results)
 	fmt.Println(results)
 
 
 	var messages []models.MessageResponse
 	for _,result := range results{
 		message := models.MessageResponse{
-			Email:    d.gravatarURL(result.user.Email, 48),
-			User: 		result.user.Username,
-			Content:  result.message.Text,
+			Email:    d.gravatarURL(result.email, 48),
+			User: 		result.username,
+			Content:  result.text,
 			// PubDate:  d.formatDatetime(int64(pubDate)),
-			PubDate: int(result.message.PubDate),
+			PubDate: int(result.pub_date),
 		}
 		messages = append(messages, message)
 	}
-
 
 	session, err := store.Get(r, "_cookie")
 	username := session.Values["username"]

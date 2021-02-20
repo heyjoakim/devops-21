@@ -6,4 +6,6 @@ type User struct {
 	Username string `gorm:"column:username"`
 	Email    string `gorm:"column:email"`
 	PwHash   string `gorm:"column:pw_hash"`
+	Messages []Message `gorm:"foreignKey:AuthorID"`
+
 }
