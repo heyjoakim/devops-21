@@ -72,10 +72,10 @@ The branch structure will therefore be as following :
 
 - [X] Complete implementing an API for the simulator 
 - [X] Continue refactoring 
-- [X] Introduce a DB abstraction layer
-- [X] Arguments for choice of ORM framework and chosen DBMS
-- [ ] Rebase and deploy
-- [ ] Provide good arguments for choice of virtualization techniques and deployment targets
+  - [X] Introduce a DB abstraction layer
+  - [X] Arguments for choice of ORM framework and chosen DBMS
+  - [ ] Rebase and deploy
+  - [ ] Provide good arguments for choice of virtualization techniques and deployment targets
 - [ ] Log dependencies
 
 #### Release and deploy
