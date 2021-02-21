@@ -34,9 +34,9 @@ Branch out from develop into a feature / bug and then create a pr to merge back 
 - [X] Choose language and technology for refractoring
     - [X] And why
 - [X] Choose branching strategy
-- [ ] Refractor
-- [ ] Commitment guidelines?
-- [ ] Implement API for simulator
+- [X] Refractor
+- [X] Commitment guidelines?
+- [X] Implement API for simulator
 
 ### Choose language and technology
 
@@ -69,6 +69,14 @@ The branch structure will therefore be as following :
 -  `hotfix\{hotfix-name}` New hot fixes are developed on seperate hot fix branches following the *hotfix / hotfix branch name*
 
 ## Week 03 Virtalization
+
+- [X] Complete implementing an API for the simulator 
+- [X] Continue refactoring 
+- [X] Introduce a DB abstraction layer
+- [X] Arguments for choice of ORM framework and chosen DBMS
+- [ ] Rebase and deploy
+- [ ] Provide good arguments for choice of virtualization techniques and deployment targets
+- [ ] Log dependencies
 
 #### Release and deploy
 Azure as cloud provider with docker!
