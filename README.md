@@ -4,7 +4,7 @@
 *Joakim Hey Hinnerskov (jhhi), Ask Harup Sejsbo (asse), Kasper Olsen (kols) , Petya Buchkova (pebu) and Thomas Tyge Andersen (thta)*
 
 
-##### Application
+#### Application
 This project revolves around a forum application called minitwit. The functionalities includes signing up, logging in, posting messages, following other users. The forum has a public timeline where all messages are displayed. Furthermore, if a user is signed in, a personal timeline exists that displays a users own messages aswell as messages of followed users. 
 
 #### Running the application
