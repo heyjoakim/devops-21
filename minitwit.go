@@ -156,9 +156,9 @@ func (d *App) publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	var results []Result
 	d.db.Model(&models.Message{}).Select("message.text, message.pub_date, user.email, user.username").Joins("left join user on user.user_id = message.author_id").Where("message.flagged=0").Order("pub_date desc").Limit(perPage).Scan(&results)
 
-	var messages []models.MessageResponse
+	var messages []models.MessageViewModel
 	for _, result := range results {
-		message := models.MessageResponse{
+		message := models.MessageViewModel{
 			Email:   d.gravatarURL(result.Email, 48),
 			User:    result.Username,
 			Content: result.Text,
@@ -211,7 +211,7 @@ func (d *App) userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 	messages := d.getPostsForUser(profileUserID)
 
-	var msgS []models.MessageResponse
+	var msgS []models.MessageViewModel
 	if sessionUserID != 0 {
 		if sessionUserID == profileUserID {
 			followlist := d.getFollowedUsers(sessionUserID)
@@ -252,13 +252,13 @@ func (d *App) userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-func (d *App) getPostsForUser(id uint) []models.MessageResponse {
+func (d *App) getPostsForUser(id uint) []models.MessageViewModel {
 	var results []Result
 	d.db.Model(models.Message{}).Order("pub_date desc").Limit(perPage).Select("message.text,message.pub_date, user.email, user.username").Joins("left join user on user.user_id = message.author_id").Where("user.user_id=?", id).Scan(&results)
 
-	var messages []models.MessageResponse
+	var messages []models.MessageViewModel
 	for _, result := range results {
-		message := models.MessageResponse{
+		message := models.MessageViewModel{
 			Email:   d.gravatarURL(result.Email, 48),
 			User:    result.Username,
 			Content: result.Text,

@@ -94,5 +94,5 @@ We also hope to be able to get rid of some repetetive boilerplate SQL, and thus 
 
 Another positive benefit could be that changing to another dbms, could require less work in terms of rewriting code, thus improving modifiability.
 
-## Staying with sqlite
+## Staying with SQLite
 For now we have decided to keep SQLite3 as SQL database engine as the database is still of a smaller size and the write volumes are low. 
