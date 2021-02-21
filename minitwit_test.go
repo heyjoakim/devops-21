@@ -33,9 +33,10 @@ var defaultUser = &models.User{
 
 func MemorySetup() *App {
 	db, _ := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
-			NamingStrategy: schema.NamingStrategy {
-        SingularTable: true,
-    	},})
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		}})
+
 	app := &App{db}
 	app.initDb()
 	return app
@@ -270,8 +271,8 @@ func TestMemoryTimeline(t *testing.T) {
 
 func TestMemoryFollow(t *testing.T) {
 	// Setup two mock users
-	foo := &models.User{UserID: 1, Username: "Foo", Email: "foo@baz.com", PwHash: "off"}
-	bar := &models.User{UserID: 2, Username: "Bar", Email: "bar@baz.com", PwHash: "rab"}
+	foo := &models.User{Username: "Foo", Email: "foo@baz.com", PwHash: "off"}
+	bar := &models.User{Username: "Bar", Email: "bar@baz.com", PwHash: "rab"}
 	fooData := url.Values{"username": {foo.Username}, "email": {foo.Email}, "password": {foo.PwHash}, "password2": {foo.PwHash}}
 	barData := url.Values{"username": {bar.Username}, "email": {bar.Email}, "password": {bar.PwHash}, "password2": {bar.PwHash}}
 
@@ -296,7 +297,7 @@ func TestMemoryFollow(t *testing.T) {
 
 	// Set current user to bar
 	session, _ := store.Get(req, "_cookie")
-	session.Values["user_id"] = bar.UserID
+	session.Values["user_id"], _ = app.getUserID(bar.Username)
 	session.Values["username"] = bar.Username
 	session.Save(req, w)
 
@@ -319,7 +320,7 @@ func TestMemoryFollow(t *testing.T) {
 
 	// New request, need to set session vars again
 	session, _ = store.Get(newReq, "_cookie")
-	session.Values["user_id"] = bar.UserID
+	session.Values["user_id"], _ = app.getUserID(bar.Username)
 	session.Values["username"] = bar.Username
 	session.Save(newReq, newW)
 
