@@ -1,8 +1,11 @@
 package models
 
+// User model
 type User struct {
-	UserID   int    `gorm:"column:user_id"`
+	UserID   uint   `gorm:"primaryKey;column:user_id"`
 	Username string `gorm:"column:username"`
 	Email    string `gorm:"column:email"`
 	PwHash   string `gorm:"column:pw_hash"`
+	Messages []Message `gorm:"foreignKey:AuthorID"`
+
 }

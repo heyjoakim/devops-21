@@ -1,8 +1,10 @@
 package models
 
+// Message model structure
 type Message struct {
-	Email    string `gorm:"column:user_id"`
-	Username string `gorm:"column:user_id"`
-	Text     string `gorm:"column:user_id"`
-	PubDate  string `gorm:"column:user_id"`
+	MessageID 	uint  	`gorm:"primaryKey;column:message_id"`
+	AuthorID    uint 	  `gorm:"column:author_id"`
+	Text      	string 	`gorm:"column:text"`
+	PubDate   	int64   `gorm:"column:pub_date"`
+	Flagged   	int 	  `gorm:"column:flagged"`
 }
