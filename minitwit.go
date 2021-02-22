@@ -508,7 +508,6 @@ func (d *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 func (d *App) faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/dev.png")
-	// http.Redirect(w, r, "/public", http.StatusFound)
 }
 
 func updateLatest(r *http.Request) {
@@ -527,7 +526,7 @@ func updateLatest(r *http.Request) {
 // @Description Get the latest x
 // @Produce  json
 // @Success 200 {object} interface{}
-// @Router /latest [get]
+// @Router /api/latest [get]
 func (d *App) GetLatestHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{ // could also be an array
 		"latest": latest,
@@ -550,7 +549,7 @@ func (d *App) GetLatestHandler(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Success 203
 // @Failure 400 {string} string "unauthorized"
-// @Router /register [post]
+// @Router /api/register [post]
 func (d *App) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var registerRequest models.RegisterRequest
 	json.NewDecoder(r.Body).Decode(&registerRequest)
@@ -607,7 +606,7 @@ func (d *App) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 // @Produce  json
 // @Success 200 {object} interface{}
 // @Failure 401 {string} string "unauthorized"
-// @Router /msgs [get]
+// @Router /api/msgs [get]
 func (d *App) MessagesHandler(w http.ResponseWriter, r *http.Request) {
 	updateLatest(r)
 
@@ -647,8 +646,8 @@ func (d *App) MessagesHandler(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} interface{}
 // @Failure 401 {string} string "unauthorized"
 // @Failure 500 {string} string response.Error
-// @Router /msgs/{username} [get]
-// @Router /msgs/{username} [post]
+// @Router /api/msgs/{username} [get]
+// @Router /api/msgs/{username} [post]
 func (d *App) MessagesPerUserHandler(w http.ResponseWriter, r *http.Request) {
 	updateLatest(r)
 	params := mux.Vars(r)
@@ -726,8 +725,8 @@ func (d *App) MessagesPerUserHandler(w http.ResponseWriter, r *http.Request) {
 // @Success 204 {object} interface{}
 // @Failure 401 {string} string "unauthorized"
 // @Failure 500 {string} string response.Error
-// @Router /fllws/{username} [get]
-// @Router /fllws/{username} [post]
+// @Router /api/fllws/{username} [get]
+// @Router /api/fllws/{username} [post]
 func (d *App) FollowHandler(w http.ResponseWriter, r *http.Request) {
 	updateLatest(r)
 
