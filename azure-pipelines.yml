@@ -27,6 +27,8 @@ stages:
         dockerfile: '$(Build.SourcesDirectory)/dockerfile'
         tags: |
           $(tag)
-          - task: Go@0
-            inputs:
-              command: 'test'
+    - task: Go@0
+      inputs:
+        command: 'test'
+        arguments: '-v'
+        workingDirectory: '$(modulePath)'
