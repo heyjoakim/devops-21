@@ -460,13 +460,13 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 
 // init is automatically executed on program startup. Can't be called
 // or referenced.
-// func init() {
-// 	database, err := connectDb()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	db = database
-// }
+func init() {
+	database, err := connectDb()
+	if err != nil {
+		log.Fatal(err)
+	}
+	db = database
+}
 
 // @title Minitwit API
 // @version 1.0
@@ -474,19 +474,19 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 // @termsOfService http://swagger.io/terms/
 // @host localhost:8001
 // @BasePath /
-// func main() {
-// 	router := mux.NewRouter()
+func main() {
+	// router := mux.NewRouter()
 
-// 	router.Use(beforeRequest)
-// 	router.HandleFunc("/latest", getLatestHandler)
-// 	router.HandleFunc("/register", registerHandler).Methods("POST")
-// 	router.HandleFunc("/msgs", messagesHandler)
-// 	router.HandleFunc("/msgs/{username}", messagesPerUserHandler).Methods("GET", "POST")
-// 	router.HandleFunc("/fllws/{username}", followHandler).Methods("GET", "POST")
+	// router.Use(beforeRequest)
+	// router.HandleFunc("/latest", getLatestHandler)
+	// router.HandleFunc("/register", registerHandler).Methods("POST")
+	// router.HandleFunc("/msgs", messagesHandler)
+	// router.HandleFunc("/msgs/{username}", messagesPerUserHandler).Methods("GET", "POST")
+	// router.HandleFunc("/fllws/{username}", followHandler).Methods("GET", "POST")
 
-// 	// Swagger
-// 	router.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
+	// // Swagger
+	// router.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
 
-// 	log.Fatal(http.ListenAndServe(":8001", router))
+	// log.Fatal(http.ListenAndServe(":8001", router))
 
-// }
+}
