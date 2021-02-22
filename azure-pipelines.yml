@@ -8,35 +8,20 @@ trigger:
 resources:
 - repo: self
 
-variables:
-  tag: '$(Build.BuildId)'
+pool:
+   vmImage: 'ubuntu-latest'
 
-stages:
-- stage: Build
-  displayName: Build image
-  jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - task: Docker@2
-      displayName: Build an image
-      inputs:
-        command: build
-        dockerfile: '$(Build.SourcesDirectory)/dockerfile'
-        tags: |
-          $(tag)
-    - task: GoTool@0
-      inputs:
-        version: '1.10'
-    - task: Go@0
-      inputs:
-        command: 'get'
-    - task: Go@0
-      inputs:
-        command: 'build'
-    - task: Go@0
-      inputs:
-        command: 'test'
-        arguments: '-v'
+steps:
+  - task: GoTool@0
+    inputs:
+      version: '1.15'
+  - task: Go@0
+    inputs:
+      command: 'get'
+  - task: Go@0
+    inputs:
+      command: 'build'
+  - task: Go@0
+    inputs:
+      command: 'test'
+      arguments: '-v'
