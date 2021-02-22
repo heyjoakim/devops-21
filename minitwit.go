@@ -98,16 +98,16 @@ func (d *App) gravatarURL(email string, size int) string {
 }
 
 func (d *App) notReqFromSimulator(r *http.Request) []byte {
-	// authHeader := r.Header.Get("Authorization")
-	// if authHeader != "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh" {
-	// 	data := map[string]interface{}{
-	// 		"status":    http.StatusForbidden,
-	// 		"error_msg": "You are not authorized to use this resource!",
-	// 	}
+	authHeader := r.Header.Get("Authorization")
+	if authHeader != "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh" {
+		data := map[string]interface{}{
+			"status":    http.StatusForbidden,
+			"error_msg": "You are not authorized to use this resource!",
+		}
 
-	// 	json, _ := d.serialize(data)
-	// 	return json
-	// }
+		json, _ := d.serialize(data)
+		return json
+	}
 	return nil
 }
 
@@ -158,7 +158,7 @@ func (d *App) beforeRequest(next http.Handler) http.Handler {
 // Closes the database again at the end of the request.
 func (d *App) afterRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("Entered: " + r.RequestURI)
+		log.Println(fmt.Sprintf("[%s] --> %s", r.Method, r.RequestURI))
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})
@@ -169,7 +169,6 @@ func (d *App) afterRequest(next http.Handler) http.Handler {
 // messages as well as all the messages of followed users.
 func (d *App) timelineHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, "_cookie")
-	fmt.Println(session)
 	if session.Values["user_id"] != nil {
 		routeName := fmt.Sprintf("/%s", session.Values["username"])
 		http.Redirect(w, r, routeName, http.StatusFound)
@@ -629,16 +628,6 @@ func (d *App) MessagesHandler(w http.ResponseWriter, r *http.Request) {
 		var results []models.MessageResponse
 		d.db.Model(&models.Message{}).Select("message.text, message.pub_date, user.email, user.username").Joins("left join user on user.user_id = message.author_id").Where("message.flagged=0").Order("pub_date desc").Limit(noMsgs).Scan(&results)
 
-		// var messages []models.MessageResult
-		// for _, result := range results {
-		// 	message := models.MessageResponse{
-		// 		Content: result.Text,
-		// 		PubDate: result.PubDate,
-		// 		User:    result.Username,
-		// 	}
-		// 	messages = append(messages, message)
-		// }
-
 		json, _ := d.serialize(results)
 
 		w.Header().Set("Content-Type", "application/json")
@@ -799,35 +788,16 @@ func (d *App) FollowHandler(w http.ResponseWriter, r *http.Request) {
 			noFollowers, _ = strconv.Atoi(noFollowersQuery)
 		}
 
-		res, _ := db.Query("SELECT user.username FROM user "+
-			"INNER JOIN follower ON follower.whom_id=user.user_id "+
-			"WHERE follower.who_id=? "+
-			"LIMIT ?", userID, noFollowers)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		var users []string
+		d.db.Model(&models.User{}).Select("user.username").Joins("left join follower on follower.whom_id = user.user_id").Where("follower.who_id=?", userID).Limit(noFollowers).Scan(&users)
 
-		followers := make([]string, 0)
-		for res.Next() {
-			var username string
-			err := res.Scan(&username)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			followers = append(followers, username)
-		}
-
-		json, _ := d.serialize(map[string]interface{}{"follows": followers})
+		json, _ := d.serialize(map[string]interface{}{"follows": users})
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
 	}
 }
 
 func (d *App) init() {
-	fmt.Println("init")
 	db, err := d.connectDb()
 	if err != nil {
 		log.Panic(err)
@@ -863,6 +833,7 @@ func main() {
 	apiRouter.HandleFunc("/msgs/{username}", app.MessagesPerUserHandler).Methods("GET", "POST")
 	apiRouter.HandleFunc("/fllws/{username}", app.FollowHandler).Methods("GET", "POST")
 
-	fmt.Println("Server running on port http://localhost:8000")
-	log.Fatal(http.ListenAndServe(":8000", router))
+	PORT := ":8000"
+	fmt.Printf("Server is running on http://localhost%s\n", PORT)
+	log.Fatal(http.ListenAndServe(PORT, router))
 }
