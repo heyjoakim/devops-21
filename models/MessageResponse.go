@@ -2,8 +2,7 @@ package models
 
 // MessageResponse defines a message reponse
 type MessageResponse struct {
-	Content string `json:"content"`
-	PubDate int    `json:"pub_date"`
-	User    string `json:"user"`
-	Email   string `json:"email"`
+	Content string `gorm:"column:text" json:"content"`
+	PubDate int    `gorm:"column:pub_date" json:"pub_date"`
+	User    string `gorm:"column:username" json:"user"`
 }
