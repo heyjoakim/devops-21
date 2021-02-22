@@ -96,3 +96,5 @@ Another positive benefit could be that changing to another dbms, could require l
 
 ## Staying with SQLite
 For now we have decided to keep SQLite3 as SQL database engine as the database is still of a smaller size and the write volumes are low. 
+
+TO BE DELETED
