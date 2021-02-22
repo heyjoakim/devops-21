@@ -40,4 +40,3 @@ stages:
       inputs:
         command: 'test'
         arguments: '-v'
-        workingDirectory: '$(modulePath)'
