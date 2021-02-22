@@ -2,6 +2,7 @@ bin/
 gin-bin
 .metals
 tmp/minitwit.db
+.README.md.un~
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
