@@ -32,7 +32,7 @@ stages:
         version: '1.10'
     - task: Go@0
       inputs:
-        command: 'get'
+        command: 'mod download'
     - task: Go@0
       inputs:
         command: 'build'
