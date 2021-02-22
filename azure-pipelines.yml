@@ -1,4 +1,7 @@
 # Docker
+- task: Go@0
+  inputs:
+    command: 'test'
 # Build a Docker image
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
