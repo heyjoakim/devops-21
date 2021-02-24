@@ -33,5 +33,6 @@ steps:
       repository: 'heyjoakim / minitwit'
       command: 'buildAndPush'
       Dockerfile: '**/dockerfile'
+      tags: stable
     
   
