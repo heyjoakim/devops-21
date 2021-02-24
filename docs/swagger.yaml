@@ -1,0 +1,113 @@
+info:
+  contact: {}
+paths:
+  /fllws/{username}:
+    post:
+      consumes:
+      - application/json
+      description: Eiter follows a user, unfollows a user or returns a list of users's
+        followers
+      parameters:
+      - description: Number of results returned
+        in: query
+        name: "no"
+        type: integer
+      - description: Something about latest
+        in: query
+        name: latest
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "204":
+          description: No Content
+          schema:
+            type: object
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Follow, unfollow or get followers
+  /latest:
+    get:
+      description: Get the latest x
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: Get the latest x
+  /msgs:
+    get:
+      description: Gets the latest messages in descending order.
+      parameters:
+      - description: Number of results returned
+        in: query
+        name: "no"
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      summary: Gets the latest messages
+  /msgs/{username}:
+    post:
+      description: Gets the latest messages per user
+      parameters:
+      - description: Number of results returned
+        in: query
+        name: "no"
+        type: integer
+      - description: Something about latest
+        in: query
+        name: latest
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Gets the latest messages per user
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a user, provided that the given info passes all checks.
+      produces:
+      - application/json
+      responses:
+        "203":
+          description: ""
+        "400":
+          description: unauthorized
+          schema:
+            type: string
+      summary: Registers a user
+swagger: "2.0"
