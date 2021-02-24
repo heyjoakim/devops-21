@@ -17,7 +17,7 @@ RUN go mod download
 COPY . /src/.
 
 # Make port 8080 available to the host
-EXPOSE 8000
+EXPOSE 80
 
 # Build and run the server when the container is started
 RUN go build /src/minitwit.go
