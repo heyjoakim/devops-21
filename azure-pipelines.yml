@@ -11,6 +11,8 @@ resources:
 pool:
    vmImage: 'ubuntu-latest'
 
+
+
 steps:
   - task: GoTool@0
     inputs:
@@ -25,5 +27,11 @@ steps:
     inputs:
       command: 'test'
       arguments: '-v'
-  
+  - task: Docker@2
+    inputs:
+      containerRegistry: 'hey-dockerhub'
+      repository: 'heyjoakim / minitwit'
+      command: 'buildAndPush'
+      Dockerfile: '**/dockerfile'
+    
   
