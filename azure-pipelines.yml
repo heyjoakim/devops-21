@@ -3,20 +3,16 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
-  batch: true
-  branches:
-    include:
-      - main
-      - develop
+- main
 
 resources:
 - repo: self
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: '8d419e08-fdfd-4a93-9bf7-5d4ce42b9132'
+  dockerRegistryServiceConnection: 'a6e4080a-8cfe-4c30-926d-e657b1daab8c'
   imageRepository: 'heyjoakimdevops'
-  containerRegistry: 'minitwit.azurecr.io'
+  containerRegistry: 'minitwitreg.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/dockerfile'
   tag: '$(Build.BuildId)'
 
@@ -32,23 +28,12 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-      - task: GoTool@0
-        inputs:
-          version: '1.15'
-      - task: Go@0
-        inputs:
-          command: 'get'
-      - task: Go@0
-        inputs:
-          command: 'build'
-      - task: Go@0
-        inputs:
-          command: 'test'
-          arguments: '-v'
-      
-      - task: Docker@2
-        inputs:
-          containerRegistry: 'regi'
-          repository: 'minitwit'
-          command: 'buildAndPush'
-          Dockerfile: '**/dockerfile'
+    - task: Docker@2
+      displayName: Build and push an image to container registry
+      inputs:
+        command: buildAndPush
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
