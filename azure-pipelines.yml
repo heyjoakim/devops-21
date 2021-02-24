@@ -45,9 +45,3 @@ stages:
         inputs:
           command: 'test'
           arguments: '-v'
-      - task: Docker@2
-        inputs:
-          containerRegistry: 'hey-dockerhub'
-          repository: 'minitwit'
-          command: 'buildAndPush'
-          Dockerfile: '**/Dockerfile'
