@@ -49,7 +49,7 @@ stages:
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
-          stable
+          latest
     - task: CopyFiles@2
       inputs:
         sourceFolder: $(Build.SourcesDirectory)
