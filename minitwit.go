@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"text/template"
@@ -19,7 +20,8 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/heyjoakim/devops-21/models"
-	"gorm.io/driver/sqlite"
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
@@ -45,7 +47,7 @@ type App struct {
 
 // configuration
 var (
-	database  = "./tmp/minitwit.db"
+	dsn  			= os.Getenv("DB_CONNECTION")
 	perPage   = 30
 	debug     = true
 	secretKey = []byte("development key")
@@ -61,20 +63,29 @@ var loginPath string = "./templates/login.html"
 var registerPath string = "./templates/register.html"
 
 func (d *App) connectDb() (*gorm.DB, error) {
-	return gorm.Open(sqlite.Open(database), &gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			SingularTable: true,
-		},
-	})
+	// return gorm.Open(postgres.Open(dsn), &gorm.Config{
+	// 	NamingStrategy: schema.NamingStrategy{
+	// 		SingularTable: true,
+	// 	},
+	// })
+	return gorm.Open(postgres.New(
+		postgres.Config{
+			DSN: dsn,
+			PreferSimpleProtocol: true, // disables implicit prepared statement usage
+		}),
+		&gorm.Config{
+			NamingStrategy: schema.NamingStrategy{
+					SingularTable: true,
+				},
+		})
 }
 
 // initDb creates the database tables.
 func (d *App) initDb() {
-	var user models.User
-	var follower models.Follower
-	var message models.Message
-
-	d.db.AutoMigrate(&user, &follower, &message)
+	err :=  d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{})
+	if err != nil {
+		fmt.Println("Migration error:", err)
+	}
 }
 
 // getUserID returns user ID for username
@@ -188,7 +199,7 @@ func (d *App) publicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var results []Result
-	d.db.Model(&models.Message{}).Select("message.text, message.pub_date, user.email, user.username").Joins("left join user on user.user_id = message.author_id").Where("message.flagged=0").Order("pub_date desc").Limit(perPage).Scan(&results)
+	d.db.Model(&models.Message{}).Select("message.text, message.pub_date, \"user\".email, \"user\".username").Joins("left join \"user\" on \"message\".\"author_id\" = \"user\".user_id").Where("\"message\".flagged=0").Order("pub_date desc").Limit(perPage).Scan(&results)
 
 	var messages []models.MessageViewModel
 	for _, result := range results {
@@ -287,7 +298,7 @@ func (d *App) userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 func (d *App) getPostsForUser(id uint) []models.MessageViewModel {
 	var results []Result
-	d.db.Model(models.Message{}).Order("pub_date desc").Limit(perPage).Select("message.text,message.pub_date, user.email, user.username").Joins("left join user on user.user_id = message.author_id").Where("user.user_id=?", id).Scan(&results)
+	d.db.Model(models.Message{}).Order("pub_date desc").Limit(perPage).Select("message.text,message.pub_date, \"user\".email, \"user\".username").Joins("left join \"user\" on \"message\".\"author_id\" = \"user\".user_id").Where("\"user\".user_id=?", id).Scan(&results)
 
 	var messages []models.MessageViewModel
 	for _, result := range results {
@@ -382,8 +393,8 @@ func (d *App) addMessageHandler(w http.ResponseWriter, r *http.Request) {
 		message := models.Message{AuthorID: userID, Text: r.FormValue("text"), PubDate: time.Now().Unix(), Flagged: 0}
 		err := d.db.Create(&message).Error
 		if err != nil {
-			log.Fatal(err)
 			fmt.Println("database error: ", err)
+			log.Fatal(err)
 			return
 		}
 
@@ -467,6 +478,7 @@ func (d *App) registerHandler(w http.ResponseWriter, r *http.Request) {
 
 			if error != nil {
 				fmt.Println(error)
+				registerError = "Error while creating user"
 			}
 
 			session.AddFlash("You are now registered ?", username)
@@ -811,6 +823,12 @@ func main() {
 	router := mux.NewRouter()
 	var app App
 	app.init()
+	app.initDb() // Automigrate
+
+	err := godotenv.Load()
+  if err != nil {
+    log.Fatal("Error loading .env file")
+  }
 
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
 	router.PathPrefix("/static/").Handler(s)
