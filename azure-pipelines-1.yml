@@ -11,7 +11,7 @@ resources:
 variables:
   # Container registry service connection established during pipeline creation
   dockerRegistryServiceConnection: 'b847c50d-b280-46ad-acf5-794f79657523'
-  imageRepository: 'mtimage'
+  imageRepository: 'svopper-minitwit'
   containerRegistry: 'minitwit.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/dockerfile'
   tag: '$(Build.BuildId)'
