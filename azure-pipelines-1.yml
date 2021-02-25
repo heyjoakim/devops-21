@@ -28,6 +28,19 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+    - task: GoTool@0
+      inputs:
+        version: '1.15'
+    - task: Go@0
+      inputs:
+        command: 'get'
+    - task: Go@0
+      inputs:
+        command: 'build'
+    - task: Go@0
+      inputs:
+        command: 'test'
+        arguments: '-v'    
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
@@ -35,3 +48,8 @@ stages:
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'miniBuildImage'
+        publishLocation: 'Container'
