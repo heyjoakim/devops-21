@@ -10,8 +10,8 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: 'b847c50d-b280-46ad-acf5-794f79657523'
-  imageRepository: 'mtimage'
+  dockerRegistryServiceConnection: 'd6b58210-95b6-44fe-b846-5e57dee72d1f'
+  imageRepository: 'svopper-minitwit'
   containerRegistry: 'minitwit.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/dockerfile'
   tag: '$(Build.BuildId)'
@@ -40,7 +40,7 @@ stages:
     - task: Go@0
       inputs:
         command: 'test'
-        arguments: '-v'    
+        arguments: '-v'  
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
@@ -48,6 +48,8 @@ stages:
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          latest
     - task: CopyFiles@2
       inputs:
         sourceFolder: $(Build.SourcesDirectory)
