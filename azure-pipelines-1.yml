@@ -1,4 +1,4 @@
-# Docker
+0# Docker
 # Build and push an image to Azure Container Registry
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
@@ -10,7 +10,7 @@ resources:
 
 variables:
   # Container registry service connection established during pipeline creation
-  dockerRegistryServiceConnection: 'b847c50d-b280-46ad-acf5-794f79657523'
+  dockerRegistryServiceConnection: '26447086-6af9-4de9-818e-267ed6d874df'
   imageRepository: 'mtimage'
   containerRegistry: 'minitwit.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/dockerfile'
