@@ -6,7 +6,7 @@
 
 ## Setting up env variable
 
-Run the following command `cp .env.example .env`
+Run the following command `cp .env.example .env` to create a .env file
 
 Populate the .env file with your db connection string
 
