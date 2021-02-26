@@ -47,7 +47,7 @@ type App struct {
 
 // configuration
 var (
-	dsn  			= os.Getenv("DB_CONNECTION")
+	dsn       = os.Getenv("DB_CONNECTION")
 	perPage   = 30
 	debug     = true
 	secretKey = []byte("development key")
@@ -70,19 +70,19 @@ func (d *App) connectDb() (*gorm.DB, error) {
 	// })
 	return gorm.Open(postgres.New(
 		postgres.Config{
-			DSN: dsn,
+			DSN:                  dsn,
 			PreferSimpleProtocol: true, // disables implicit prepared statement usage
 		}),
 		&gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
-					SingularTable: true,
-				},
+				SingularTable: true,
+			},
 		})
 }
 
 // initDb creates the database tables.
 func (d *App) initDb() {
-	err :=  d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{})
+	err := d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{})
 	if err != nil {
 		fmt.Println("Migration error:", err)
 	}
@@ -826,9 +826,9 @@ func main() {
 	app.initDb() // Automigrate
 
 	err := godotenv.Load()
-  if err != nil {
-    log.Fatal("Error loading .env file")
-  }
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
 	router.PathPrefix("/static/").Handler(s)
