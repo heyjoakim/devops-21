@@ -830,7 +830,6 @@ func main() {
 	} else {
 		log.Println("Found env.")
 		dsn = os.Getenv("DB_CONNECTION")
-
 	}
 	router := mux.NewRouter()
 	var app App
