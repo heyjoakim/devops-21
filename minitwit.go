@@ -811,6 +811,10 @@ func (d *App) FollowHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (d *App) TestHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, os.Getenv("DB_CONNECTION"))
+}
+
 func (d *App) init() {
 	db, err := d.connectDb()
 	if err != nil {
@@ -844,6 +848,7 @@ func main() {
 	router.HandleFunc("/register", app.registerHandler).Methods("GET", "POST")
 	router.HandleFunc("/public", app.publicTimelineHandler)
 	router.HandleFunc("/favicon.ico", app.faviconHandler)
+	router.HandleFunc("/test", app.TestHandler)
 	router.HandleFunc("/{username}", app.userTimelineHandler)
 
 	apiRouter := router.PathPrefix("/api").Subrouter()
