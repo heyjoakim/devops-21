@@ -48,6 +48,7 @@ stages:
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
+        arguments: DB_CONNECTION=yeet
         tags: |
           latest
     - task: CopyFiles@2
