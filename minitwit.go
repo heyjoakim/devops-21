@@ -63,11 +63,6 @@ var loginPath string = "./templates/login.html"
 var registerPath string = "./templates/register.html"
 
 func (d *App) connectDb() (*gorm.DB, error) {
-	// return gorm.Open(postgres.Open(dsn), &gorm.Config{
-	// 	NamingStrategy: schema.NamingStrategy{
-	// 		SingularTable: true,
-	// 	},
-	// })
 	return gorm.Open(postgres.New(
 		postgres.Config{
 			DSN:                  dsn,
@@ -811,11 +806,8 @@ func (d *App) FollowHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (d *App) TestHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, os.Getenv("DB_CONNECTION"))
-}
-
 func (d *App) init() {
+	configureEnv()
 	db, err := d.connectDb()
 	if err != nil {
 		log.Panic(err)
@@ -823,17 +815,15 @@ func (d *App) init() {
 	d.db = db
 }
 
-func main() {
+func configureEnv() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Error loading .env file - using system variables.")
-		fmt.Println(os.Getenv("DB_CONNECTION"))
-
-	} else {
-		log.Println("Found env.")
 	}
-
 	dsn = os.Getenv("DB_CONNECTION")
+}
+
+func main() {
 	router := mux.NewRouter()
 	var app App
 	app.init()
@@ -853,7 +843,6 @@ func main() {
 	router.HandleFunc("/register", app.registerHandler).Methods("GET", "POST")
 	router.HandleFunc("/public", app.publicTimelineHandler)
 	router.HandleFunc("/favicon.ico", app.faviconHandler)
-	router.HandleFunc("/test", app.TestHandler)
 	router.HandleFunc("/{username}", app.userTimelineHandler)
 
 	apiRouter := router.PathPrefix("/api").Subrouter()
