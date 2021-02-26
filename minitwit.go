@@ -20,7 +20,6 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/heyjoakim/devops-21/models"
-	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -829,10 +828,10 @@ func main() {
 	app.init()
 	app.initDb() // Automigrate
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
 
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
 	router.PathPrefix("/static/").Handler(s)
