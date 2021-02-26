@@ -827,10 +827,13 @@ func main() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Error loading .env file - using system variables.")
+		fmt.Println(os.Getenv("DB_CONNECTION"))
+
 	} else {
 		log.Println("Found env.")
-		dsn = os.Getenv("DB_CONNECTION")
 	}
+
+	dsn = os.Getenv("DB_CONNECTION")
 	router := mux.NewRouter()
 	var app App
 	app.init()
