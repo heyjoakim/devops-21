@@ -9,6 +9,8 @@ trigger:
    - main
   exclude:
    - develop
+   - hotfix/*
+   - feature/*
 
 resources:
 - repo: self
