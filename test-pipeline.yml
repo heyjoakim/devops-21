@@ -3,6 +3,8 @@ trigger:
   branches:
     include:
       - develop
+      - hotfix/*
+      - feature/*
     exclude:
      - main
 
