@@ -1,6 +1,6 @@
 # DevOps, Software Evolution and Software Maintenance
 
-[![Build Status](https://dev.azure.com/kols/devops-21/_apis/build/status/heyjoakim.devops-21?branchName=main)](https://dev.azure.com/kols/devops-21/_build/latest?definitionId=5&branchName=main)
+[![Build Status](https://dev.azure.com/kols/devops-21/_apis/build/status/CI%20Build?branchName=refs%2Fpull%2F81%2Fmerge)](https://dev.azure.com/kols/devops-21/_build/latest?definitionId=19&branchName=refs%2Fpull%2F81%2Fmerge)
 
 > This project revolves around a forum application called minitwit. The functionalities includes signing up, logging in, posting messages, following other users. The forum has a public timeline where all messages are displayed. Furthermore, if a user is signed in, a personal timeline exists that displays a users own messages aswell as messages of followed users.
 

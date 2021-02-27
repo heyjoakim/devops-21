@@ -3,6 +3,8 @@ trigger:
   branches:
     include:
       - develop
+    exclude:
+     - main
 
 resources:
 - repo: self
