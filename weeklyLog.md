@@ -111,3 +111,19 @@ As we are already using the Microsoft Azure ecosystem, we decided it would be th
 
 - [] Complete implementing an API for the simulator
 - [] Creating a CI/CD setup for your ITU-MiniTwit.
+
+### Choice of CI/CD provider
+We have chosen to go with Azure DevOps Pipelines as our CI/CD provider. The reasoning behind this was, in large part, that we were already using the platform for our sprint backlogs. In addition, it also provides good integration with our platform for deployments i.e. Azure. 
+
+We are running a CI pipeline on our develop branch in order to verify that the code we are continuously contributing to the project does not break any of the existing codebase. In our CI pipeline we are ensuring that all test are still passing, and the program is able to be compiled.
+
+On our main branch we are running a CD pipeline , so whenever something has been approved  for merging into the main branch, it will automatically be deployed to our production enviroment as soon as iti s merged into our main branch. In addition a new release will also be created on GitHub. 
+
+Currently, no other pipelines are running.
+
+### New project structure
+Since part of next weeks work will be "cleaning and polishing of our ITU-MiniTwit" application, we decided upon a new project structure for our application that we will be implementing by then. The overall goal of this refactoring will be to make the code more readable, maintainable, and easier to deploy.
+
+The reason this refactoring is necessary so soon is, out initial refactoring from python to golang was, very literally, a 1-1 translation from the python application. This has resulted in our current application having no separation in responsibilities in regard to which class does what, as well as the UI, and the API being to separate applications that need to be deployed. Since the API and the UI is each contained entirely in their own class, there is a lot of code duplication as well between the two.
+
+Our current idea is to follow the overall structure proposed [here](https://github.com/Mindinventory/Golang-Project-Structure). The API will therefore be merged into UI i.e. there will only be one application. This part of the work was already started this week. The data access layer will also be split into different services from the http handlers. The ending project structure should end up looking like the following, with the exception that we will only have a single version of the api that we will be maintaining. ![](https://raw.githubusercontent.com/Mindinventory/Golang-Project-Structure/master/structure.png)
