@@ -55,6 +55,8 @@ stages:
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          stable
     - task: CopyFiles@2
       inputs:
         sourceFolder: $(Build.SourcesDirectory)
