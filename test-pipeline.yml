@@ -3,8 +3,8 @@ pr:
   branches:
     include:
     - develop
-    exclude:
     - main
+    exclude:
     - hotfix/*
     - feature/*
 
