@@ -2,8 +2,15 @@
 # Build and push an image to Azure Container Registry
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
-trigger:
-- main
+trigger: 
+ branches:
+    include:
+    - main
+    exclude:
+    - develop
+    - hotfix/*
+    - feature/*
+pr: none
 
 resources:
 - repo: self
@@ -49,7 +56,7 @@ stages:
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
-          latest
+          stable
     - task: CopyFiles@2
       inputs:
         sourceFolder: $(Build.SourcesDirectory)
