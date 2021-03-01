@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+
 	"github.com/heyjoakim/devops-21/models"
 )
 

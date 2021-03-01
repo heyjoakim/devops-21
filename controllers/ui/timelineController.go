@@ -28,13 +28,7 @@ func TimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 // PublicTimelineHandler shows the public timeline
 func PublicTimelineHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles(TimelinePath, LayoutPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	var results = services.GetPublicMessages(PerPage)
-
 	var messages []models.MessageViewModel
 	for _, result := range results {
 		message := models.MessageViewModel{
@@ -46,7 +40,7 @@ func PublicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		messages = append(messages, message)
 	}
 
-	session, err := store.Get(r, "_cookie")
+	session := GetSession(w, r)
 	username := session.Values["username"]
 
 	data := models.PageData{
@@ -55,12 +49,12 @@ func PublicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		"msgCount": len(messages),
 	}
 
+	tmpl := LoadTemplate(TimelinePath)
 	tmpl.Execute(w, data)
 }
 
-// UserTimelineHandler shows the timeline one user
+// UserTimelineHandler shows the posts from one user
 func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
-	//Display's a users tweets.
 	params := mux.Vars(r)
 	profileUsername := params["username"]
 
@@ -71,7 +65,7 @@ func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := store.Get(r, "_cookie")
+	session := GetSession(w, r)
 	sessionUserID := session.Values["user_id"]
 	data := models.PageData{"followed": false}
 
@@ -79,11 +73,6 @@ func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
 		if services.IsUserFollower(sessionUserID.(uint), profileUserID) {
 			data["followed"] = true
 		}
-	}
-
-	tmpl, err := template.ParseFiles(TimelinePath, LayoutPath)
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	messages := getPostsForUser(profileUserID)
@@ -105,22 +94,7 @@ func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 	if session.Values["username"] == profileUsername {
 		data["ownProfile"] = true
-	} /*else { //TODO Delete once it ahs been verified accessing a nonexistent userpage returns a 404
-		currentUser := session.Values["user_id"]
-		otherUser, err := services.GetUserID(profileUsername)
-		if err != nil {
-			http.Error(w, "User does not exist", 400)
-			return
-		}
-
-		var follower models.Follower
-		d.db.Where("who_id = ?", otherUser).
-			Where("whom_id = ?", currentUser).
-			First(&follower)
-		if follower.WhoID != 0 && follower.WhomID != 0 {
-			data["followed"] = true
-		}
-	}*/
+	}
 
 	data["msgCount"] = len(messages)
 	data["username"] = session.Values["username"]
@@ -128,6 +102,10 @@ func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	data["MsgWarn"] = session.Flashes("Warn")
 	session.Save(r, w)
 
+	tmpl, err := template.ParseFiles(TimelinePath, LayoutPath)
+	if err != nil {
+		log.Fatal(err)
+	}
 	tmpl.Execute(w, data)
 }
 

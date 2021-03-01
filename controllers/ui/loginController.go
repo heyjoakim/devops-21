@@ -2,9 +2,7 @@ package ui
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-	"text/template"
 
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
@@ -56,10 +54,6 @@ func PostLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func redirectToLogin(w http.ResponseWriter, data models.PageData) {
-	tmpl, err := template.ParseFiles(LoginPath, LayoutPath)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	tmpl := LoadTemplate(LoginPath)
 	tmpl.Execute(w, data)
 }

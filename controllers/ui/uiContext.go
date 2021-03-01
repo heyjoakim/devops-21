@@ -7,12 +7,13 @@ import (
 )
 
 var (
-	PerPage   = 30
-	Debug     = true
+	// PerPage defines how many results are returned
+	PerPage = 30
 	store     = sessions.NewCookieStore(secretKey)
 	secretKey = []byte("development key")
 )
 
+// GetSession returns the current browser session
 func GetSession(w http.ResponseWriter, r *http.Request) *sessions.Session {
 	session, err := store.Get(r, "_cookie")
 	if err != nil {
