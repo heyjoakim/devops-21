@@ -47,7 +47,7 @@ type App struct {
 
 // configuration
 var (
-	dsn  			= os.Getenv("DB_CONNECTION")
+	dsn       string
 	perPage   = 30
 	debug     = true
 	secretKey = []byte("development key")
@@ -70,19 +70,19 @@ func (d *App) connectDb() (*gorm.DB, error) {
 	// })
 	return gorm.Open(postgres.New(
 		postgres.Config{
-			DSN: dsn,
+			DSN:                  dsn,
 			PreferSimpleProtocol: true, // disables implicit prepared statement usage
 		}),
 		&gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
-					SingularTable: true,
-				},
+				SingularTable: true,
+			},
 		})
 }
 
 // initDb creates the database tables.
 func (d *App) initDb() {
-	err :=  d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{})
+	err := d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{})
 	if err != nil {
 		fmt.Println("Migration error:", err)
 	}
@@ -101,7 +101,7 @@ func (d *App) getUserID(username string) (uint, error) {
 // formatDatetime formats a timestamp for display.
 func (d *App) formatDatetime(timestamp int64) string {
 	timeObject := time.Unix(timestamp, 0)
-	return timeObject.Format("2006-02-01 @ 02:04")
+	return timeObject.Format("2006-02-01 @ 15:04")
 }
 
 // gravatarURL return the gravatar image for the given email address.
@@ -811,6 +811,15 @@ func (d *App) FollowHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func configVariables() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	dsn = os.Getenv("DB_CONNECTION")
+}
+
 func (d *App) init() {
 	db, err := d.connectDb()
 	if err != nil {
@@ -820,15 +829,12 @@ func (d *App) init() {
 }
 
 func main() {
+	configVariables()
+
 	router := mux.NewRouter()
 	var app App
 	app.init()
 	app.initDb() // Automigrate
-
-	err := godotenv.Load()
-  if err != nil {
-    log.Fatal("Error loading .env file")
-  }
 
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
 	router.PathPrefix("/static/").Handler(s)
