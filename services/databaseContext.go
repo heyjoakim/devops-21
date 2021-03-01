@@ -60,14 +60,10 @@ func (d *DbContext) initDb() {
 }
 
 func GetDbInstance() DbContext {
-	if dbContext.db != nil {
-		fmt.Println("Single Instance already created-2")
-	} else {
+	if dbContext.db == nil {
 		lock.Lock()
 		defer lock.Unlock()
-		if dbContext.db != nil {
-			fmt.Println("Single Instance already created-1")
-		} else {
+		if dbContext.db == nil {
 			fmt.Println("Creating Single Instance Now")
 			dbContext.init()
 			dbContext.initDb() // AutoMigrate
