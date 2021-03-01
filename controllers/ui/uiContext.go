@@ -1,16 +1,16 @@
 package ui
 
 import (
-	"net/http"
-
 	"github.com/gorilla/sessions"
+	"net/http"
+	"os"
 )
 
 var (
 	// PerPage defines how many results are returned
-	PerPage = 30
+	PerPage   = 30
 	store     = sessions.NewCookieStore(secretKey)
-	secretKey = []byte("development key")
+	secretKey = []byte(os.Getenv("SECRET_KEY"))
 )
 
 // GetSession returns the current browser session

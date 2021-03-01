@@ -27,15 +27,15 @@ var (
 
 func configureEnv() {
 	err := godotenv.Load()
-
 	if err != nil {
 		log.Println("Error loading .env file - using system variables.")
 	}
+
 	environment = os.Getenv("ENVIRONMENT")
 	dsn = os.Getenv("DB_CONNECTION")
 }
 
-func (d *DbContext) init() {
+func (d *DbContext) initialize() {
 	configureEnv()
 	db, err := d.connectDb()
 	if err != nil {
@@ -46,14 +46,14 @@ func (d *DbContext) init() {
 
 func (d *DbContext) connectDb() (*gorm.DB, error) {
 	if environment == "develop" {
-		print("Using local sqlLite db")
+		fmt.Println("Using local SQLite db")
 		return gorm.Open(sqlite.Open("./tmp/minitwit.db"), &gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
 			},
 		})
 	} else if environment == "production" {
-		print("Using remote postgres db")
+		fmt.Println("Using remote postgres db")
 		return gorm.Open(postgres.New(
 			postgres.Config{
 				DSN:                  dsn,
@@ -83,7 +83,7 @@ func GetDbInstance() DbContext {
 		defer lock.Unlock()
 		if dbContext.db == nil {
 			fmt.Println("Creating Single Instance Now")
-			dbContext.init()
+			dbContext.initialize()
 			dbContext.initDb() // AutoMigrate
 		}
 	}
