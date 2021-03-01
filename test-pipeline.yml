@@ -1,8 +1,12 @@
-trigger:
-  batch: true
+trigger: none
+pr:
   branches:
     include:
-      - develop
+    - develop
+    - main
+    exclude:
+    - hotfix/*
+    - feature/*
 
 resources:
 - repo: self
