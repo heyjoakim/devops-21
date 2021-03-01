@@ -76,9 +76,9 @@ The branch structure will therefore be as following :
 - [x] Continue refactoring
   - [x] Introduce a DB abstraction layer
   - [x] Arguments for choice of ORM framework and chosen DBMS
-  - [ ] Rebase and deploy
+  - [X] Rebase and deploy
   - [x] Provide good arguments for choice of virtualization techniques and deployment targets
-- [ ] Log dependencies
+- [X] Log dependencies
 
 #### Release and deploy
 
@@ -103,24 +103,31 @@ Another positive benefit could be that changing to another dbms, could require l
 
 For hosting our Minitwit App and API, we decided to use Microsoft Azure as a cloud provider. Azure also allows to deploy an application in a Docker containter instance, which was the initial reason why we preferred Docker as a virtualization technique. Moreover, the team had some previous experience and general prefference towards using Docker. Therefore, we created a Docker image, published it on DockerHub and created the basis for further optimizations in our CI/CD pipeline.
 
+**Further notes:** We moved from Dockerhub to Azure Container Registry as this seems to be faster with Azure App Service and has better support for it.
+
 ## Switching to PostgreSQL
 
 As we are already using the Microsoft Azure ecosystem, we decided it would be the ideal place to also host our database. We wanted to still use a relational database (our models have clear relations between them), but we decided to use another relational database - Postgres, as it has support for more data types, which would give us more benefits in the future. We also considered the case that if we have to do scale the application on a database layer, SQLite has limited concurrency. As another advantage, Azure offers hosting and scailing of PostgreSQL databases, which was another reason for our change of database.
 
 ## Week 04 Continuous Integration (CI), Continuous Delivery (CD), and Continuous Deployment
 
-- [] Complete implementing an API for the simulator
-- [] Creating a CI/CD setup for your ITU-MiniTwit.
+- [X] Complete implementing an API for the simulator
+- [X] Creating a CI/CD setup for your ITU-MiniTwit.
 
 ### Choice of CI/CD provider
 
-We have chosen to go with Azure DevOps Pipelines as our CI/CD provider. The reasoning behind this was, in large part, that we were already using the platform for our sprint backlogs. In addition, it also provides good integration with our platform for deployments i.e. Azure.
+We have chosen to go with Azure DevOps Pipelines as our CI/CD provider. The reasoning behind this was, in large part, that we were already using the platform for our sprint backlogs. In addition, it also provides good integration with our platform for deployments i.e. Azure, which is our main reason for this choice.
 
 We are running a CI pipeline on our develop branch in order to verify that the code we are continuously contributing to the project does not break any of the existing codebase. In our CI pipeline we are ensuring that all test are still passing, and the program is able to be compiled.
 
-On our main branch we are running a CD pipeline , so whenever something has been approved for merging into the main branch, it will automatically be deployed to our production enviroment as soon as iti s merged into our main branch. In addition a new release will also be created on GitHub.
+**CI Piplines:**
+- CI Test: is a test pipeline that builds and execute all unit tests. This pipeline is triggered with every PR and has to pass before a merge can happen (configured as branch rules in Github).
+- CI build: builds a dockrt image and pushses it to Azure Container Registry (ACR) and publishes it as an artifact we can use in the CD pipeline. This pipeline is triggered whenever a PR is merged into main.
 
-Currently, no other pipelines are running.
+**CD Pipeline / Release:**
+- Deploy to App Service: is configured to take the artifact from the CI build pipeline, which is the latest docker image from ACR, and execute a series of tasks. The first task called "Deploy Azure App Service" specifies a connection to our ACR and Azure App Service and tells the App Service to pull the latest image. The second task simply restarts our app service. The third tasks creates a release on Github where it increments the release tag, attach assets from the artifact and add a changelog based on the commit history. This pipeline is triggered whenever a new image is pushed to ACR, thus the whole pipeline will be executed whenever new code is merged into our main branch. This ensures Continous deployment.
+
+**Further notes:** As of right now we are considering our project Open Source, meaning that some measures described in this pipeline is based on other people contributing to the project. Was this to be closed source we would consider a Trunk based branching strategy with less manual steps.
 
 ### New project structure
 
@@ -128,12 +135,14 @@ Since part of next weeks work will be "cleaning and polishing of our ITU-MiniTwi
 
 The reason this refactoring is necessary so soon is, out initial refactoring from python to golang was, very literally, a 1-1 translation from the python application. This has resulted in our current application having no separation in responsibilities in regard to which class does what, as well as the UI, and the API being to separate applications that need to be deployed. Since the API and the UI is each contained entirely in their own class, there is a lot of code duplication as well between the two.
 
-Our current idea is to follow the overall structure proposed [here](https://github.com/Mindinventory/Golang-Project-Structure). The API will therefore be merged into UI i.e. there will only be one application. This part of the work was already started this week. The data access layer will also be split into different services from the http handlers. The ending project structure should end up looking like the following, with the exception that we will only have a single version of the api that we will be maintaining. ![](https://raw.githubusercontent.com/Mindinventory/Golang-Project-Structure/master/structure.png)
+Our current idea is to follow the overall structure proposed [here](https://github.com/Mindinventory/Golang-Project-Structure). The API will therefore be merged into UI i.e. there will only be one application. This part of the work was already started this week. The data access layer will also be split into different services from the http handlers. The ending project structure should end up looking like the following, with the exception that we will only have a single version of the api that we will be maintaining. 
+
+![](https://raw.githubusercontent.com/Mindinventory/Golang-Project-Structure/master/structure.png)
 
 ## Week 05 Finalizing development stage
 
-- [] Add API tests to CI
-- [] DevOps - the "Three Ways"
+- [ ] Add API tests to CI
+- [ ] DevOps - the "Three Ways"
 - [x] Software Maintenance || - Group B
 
 ### Group B Monitoring
