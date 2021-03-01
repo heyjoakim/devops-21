@@ -139,11 +139,11 @@ func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session, err := store.Get(r, "_cookie")
-	sessionUserID := session.Values["user_id"].(uint)
+	sessionUserID := session.Values["user_id"]
 	data := PageData{"followed": false}
 
-	if sessionUserID != 0 {
-		if services.IsUserFollower(sessionUserID, profileUserID) {
+	if sessionUserID != nil {
+		if services.IsUserFollower(sessionUserID.(uint), profileUserID) {
 			data["followed"] = true
 		}
 	}
@@ -156,9 +156,9 @@ func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	messages := getPostsForUser(profileUserID)
 
 	var msgS []models.MessageViewModel
-	if sessionUserID != 0 {
+	if sessionUserID != nil {
 		if sessionUserID == profileUserID {
-			followlist := getFollowedUsers(sessionUserID)
+			followlist := getFollowedUsers(sessionUserID.(uint))
 			for _, v := range followlist {
 				msgS = append(getPostsForUser(v), msgS...)
 			}
