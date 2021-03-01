@@ -237,12 +237,12 @@ func (d *App) userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	session, err := store.Get(r, "_cookie")
-	sessionUserID := session.Values["user_id"].(uint)
+	sessionUserID := session.Values["user_id"]
 	data := PageData{"followed": false}
 
-	if sessionUserID != 0 {
+	if sessionUserID != nil {
 		var follower models.Follower
-		d.db.Where("who_id = ?", sessionUserID).Where("whom_id = ?", profileUserID).Find(&follower)
+		d.db.Where("who_id = ?", sessionUserID.(uint)).Where("whom_id = ?", profileUserID).Find(&follower)
 		if follower.WhoID != 0 {
 			data["followed"] = true
 		}
@@ -256,9 +256,9 @@ func (d *App) userTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	messages := d.getPostsForUser(profileUserID)
 
 	var msgS []models.MessageViewModel
-	if sessionUserID != 0 {
+	if sessionUserID != nil {
 		if sessionUserID == profileUserID {
-			followlist := d.getFollowedUsers(sessionUserID)
+			followlist := d.getFollowedUsers(sessionUserID.(uint))
 			for _, v := range followlist {
 				msgS = append(d.getPostsForUser(v), msgS...)
 			}
