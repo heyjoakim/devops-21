@@ -5,6 +5,7 @@ import (
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 	"log"
@@ -17,15 +18,20 @@ type DbContext struct {
 	db *gorm.DB
 }
 
-var dsn string
-var dbContext DbContext
-var lock = &sync.Mutex{}
+var (
+	dsn         string
+	environment string
+	dbContext   DbContext
+	lock        = &sync.Mutex{}
+)
 
 func configureEnv() {
 	err := godotenv.Load()
+
 	if err != nil {
 		log.Println("Error loading .env file - using system variables.")
 	}
+	environment = os.Getenv("ENVIRONMENT")
 	dsn = os.Getenv("DB_CONNECTION")
 }
 
@@ -39,16 +45,28 @@ func (d *DbContext) init() {
 }
 
 func (d *DbContext) connectDb() (*gorm.DB, error) {
-	return gorm.Open(postgres.New(
-		postgres.Config{
-			DSN:                  dsn,
-			PreferSimpleProtocol: true, // disables implicit prepared statement usage
-		}),
-		&gorm.Config{
+	if environment == "develop" {
+		print("Using local sqlLite db")
+		return gorm.Open(sqlite.Open("./tmp/minitwit.db"), &gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
 			},
 		})
+	} else if environment == "production" {
+		print("Using remote postgres db")
+		return gorm.Open(postgres.New(
+			postgres.Config{
+				DSN:                  dsn,
+				PreferSimpleProtocol: true, // disables implicit prepared statement usage
+			}),
+			&gorm.Config{
+				NamingStrategy: schema.NamingStrategy{
+					SingularTable: true,
+				},
+			})
+	}
+	log.Panic("Environment is not specified in the .env file")
+	return nil, nil
 }
 
 // initDb creates the database tables.
