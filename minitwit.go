@@ -17,7 +17,7 @@ func main() {
 
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
 	router.PathPrefix("/static/").Handler(s)
-	routers.AddUiRouter(router)
+	routers.AddUIRouter(router)
 
 	apiRouter := router.PathPrefix("/api").Subrouter()
 	routers.AddAPIRoutes(apiRouter)

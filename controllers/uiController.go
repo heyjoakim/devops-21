@@ -1,19 +1,17 @@
 package controllers
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
-	"github.com/heyjoakim/devops-21/models"
-	services "github.com/heyjoakim/devops-21/services"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/gorilla/sessions"
+	"github.com/heyjoakim/devops-21/models"
+	services "github.com/heyjoakim/devops-21/services"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // configuration
@@ -24,8 +22,6 @@ var (
 	store     = sessions.NewCookieStore(secretKey)
 )
 
-// PageData defines data on page whatever and request
-type PageData map[string]interface{}
 type layoutPage struct {
 	Layout string
 }
@@ -39,18 +35,12 @@ var (
 	registerPath string = "./templates/register.html"
 )
 
-// formatDatetime formats a timestamp for display.
-func formatDatetime(timestamp int64) string {
-	timeObject := time.Unix(timestamp, 0)
-	return timeObject.Format("2006-02-01 @ 02:04")
-}
-
-// gravatarURL return the gravatar image for the given email address.
-func gravatarURL(email string, size int) string {
-	encodedEmail := hex.EncodeToString([]byte(strings.ToLower(strings.TrimSpace(email))))
-	hashedEmail := fmt.Sprintf("%x", sha256.Sum256([]byte(encodedEmail)))
-	return fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon&s=%d", hashedEmail, size)
-}
+// // gravatarURL return the gravatar image for the given email address.
+// func gravatarURL(email string, size int) string {
+// 	encodedEmail := hex.EncodeToString([]byte(strings.ToLower(strings.TrimSpace(email))))
+// 	hashedEmail := fmt.Sprintf("%x", sha256.Sum256([]byte(encodedEmail)))
+// 	return fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon&s=%d", hashedEmail, size)
+// }
 
 // BeforeRequest make sure we are connected to the database each request and look
 // up the current user so that we know he's there.
@@ -81,210 +71,210 @@ func AfterRequest(next http.Handler) http.Handler {
 	})
 }
 
-// TimelineHandler a users timeline or if no user is logged in it will
-// redirect to the public timeline.  This timeline shows the user's
-// messages as well as all the messages of followed users.
-func TimelineHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "_cookie")
-	if session.Values["user_id"] != nil {
-		routeName := fmt.Sprintf("/%s", session.Values["username"])
-		http.Redirect(w, r, routeName, http.StatusFound)
-		return
-	}
+// // TimelineHandler a users timeline or if no user is logged in it will
+// // redirect to the public timeline.  This timeline shows the user's
+// // messages as well as all the messages of followed users.
+// func TimelineHandler(w http.ResponseWriter, r *http.Request) {
+// 	session, _ := store.Get(r, "_cookie")
+// 	if session.Values["user_id"] != nil {
+// 		routeName := fmt.Sprintf("/%s", session.Values["username"])
+// 		http.Redirect(w, r, routeName, http.StatusFound)
+// 		return
+// 	}
 
-	http.Redirect(w, r, "/public", http.StatusFound)
-}
+// 	http.Redirect(w, r, "/public", http.StatusFound)
+// }
 
-func PublicTimelineHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles(timelinePath, layoutPath)
-	if err != nil {
-		log.Fatal(err)
-	}
+// func PublicTimelineHandler(w http.ResponseWriter, r *http.Request) {
+// 	tmpl, err := template.ParseFiles(timelinePath, layoutPath)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	var results = services.GetPublicMessages(perPage)
+// 	var results = services.GetPublicMessages(perPage)
 
-	var messages []models.MessageViewModel
-	for _, result := range results {
-		message := models.MessageViewModel{
-			Email:   gravatarURL(result.Email, 48),
-			User:    result.Username,
-			Content: result.Content,
-			PubDate: formatDatetime(result.PubDate),
-		}
-		messages = append(messages, message)
-	}
+// 	var messages []models.MessageViewModel
+// 	for _, result := range results {
+// 		message := models.MessageViewModel{
+// 			Email:   gravatarURL(result.Email, 48),
+// 			User:    result.Username,
+// 			Content: result.Content,
+// 			PubDate: helpers.FormatDatetime(result.PubDate),
+// 		}
+// 		messages = append(messages, message)
+// 	}
 
-	session, err := store.Get(r, "_cookie")
-	username := session.Values["username"]
+// 	session, err := store.Get(r, "_cookie")
+// 	username := session.Values["username"]
 
-	data := PageData{
-		"username": username,
-		"messages": messages,
-		"msgCount": len(messages),
-	}
+// 	data := models.PageData{
+// 		"username": username,
+// 		"messages": messages,
+// 		"msgCount": len(messages),
+// 	}
 
-	tmpl.Execute(w, data)
-}
+// 	tmpl.Execute(w, data)
+// }
 
-func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
-	//Display's a users tweets.
-	params := mux.Vars(r)
-	profileUsername := params["username"]
+// func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
+// 	//Display's a users tweets.
+// 	params := mux.Vars(r)
+// 	profileUsername := params["username"]
 
-	profileUserID, err := services.GetUserID(profileUsername)
-	if err != nil {
-		w.WriteHeader(404)
-		fmt.Println(err)
-		return
-	}
+// 	profileUserID, err := services.GetUserID(profileUsername)
+// 	if err != nil {
+// 		w.WriteHeader(404)
+// 		fmt.Println(err)
+// 		return
+// 	}
 
-	session, err := store.Get(r, "_cookie")
-	sessionUserID := session.Values["user_id"]
-	data := PageData{"followed": false}
+// 	session, err := store.Get(r, "_cookie")
+// 	sessionUserID := session.Values["user_id"]
+// 	data := models.PageData{"followed": false}
 
-	if sessionUserID != nil {
-		if services.IsUserFollower(sessionUserID.(uint), profileUserID) {
-			data["followed"] = true
-		}
-	}
+// 	if sessionUserID != nil {
+// 		if services.IsUserFollower(sessionUserID.(uint), profileUserID) {
+// 			data["followed"] = true
+// 		}
+// 	}
 
-	tmpl, err := template.ParseFiles(timelinePath, layoutPath)
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	tmpl, err := template.ParseFiles(timelinePath, layoutPath)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	messages := getPostsForUser(profileUserID)
+// 	messages := getPostsForUser(profileUserID)
 
-	var msgS []models.MessageViewModel
-	if sessionUserID != nil {
-		if sessionUserID == profileUserID {
-			followlist := getFollowedUsers(sessionUserID.(uint))
-			for _, v := range followlist {
-				msgS = append(getPostsForUser(v), msgS...)
-			}
-		}
-	}
+// 	var msgS []models.MessageViewModel
+// 	if sessionUserID != nil {
+// 		if sessionUserID == profileUserID {
+// 			followlist := getFollowedUsers(sessionUserID.(uint))
+// 			for _, v := range followlist {
+// 				msgS = append(getPostsForUser(v), msgS...)
+// 			}
+// 		}
+// 	}
 
-	messages = append(msgS, messages...)
-	data["messages"] = messages
-	data["title"] = fmt.Sprintf("%s's Timeline", profileUsername)
-	data["profileOwner"] = profileUsername
+// 	messages = append(msgS, messages...)
+// 	data["messages"] = messages
+// 	data["title"] = fmt.Sprintf("%s's Timeline", profileUsername)
+// 	data["profileOwner"] = profileUsername
 
-	if session.Values["username"] == profileUsername {
-		data["ownProfile"] = true
-	} /*else { //TODO Delete once it ahs been verified accessing a nonexistent userpage returns a 404
-		currentUser := session.Values["user_id"]
-		otherUser, err := services.GetUserID(profileUsername)
-		if err != nil {
-			http.Error(w, "User does not exist", 400)
-			return
-		}
+// 	if session.Values["username"] == profileUsername {
+// 		data["ownProfile"] = true
+// 	} /*else { //TODO Delete once it ahs been verified accessing a nonexistent userpage returns a 404
+// 		currentUser := session.Values["user_id"]
+// 		otherUser, err := services.GetUserID(profileUsername)
+// 		if err != nil {
+// 			http.Error(w, "User does not exist", 400)
+// 			return
+// 		}
 
-		var follower models.Follower
-		d.db.Where("who_id = ?", otherUser).
-			Where("whom_id = ?", currentUser).
-			First(&follower)
-		if follower.WhoID != 0 && follower.WhomID != 0 {
-			data["followed"] = true
-		}
-	}*/
+// 		var follower models.Follower
+// 		d.db.Where("who_id = ?", otherUser).
+// 			Where("whom_id = ?", currentUser).
+// 			First(&follower)
+// 		if follower.WhoID != 0 && follower.WhomID != 0 {
+// 			data["followed"] = true
+// 		}
+// 	}*/
 
-	data["msgCount"] = len(messages)
-	data["username"] = session.Values["username"]
-	data["MsgInfo"] = session.Flashes("Info")
-	data["MsgWarn"] = session.Flashes("Warn")
-	session.Save(r, w)
+// 	data["msgCount"] = len(messages)
+// 	data["username"] = session.Values["username"]
+// 	data["MsgInfo"] = session.Flashes("Info")
+// 	data["MsgWarn"] = session.Flashes("Warn")
+// 	session.Save(r, w)
 
-	tmpl.Execute(w, data)
-}
+// 	tmpl.Execute(w, data)
+// }
 
-func getPostsForUser(id uint) []models.MessageViewModel {
-	var results = services.GetMessagesForUser(perPage, id)
+// func getPostsForUser(id uint) []models.MessageViewModel {
+// 	var results = services.GetMessagesForUser(perPage, id)
 
-	var messages []models.MessageViewModel
-	for _, result := range results {
-		message := models.MessageViewModel{
-			Email:   gravatarURL(result.Email, 48),
-			User:    result.Username,
-			Content: result.Content,
-			PubDate: formatDatetime(result.PubDate),
-		}
-		messages = append(messages, message)
-	}
+// 	var messages []models.MessageViewModel
+// 	for _, result := range results {
+// 		message := models.MessageViewModel{
+// 			Email:   helpers.GetGravatarURL(result.Email, 48),
+// 			User:    result.Username,
+// 			Content: result.Content,
+// 			PubDate: helpers.FormatDatetime(result.PubDate),
+// 		}
+// 		messages = append(messages, message)
+// 	}
 
-	return messages
-}
+// 	return messages
+// }
 
-// get ID's of all users that are followed by some user
-func getFollowedUsers(id uint) []uint {
-	var followers = services.GetUsersFollowedBy(id)
+// // get ID's of all users that are followed by some user
+// func getFollowedUsers(id uint) []uint {
+// 	var followers = services.GetUsersFollowedBy(id)
 
-	var followlist []uint
-	for _, follower := range followers {
-		followlist = append(followlist, follower.WhomID)
-	}
+// 	var followlist []uint
+// 	for _, follower := range followers {
+// 		followlist = append(followlist, follower.WhomID)
+// 	}
 
-	return followlist
-}
+// 	return followlist
+// }
 
-// follow user
-func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "_cookie")
-	currentUserID := session.Values["user_id"].(uint)
-	params := mux.Vars(r)
-	username := params["username"]
-	userToFollowID, _ := services.GetUserID(username)
+// // FollowUserHandler handles following another user
+// func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
+// 	session, _ := store.Get(r, "_cookie")
+// 	currentUserID := session.Values["user_id"].(uint)
+// 	params := mux.Vars(r)
+// 	username := params["username"]
+// 	userToFollowID, _ := services.GetUserID(username)
 
-	follower := models.Follower{WhoID: currentUserID, WhomID: userToFollowID}
-	err := services.CreateFollower(follower)
-	if err != nil {
-		log.Print(err)
-		fmt.Println("database error: ", err)
-		return
-	}
+// 	follower := models.Follower{WhoID: currentUserID, WhomID: userToFollowID}
+// 	err := services.CreateFollower(follower)
+// 	if err != nil {
+// 		log.Print(err)
+// 		fmt.Println("database error: ", err)
+// 		return
+// 	}
 
-	session.AddFlash("You are now following "+username, "Info")
-	session.Save(r, w)
-	http.Redirect(w, r, "/"+username, http.StatusFound)
-}
+// 	session.AddFlash("You are now following "+username, "Info")
+// 	session.Save(r, w)
+// 	http.Redirect(w, r, "/"+username, http.StatusFound)
+// }
 
-// Unfollow user - relies on a query string
-func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "_cookie")
-	loggedInUser := session.Values["user_id"].(uint)
-	params := mux.Vars(r)
-	username := params["username"]
+// // UnfollowUserHandler - relies on a query string
+// func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
+// 	session, _ := store.Get(r, "_cookie")
+// 	loggedInUser := session.Values["user_id"].(uint)
+// 	params := mux.Vars(r)
+// 	username := params["username"]
 
-	if username == "" {
-		session.AddFlash("No query parameter present", "Warn")
-		session.Save(r, w)
-		http.Redirect(w, r, "timeline", http.StatusFound)
-		return
-	}
+// 	if username == "" {
+// 		session.AddFlash("No query parameter present", "Warn")
+// 		session.Save(r, w)
+// 		http.Redirect(w, r, "timeline", http.StatusFound)
+// 		return
+// 	}
 
-	id2, user2Err := services.GetUserID(username)
-	if user2Err != nil {
-		session.AddFlash("User does not exist", "Warn")
-		session.Save(r, w)
-		http.Redirect(w, r, "timeline", http.StatusFound)
-		return
-	}
+// 	id2, user2Err := services.GetUserID(username)
+// 	if user2Err != nil {
+// 		session.AddFlash("User does not exist", "Warn")
+// 		session.Save(r, w)
+// 		http.Redirect(w, r, "timeline", http.StatusFound)
+// 		return
+// 	}
 
-	err := services.UnfollowUser(loggedInUser, id2)
+// 	err := services.UnfollowUser(loggedInUser, id2)
 
-	if err != nil {
-		session.AddFlash("Error following user", "Warn")
-		session.Save(r, w)
-		fmt.Println("db error: ", err)
-		http.Redirect(w, r, "/", http.StatusFound)
-		return
-	}
+// 	if err != nil {
+// 		session.AddFlash("Error following user", "Warn")
+// 		session.Save(r, w)
+// 		fmt.Println("db error: ", err)
+// 		http.Redirect(w, r, "/", http.StatusFound)
+// 		return
+// 	}
 
-	session.AddFlash("You are no longer following "+username, "Info")
-	session.Save(r, w)
-	http.Redirect(w, r, "/"+username, http.StatusFound)
-	return
-}
+// 	session.AddFlash("You are no longer following "+username, "Info")
+// 	session.Save(r, w)
+// 	http.Redirect(w, r, "/"+username, http.StatusFound)
+// 	return
+// }
 
 func AddMessageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
@@ -299,46 +289,6 @@ func AddMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 		http.Redirect(w, r, "/"+r.FormValue("token"), http.StatusFound)
 	}
-}
-
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-
-	session, err := store.Get(r, "_cookie")
-	if ok := session.Values["user_id"] != nil; ok {
-		routeName := fmt.Sprintf("/%s", session.Values["username"])
-		http.Redirect(w, r, routeName, http.StatusFound)
-	}
-
-	var loginError string
-	if r.Method == "POST" {
-		var user, err = services.GetUserFromUsername(r.FormValue("username"))
-		if err != nil {
-			loginError = "Invalid username"
-			fmt.Println(err)
-		}
-
-		if err := bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("password"))); err != nil {
-			loginError = "Invalid password"
-		} else {
-			session.AddFlash("You were logged in")
-			session.Values["user_id"] = user.UserID
-			session.Save(r, w)
-
-			http.Redirect(w, r, "/"+user.Username, http.StatusFound)
-		}
-	}
-
-	tmpl, err := template.ParseFiles(loginPath, layoutPath)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	data := PageData{
-		"error":    loginError,
-		"username": session.Values["username"],
-	}
-	tmpl.Execute(w, data)
-
 }
 
 func RegisterUserUiHandler(w http.ResponseWriter, r *http.Request) {
@@ -388,7 +338,7 @@ func RegisterUserUiHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := PageData{
+	data := models.PageData{
 		"error": registerError,
 	}
 
