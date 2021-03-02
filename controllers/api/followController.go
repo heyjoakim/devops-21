@@ -13,6 +13,15 @@ import (
 )
 
 
+// FollowHandler godoc
+// @Summary Follows a user, unfollows a user
+// @Description follows a user, unfollows a user
+// @Param latest query int false "Something about latest"
+// @Accept  json
+// @Success 204 {object} interface{}
+// @Failure 401 {string} string "unauthorized"
+// @Failure 500 {string} string response.Error
+// @Router /api/fllws/{username} [post]
 func FollowHandler(w http.ResponseWriter, r *http.Request){
 	updateLatest(r)
 
@@ -66,7 +75,7 @@ func FollowHandler(w http.ResponseWriter, r *http.Request){
 
 // GetFollowersHandler godoc
 // @Summary Get followers
-// @Description Returns a list of users's followers
+// @Description Returns a list of users followers
 // @Param no query int false "Number of results returned"
 // @Param latest query int false "Something about latest"
 // @Accept  json
@@ -106,74 +115,4 @@ func GetFollowersHandler(w http.ResponseWriter, r *http.Request){
 	jsonData, _ := helpers.Serialize(map[string]interface{}{"follows": users})
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonData)
-}
-
-
-// FollowHandler godoc
-// @Summary Follow, unfollow or get followers
-// @Description Eiter follows a user, unfollows a user or returns a list of users's followers
-// @Param no query int false "Number of results returned"
-// @Param latest query int false "Something about latest"
-// @Accept  json
-// @Produce json
-// @Success 200 {object} interface{}
-// @Success 204 {object} interface{}
-// @Failure 401 {string} string "unauthorized"
-// @Failure 500 {string} string response.Error
-// @Router /api/fllws/{username} [get]
-// @Router /api/fllws/{username} [post]
-func FollowHandlerOld(w http.ResponseWriter, r *http.Request) {
-	updateLatest(r)
-
-	notFromSimResponse := helpers.NotReqFromSimulator(r)
-	if notFromSimResponse != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		w.Write(notFromSimResponse)
-		return
-	}
-
-	username := mux.Vars(r)["username"]
-	userID, err := services.GetUserID(username)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("User not found: %s", username), http.StatusNotFound)
-		return
-	}
-
-	var followRequest models.FollowRequest
-	json.NewDecoder(r.Body).Decode(&followRequest)
-	if followRequest.Follow != "" && followRequest.Unfollow != "" {
-		http.Error(w, "Invalid input. Can ONLY handle either follow OR unfollow.", http.StatusUnprocessableEntity)
-	} else if r.Method == "POST" && followRequest.Follow != "" {
-		followsUserID, err := services.GetUserID(followRequest.Follow)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-
-		follower := models.Follower{WhoID: userID, WhomID: followsUserID}
-		err = services.CreateFollower(follower)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		w.WriteHeader(http.StatusNoContent)
-		return
-	} else if r.Method == "POST" && followRequest.Unfollow != "" {
-		unfollowsUserID, err := services.GetUserID(followRequest.Unfollow)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			log.Fatal(err)
-		}
-
-		err = services.UnfollowUser(userID, unfollowsUserID)
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Fatal()
-		}
-
-		w.WriteHeader(http.StatusNoContent)
-		return
-
-	}
 }

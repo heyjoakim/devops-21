@@ -18,8 +18,8 @@ func UnfollowUser(followingUsersId uint, userToUnfollowId uint) error {
 func GetAllUsersFollowers(userId uint, noFollowers int) []string {
 	var users []string
 	d.db.Model(&models.User{}).
-		Select("user.username").
-		Joins("left join follower on follower.whom_id = user.user_id").
+		Select("\"user\".username").
+		Joins("LEFT JOIN follower ON (follower.whom_id = \"user\".user_id)").
 		Where("follower.who_id=?", userId).
 		Limit(noFollowers).
 		Scan(&users)
