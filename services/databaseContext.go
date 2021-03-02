@@ -51,6 +51,7 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
 			},
+			DisableForeignKeyConstraintWhenMigrating: true,
 		})
 	} else if environment == "production" {
 		fmt.Println("Using remote postgres db")
