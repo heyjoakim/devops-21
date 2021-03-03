@@ -16,8 +16,10 @@ RUN go mod download
 
 COPY . /src/.
 
-# Make port 8080 available to the host
-EXPOSE 80
+# Make port 80 available to the host
+# Make port 2222 available for SSH from Azure
+# Make port 21 available for FTPS to access logs 
+EXPOSE 80 2222 21
 
 # Build and run the server when the container is started
 RUN go build /src/minitwit.go
