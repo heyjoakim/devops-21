@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"runtime"
 	"sync"
 
+	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -16,14 +15,9 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-var (
-    _, b, _, _ = runtime.Caller(0)
-    basepath   = filepath.Dir(b)
-)
-
 // DbContext defines the application
 type DbContext struct {
-	DB *gorm.DB
+	db *gorm.DB
 }
 
 var (
@@ -34,7 +28,7 @@ var (
 )
 
 func configureEnv() {
-	envFilePath := getFullPath("../.env")
+	envFilePath := helpers.GetFullPath("../.env")
 	err := godotenv.Load(envFilePath)
 	if err != nil {
 		fmt.Println("hep")
@@ -45,29 +39,19 @@ func configureEnv() {
 	dsn = os.Getenv("DB_CONNECTION")
 }
 
-func getFullPath(fileName string) string {
-		_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		fmt.Fprintf(os.Stderr, "Unable to identify current directory (needed to load .env.test)")
-		os.Exit(1)
-	}
-	basepath := filepath.Dir(file)
-	return filepath.Join(basepath,fileName)
-}
-
 func (d *DbContext) initialize() {
 	configureEnv()
 	db, err := d.connectDb()
 	if err != nil {
 		log.Panic(err)
 	}
-	d.DB = db
+	d.db = db
 }
 
 func (d *DbContext) connectDb() (*gorm.DB, error) {
 	fmt.Println(environment)
 	if environment == "develop" {
-		fmt.Println("Using local SQLite DB")
+		fmt.Println("Using local SQLite db")
 		return gorm.Open(sqlite.Open("./tmp/minitwit.db"), &gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
@@ -75,7 +59,7 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 			DisableForeignKeyConstraintWhenMigrating: true,
 		})
 	} else if environment == "production" {
-		fmt.Println("Using remote postgres DB")
+		fmt.Println("Using remote postgres db")
 		return gorm.Open(postgres.New(
 			postgres.Config{
 				DSN:                  dsn,
@@ -88,10 +72,15 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 			})
 	} else if environment == "testing" {
 		fmt.Println(environment)
-		fmt.Println("Using in memory SQLite DB")
-		dbPath := getFullPath("../tmp/minitwit.db")
-		fmt.Println(dbPath)
-		return gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+		fmt.Println("Using in memory SQLite db")
+
+		// "file::memory:?cache=shared"
+		// If using in memory just directly open it with sqlite.Open
+		// only need to get full path if specific test db needs to be initialized.
+
+		// dbPath := getFullPath("../tmp/test2.db")
+		// fmt.Println(dbPath)
+		return gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
 			},
@@ -104,17 +93,18 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 
 // initDb creates the database tables.
 func (d *DbContext) initDb() {
-	err := d.DB.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{})
+	err := d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{})
 	if err != nil {
 		log.Println("Migration error:", err)
 	}
 }
 
+// GetDbInstance returns DbContext with specific environment db
 func GetDbInstance() DbContext {
-	if dbContext.DB == nil {
+	if dbContext.db == nil {
 		lock.Lock()
 		defer lock.Unlock()
-		if dbContext.DB == nil {
+		if dbContext.db == nil {
 			log.Println("Creating Single Instance Now")
 			dbContext.initialize()
 			dbContext.initDb() // AutoMigrate

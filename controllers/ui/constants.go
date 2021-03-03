@@ -1,10 +1,12 @@
 package ui
 
-const (
-	StaticPath   = "./static"
-	CssPath      = "./css"
-	TimelinePath = "./templates/timeline.html"
-	LayoutPath   = "./templates/layout.html"
-	LoginPath    = "./templates/login.html"
-	RegisterPath = "./templates/register.html"
+import "github.com/heyjoakim/devops-21/helpers"
+
+var (
+	StaticPath   = helpers.GetFullPath("../static")
+	CssPath      = helpers.GetFullPath("../css")
+	TimelinePath = helpers.GetFullPath("../templates/timeline.html")
+	LayoutPath   = helpers.GetFullPath("../templates/layout.html")
+	LoginPath    = helpers.GetFullPath("../templates/login.html")
+	RegisterPath = helpers.GetFullPath("../templates/register.html")
 )
