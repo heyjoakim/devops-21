@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -52,4 +55,20 @@ func GetGravatarURL(email string, size int) string {
 	encodedEmail := hex.EncodeToString([]byte(strings.ToLower(strings.TrimSpace(email))))
 	hashedEmail := fmt.Sprintf("%x", sha256.Sum256([]byte(encodedEmail)))
 	return fmt.Sprintf("https://www.gravatar.com/avatar/%s?d=identicon&s=%d", hashedEmail, size)
+}
+
+var (
+	_, b, _, _ = runtime.Caller(0)
+	basepath   = filepath.Dir(b)
+)
+
+// GetFullPath loads full path of file
+func GetFullPath(fileName string) string {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Unable to identify current directory (needed to load .env.test)")
+		os.Exit(1)
+	}
+	basepath := filepath.Dir(file)
+	return filepath.Join(basepath, fileName)
 }

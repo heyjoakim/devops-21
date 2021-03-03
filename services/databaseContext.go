@@ -2,15 +2,17 @@ package services
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"sync"
+
+	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"log"
-	"os"
-	"sync"
 )
 
 // DbContext defines the application
@@ -26,7 +28,8 @@ var (
 )
 
 func configureEnv() {
-	err := godotenv.Load()
+	envFilePath := helpers.GetFullPath("../.env")
+	err := godotenv.Load(envFilePath)
 	if err != nil {
 		log.Println("Error loading .env file - using system variables.")
 	}
@@ -45,6 +48,7 @@ func (d *DbContext) initialize() {
 }
 
 func (d *DbContext) connectDb() (*gorm.DB, error) {
+	fmt.Println(environment)
 	if environment == "develop" {
 		fmt.Println("Using local SQLite db")
 		return gorm.Open(sqlite.Open("./tmp/minitwit.db"), &gorm.Config{
@@ -65,6 +69,15 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 					SingularTable: true,
 				},
 			})
+	} else if environment == "testing" {
+		fmt.Println("Using in memory SQLite db")
+
+		return gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+			NamingStrategy: schema.NamingStrategy{
+				SingularTable: true,
+			},
+			DisableForeignKeyConstraintWhenMigrating: true,
+		})
 	}
 	log.Panic("Environment is not specified in the .env file")
 	return nil, nil
@@ -78,6 +91,7 @@ func (d *DbContext) initDb() {
 	}
 }
 
+// GetDbInstance returns DbContext with specific environment db
 func GetDbInstance() DbContext {
 	if dbContext.db == nil {
 		lock.Lock()

@@ -1,6 +1,6 @@
 # DevOps, Software Evolution and Software Maintenance
 
-[![Build Status](https://dev.azure.com/kols/devops-21/_apis/build/status/CI%20Build?branchName=main)](https://dev.azure.com/kols/devops-21/_build/latest?definitionId=19&branchName=main)
+ [![Build Status](https://dev.azure.com/kols/devops-21/_apis/build/status/CI%20Build?branchName=main)](https://dev.azure.com/kols/devops-21/_build/latest?definitionId=19&branchName=main)
 
 > This project revolves around a forum application called minitwit. The functionalities includes signing up, logging in, posting messages, following other users. The forum has a public timeline where all messages are displayed. Furthermore, if a user is signed in, a personal timeline exists that displays a users own messages aswell as messages of followed users.
 
@@ -22,7 +22,7 @@ To execute unit tests `go test -v`
 
 ## Remote access
 
-The latest release is running in the cloud with Azure at <https://minitwit-web.azurewebsites.net/public>
+The latest release is running in the cloud with Azure at <https://minitwut.azurewebsites.net/public>
 
 ## Dependencies
 
@@ -38,7 +38,6 @@ The latest release is running in the cloud with Azure at <https://minitwit-web.a
 | gorm.io/gorm                | 1.20.12                            | ORM for Go.                                        |
 | golang.org/x/crypto/bcrypt  | v0.0.0-20201221181555-eec23a3978ad | Used to hash passwords and verify password hashes. |
 
-<img src="assets/dep_app_simple.png"  />
 
 ### Cloud dependencies
 
