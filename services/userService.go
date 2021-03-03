@@ -11,7 +11,7 @@ var d = GetDbInstance()
 // GetUserID returns user ID for username
 func GetUserID(username string) (uint, error) {
 	var user models.User
-	err := d.db.First(&user, "username = ?", username).Error
+	err := d.DB.First(&user, "username = ?", username).Error
 	if err != nil {
 		log.Println(err)
 	}
@@ -20,7 +20,7 @@ func GetUserID(username string) (uint, error) {
 
 func GetUserFromUsername(username string) (models.User, error) {
 	var user models.User
-	err := d.db.Where("username = ?", username).First(&user).Error
+	err := d.DB.Where("username = ?", username).First(&user).Error
 	if err != nil {
 		log.Println(err)
 	}
@@ -29,7 +29,7 @@ func GetUserFromUsername(username string) (models.User, error) {
 
 func GetUser(userID uint) models.User {
 	var user models.User
-	err := d.db.First(&user, "user_id = ?", userID).Error
+	err := d.DB.First(&user, "user_id = ?", userID).Error
 	if err != nil {
 		log.Println(err)
 	}
@@ -37,6 +37,6 @@ func GetUser(userID uint) models.User {
 }
 
 func CreateUser(user models.User) error {
-	err := d.db.Create(&user).Error
+	err := d.DB.Create(&user).Error
 	return err
 }
