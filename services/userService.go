@@ -1,7 +1,7 @@
 package services
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/heyjoakim/devops-21/models"
 )
@@ -13,7 +13,7 @@ func GetUserID(username string) (uint, error) {
 	var user models.User
 	err := d.db.First(&user, "username = ?", username).Error
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	return user.UserID, err
 }
@@ -22,7 +22,7 @@ func GetUserFromUsername(username string) (models.User, error) {
 	var user models.User
 	err := d.db.Where("username = ?", username).First(&user).Error
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	return user, err
 }
@@ -31,8 +31,7 @@ func GetUser(userID uint) models.User {
 	var user models.User
 	err := d.db.First(&user, "user_id = ?", userID).Error
 	if err != nil {
-		fmt.Println(err)
-
+		log.Println(err)
 	}
 	return user
 }

@@ -74,7 +74,7 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 func (d *DbContext) initDb() {
 	err := d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{})
 	if err != nil {
-		fmt.Println("Migration error:", err)
+		log.Println("Migration error:", err)
 	}
 }
 
@@ -83,7 +83,7 @@ func GetDbInstance() DbContext {
 		lock.Lock()
 		defer lock.Unlock()
 		if dbContext.db == nil {
-			fmt.Println("Creating Single Instance Now")
+			log.Println("Creating Single Instance Now")
 			dbContext.initialize()
 			dbContext.initDb() // AutoMigrate
 		}
