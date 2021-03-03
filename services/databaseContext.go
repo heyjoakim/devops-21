@@ -2,15 +2,23 @@ package services
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"runtime"
+	"sync"
+
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"log"
-	"os"
-	"sync"
+)
+
+var (
+    _, b, _, _ = runtime.Caller(0)
+    basepath   = filepath.Dir(b)
 )
 
 // DbContext defines the application
@@ -26,7 +34,8 @@ var (
 )
 
 func configureEnv() {
-	err := godotenv.Load("../.env")
+	envFilePath := getFullPath("../.env")
+	err := godotenv.Load(envFilePath)
 	if err != nil {
 		fmt.Println("hep")
 		log.Println("Error loading .env file - using system variables.")
@@ -34,6 +43,16 @@ func configureEnv() {
 
 	environment = os.Getenv("ENVIRONMENT")
 	dsn = os.Getenv("DB_CONNECTION")
+}
+
+func getFullPath(fileName string) string {
+		_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Unable to identify current directory (needed to load .env.test)")
+		os.Exit(1)
+	}
+	basepath := filepath.Dir(file)
+	return filepath.Join(basepath,fileName)
 }
 
 func (d *DbContext) initialize() {
@@ -44,16 +63,6 @@ func (d *DbContext) initialize() {
 	}
 	d.DB = db
 }
-
-/*
-import "github.com/joho/godotenv"
-func TestSendMessage(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
-		t.Error("Error loading .env file")
-	}
-}
-
- */
 
 func (d *DbContext) connectDb() (*gorm.DB, error) {
 	fmt.Println(environment)
@@ -80,7 +89,9 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 	} else if environment == "testing" {
 		fmt.Println(environment)
 		fmt.Println("Using in memory SQLite DB")
-		return gorm.Open(sqlite.Open("./tmp/test.db"), &gorm.Config{
+		dbPath := getFullPath("../tmp/minitwit.db")
+		fmt.Println(dbPath)
+		return gorm.Open(sqlite.Open(dbPath), &gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
 			},
