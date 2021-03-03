@@ -5,9 +5,9 @@ import (
 	"strconv"
 )
 
-var (
-	latest = 0
-)
+// var (
+// 	latest = 0
+// )
 
 func updateLatest(r *http.Request) {
 	tryLatestQuery := r.URL.Query().Get("latest")
@@ -16,6 +16,7 @@ func updateLatest(r *http.Request) {
 		latest = -1
 	} else {
 		tryLatest, _ := strconv.Atoi(tryLatestQuery)
-		latest = tryLatest
+		//latest = tryLatest
+		// TODO: make a db.config table, find entry where key name is latest, or first element, and then update the value with tryLatest
 	}
 }
