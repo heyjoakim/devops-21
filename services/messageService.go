@@ -6,7 +6,7 @@ import "github.com/heyjoakim/devops-21/models"
 // "user" is a reserved word in postgres, so it needs to be quoted in the queries
 func GetPublicMessages(numberOfMessages int) []models.MessageDto {
 	var results []models.MessageDto
-	d.db.Model(&models.Message{}).
+	d.DB.Model(&models.Message{}).
 		Select("message.text, message.pub_date, \"user\".username, \"user\".email").
 		Joins("left join \"user\" on message.author_id = \"user\".user_id").
 		Where("message.flagged=0").
@@ -21,7 +21,7 @@ func GetPublicMessages(numberOfMessages int) []models.MessageDto {
 // "user" is a reserved word in postgres, so it needs to be quoted in the queries
 func GetMessagesForUser(numberOfMessages int, userId uint) []models.MessageDto {
 	var results []models.MessageDto
-	d.db.Model(models.Message{}).
+	d.DB.Model(models.Message{}).
 		Order("pub_date desc").
 		Select("message.text,message.pub_date, \"user\".email, \"user\".username").
 		Joins("left join \"user\" on \"user\".user_id = message.author_id").
@@ -33,6 +33,6 @@ func GetMessagesForUser(numberOfMessages int, userId uint) []models.MessageDto {
 }
 
 func CreateMessage(message models.Message) error {
-	err := d.db.Create(&message).Error
+	err := d.DB.Create(&message).Error
 	return err
 }
