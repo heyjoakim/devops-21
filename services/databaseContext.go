@@ -31,7 +31,6 @@ func configureEnv() {
 	envFilePath := helpers.GetFullPath("../.env")
 	err := godotenv.Load(envFilePath)
 	if err != nil {
-		fmt.Println("hep")
 		log.Println("Error loading .env file - using system variables.")
 	}
 
@@ -71,15 +70,8 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 				},
 			})
 	} else if environment == "testing" {
-		fmt.Println(environment)
 		fmt.Println("Using in memory SQLite db")
 
-		// "file::memory:?cache=shared"
-		// If using in memory just directly open it with sqlite.Open
-		// only need to get full path if specific test db needs to be initialized.
-
-		// dbPath := getFullPath("../tmp/test2.db")
-		// fmt.Println(dbPath)
 		return gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
