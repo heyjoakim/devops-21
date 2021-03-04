@@ -156,3 +156,5 @@ We performed the following tests on Group B's minitwit app, hosted on this [link
 - Can you write a message? - Yes, messages can be found [here](http://144.126.244.138:4567/public) and [here](http://144.126.244.138:4567/petya)
 - After publishing a message, does it appear on you private timeline? - Yes, messages can be found [here](http://144.126.244.138:4567/petya)
 - Can you follow another user? - Yes, however we experience a bug that on a freshly created user, there are few automatically assigned accounts that the user follows. - We reported the issue to group B [here](https://github.com/DevOps2021-gb/devops2021/issues/44)
+
+changeset 0.1
