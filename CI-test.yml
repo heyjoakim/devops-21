@@ -16,6 +16,8 @@ pool:
    vmImage: 'ubuntu-latest'
 
 steps:
+  - script: |
+      echo $(ENVIRONMENT)
   - task: GoTool@0
     inputs:
       version: '1.15'
