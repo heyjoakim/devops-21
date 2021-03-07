@@ -82,7 +82,7 @@ The branch structure will therefore be as following :
 
 #### Release and deploy
 
-Azure as cloud provider with docker!
+Azure as cloud provider with Docker!
 
 #### ORM Tool
 
@@ -101,7 +101,7 @@ Another positive benefit could be that changing to another dbms, could require l
 
 #### Choice of virtualization techniques and deployment targets
 
-For hosting our Minitwit App and API, we decided to use Microsoft Azure as a cloud provider. Azure also allows to deploy an application in a Docker containter instance, which was the initial reason why we preferred Docker as a virtualization technique. Moreover, the team had some previous experience and general prefference towards using Docker. Therefore, we created a Docker image, published it on DockerHub and created the basis for further optimizations in our CI/CD pipeline.
+For hosting our Minitwit App and API, we decided to use Microsoft Azure as a cloud provider because Azure has a solid Docker integration, compared to other cloud providers. Azure also allows to deploy an application in a Docker containter instance, which was the initial reason why we preferred Docker as a virtualization technique. Moreover, the team had some previous experience and general prefference towards using Docker. Therefore, we created a Docker image, published it on DockerHub and created the basis for further optimizations in our CI/CD pipeline.
 
 **Further notes:** We moved from Dockerhub to Azure Container Registry as this seems to be faster with Azure App Service and has better support for it.
 
@@ -133,7 +133,7 @@ We are running a CI pipeline on our develop branch in order to verify that the c
 
 Since part of next weeks work will be "cleaning and polishing of our ITU-MiniTwit" application, we decided upon a new project structure for our application that we will be implementing by then. The overall goal of this refactoring will be to make the code more readable, maintainable, and easier to deploy.
 
-The reason this refactoring is necessary so soon is, out initial refactoring from python to golang was, very literally, a 1-1 translation from the python application. This has resulted in our current application having no separation in responsibilities in regard to which class does what, as well as the UI, and the API being to separate applications that need to be deployed. Since the API and the UI is each contained entirely in their own class, there is a lot of code duplication as well between the two.
+The reason this refactoring is necessary so soon is, our initial refactoring from Python to Go was, very literally, a 1-1 translation from the python application. This has resulted in our current application having no separation in responsibilities in regard to which class does what, as well as the UI, and the API being to separate applications that need to be deployed. Since the API and the UI is each contained entirely in their own class, there is a lot of code duplication as well between the two.
 
 Our current idea is to follow the overall structure proposed [here](https://github.com/Mindinventory/Golang-Project-Structure). The API will therefore be merged into UI i.e. there will only be one application. This part of the work was already started this week. The data access layer will also be split into different services from the http handlers. The ending project structure should end up looking like the following, with the exception that we will only have a single version of the api that we will be maintaining. 
 
@@ -142,7 +142,7 @@ Our current idea is to follow the overall structure proposed [here](https://gith
 ## Week 05 Finalizing development stage
 
 - [ ] Add API tests to CI
-- [ ] DevOps - the "Three Ways"
+- [x] DevOps - the "Three Ways"
 - [x] Software Maintenance || - Group B
 
 ### Group B Monitoring
@@ -156,3 +156,80 @@ We performed the following tests on Group B's minitwit app, hosted on this [link
 - Can you write a message? - Yes, messages can be found [here](http://144.126.244.138:4567/public) and [here](http://144.126.244.138:4567/petya)
 - After publishing a message, does it appear on you private timeline? - Yes, messages can be found [here](http://144.126.244.138:4567/petya)
 - Can you follow another user? - Yes, however we experience a bug that on a freshly created user, there are few automatically assigned accounts that the user follows. - We reported the issue to group B [here](https://github.com/DevOps2021-gb/devops2021/issues/44)
+
+changeset 0.1
+
+### The Three Ways
+Some methodologies from the _Three Ways_ won't be covered, since they don't relate to how we work on this project.
+
+**Flow**
+
+_Make work visible_
+
+To make our scheudled work visible throughout the team, we make use of a _taskboard_ in Azure DevOps. All tasks are children to a _user story_ that describes a goal or issue on a higher level. Specific tasks are then created under each user story. The entire team can inspect this board and get an overview on how far the team is with the project work and who works on what.
+
+_Limit Work in Progress & Reduced batch sizes_
+
+When creating tasks in the team, we ensure to make the tasks small enough to be addressed withing a relative short period of time. We strive after not having tasks that span over mulitple days. This also makes the merging way more simple.
+
+_Reduced number of handoffs_
+
+To reduce the numberof handoffs and delaying steps, like having one person to do code review and accept pull requests, the entire team have these capabilities. This ensures that once a pull request are created, the first available collegue can review it start the automatic testing process in out CI pipeline. The same applies to deployment.
+
+**Feedback**
+
+Creatig fast feedback is critical to ensure quality and reliability.
+
+_See problems as they occur_
+
+To catch any errors in the code, we make use of automated testing in our CI pipeline. The pipeline runs a series of tests that ensures functionality has not been broken by the new additions. If a test fails, the pipeline terminates and the team members will get an email that tells that tests has failed. This is then up to the comitter to fix any issues.
+
+_Swarm and solve problems_
+
+In relation to the above, our branching strategy allows us to commit to a failing branch. If we discover an error in the production application, we are allowed to create a hotfix branch from _main_, and create a pull request directly into main once the issue is addressed.
+
+_Pushing quality closer to source_
+
+We strive the distribute the reposnsibility of certain parts of the system across the team members, so one person is the expert, but everyone in the team should know how all components interact. The _expert_ should be able to explain and handover tasks to other team mates with confidence though.
+
+**Continual Learning and Experimentation**
+
+_Enabling organizational learning and a safety culture_
+
+Our project builds upon the generative culture, which means that we don't blame people for any mistakes, but sees it as a joint learning experience. When on team members discovers an issue and asks for help, most often one person knows the answer and shares it with the entire team. This ensures that errors and mistakes only happen once, which generally leads to more work on new features, instead of struggling with the system.
+
+
+## Week 06 Monitoring
+
+- [x] Find metrics and user statistics for system (prep material)
+- [ ] Add monitoring
+
+### Metrics and user statistics
+
+#### CPU load during the last hour/the last day
+**Stakeholder:** Developer
+
+In Azure Portal, it is straight forward to find CPU usage of an _App Service_. Go to **Diagnose and solve problems** > **Availability and Performance** > **CPU Usage**. The resolution of CPU usage data is 5 minute intervals. The average CPU usage between 23.00 and 23.59 the 6th of March was **0.18%**.
+
+#### Average response time of your application's front page
+**Stakeholder:** Developer
+
+We can't get a reading for the front page, but we can get data from the entire site. Go to **Monitoring** > **Metrics**, then select **minitwut,Response Time,Avg** and select a time range and granularity. The average reponse time for the sustem the last 3 days was **28.88ms**.
+
+#### Amount of users registered in your system
+**Stakeholder:** C-level officers
+
+We can query our database to get the information. The following query returns the number of users in the system:
+```sql
+SELECT COUNT(*) from "user";
+```
+The number of users registered in the system: **8926** (2020-03-07 20.28).
+
+#### Average amount of followers a user has
+**Stakeholder:** C-level officers
+
+We can query our database to get the information. The following query returns the average number of followers each user has:
+```sql
+SELECT AVG(flws) FROM (SELECT COUNT(*) AS flws FROM "user" LEFT JOIN follower ON (follower.who_id = "user".user_id) GROUP BY "user".user_id) _;
+```
+The average number of followers a user has: **2.01 ~ 2** (2020-03-07 20.53).
