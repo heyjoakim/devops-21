@@ -3,19 +3,18 @@ package api
 import (
 	"net/http"
 	"strconv"
+
+	"github.com/heyjoakim/devops-21/services"
 )
 
-var (
-	latest = 0
-)
+var d = services.GetDbInstance()
 
 func updateLatest(r *http.Request) {
 	tryLatestQuery := r.URL.Query().Get("latest")
 
-	if tryLatestQuery == "" {
-		latest = -1
-	} else {
+	if tryLatestQuery != "" {
 		tryLatest, _ := strconv.Atoi(tryLatestQuery)
-		latest = tryLatest
+
+		services.UpdateLatest(tryLatest)
 	}
 }

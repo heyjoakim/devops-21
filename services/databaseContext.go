@@ -85,7 +85,8 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 
 // initDb creates the database tables.
 func (d *DbContext) initDb() {
-	err := d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{})
+	err := d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{}, &models.Config{})
+
 	if err != nil {
 		log.Println("Migration error:", err)
 	}

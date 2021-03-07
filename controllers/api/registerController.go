@@ -2,13 +2,14 @@ package api
 
 import (
 	"encoding/json"
+	"log"
+	"net/http"
+	"strings"
+
 	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
 	"golang.org/x/crypto/bcrypt"
-	"log"
-	"net/http"
-	"strings"
 )
 
 // Messages godoc
