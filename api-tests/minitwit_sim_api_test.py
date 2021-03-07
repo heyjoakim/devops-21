@@ -6,7 +6,7 @@ import requests
 from contextlib import closing
 
 
-BASE_URL = 'http://localhost:8001'
+BASE_URL = 'http://localhost:8000/api'
 DATABASE = "../tmp/minitwit.db"
 USERNAME = 'simulator'
 PWD = 'super_safe!'
@@ -31,7 +31,7 @@ init_db()
 
 
 def test_latest():
-    # post something to updaet LATEST
+    # post something to update LATEST
     url = f"{BASE_URL}/register"
     data = {'username': 'test', 'email': 'test@test', 'pwd': 'foo'}
     params = {'latest': 1337}

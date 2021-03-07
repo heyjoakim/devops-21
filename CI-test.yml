@@ -7,7 +7,6 @@ pr:
     - develop
     - main
     - hotfix/*
-    - feature/*
 
 resources:
 - repo: self
