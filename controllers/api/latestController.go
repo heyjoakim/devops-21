@@ -1,12 +1,13 @@
 package api
 
 import (
-	"github.com/heyjoakim/devops-21/helpers"
 	"net/http"
+
+	"github.com/heyjoakim/devops-21/helpers"
+	"github.com/heyjoakim/devops-21/services"
 )
 
-
-// GetLatest godoc
+// GetLatestHandler godoc
 // @Summary Get the latest x
 // @Description Get the latest x
 // @Produce  json
@@ -14,7 +15,7 @@ import (
 // @Router /api/latest [get]
 func GetLatestHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{
-		"latest": latest,
+		"latest": services.GetLatest(),
 	}
 
 	jsonData, err := helpers.Serialize(data)
