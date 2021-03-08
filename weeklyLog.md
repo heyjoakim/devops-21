@@ -122,7 +122,7 @@ We are running a CI pipeline on our develop branch in order to verify that the c
 
 **CI Piplines:**
 - CI Test: is a test pipeline that builds and execute all unit tests. This pipeline is triggered with every PR and has to pass before a merge can happen (configured as branch rules in Github).
-- CI build: builds a dockrt image and pushses it to Azure Container Registry (ACR) and publishes it as an artifact we can use in the CD pipeline. This pipeline is triggered whenever a PR is merged into main.
+- CI build: builds a docker image and pushes it to Azure Container Registry (ACR) and publishes it as an artifact we can use in the CD pipeline. This pipeline is triggered whenever a PR is merged into main.
 
 **CD Pipeline / Release:**
 - Deploy to App Service: is configured to take the artifact from the CI build pipeline, which is the latest docker image from ACR, and execute a series of tasks. The first task called "Deploy Azure App Service" specifies a connection to our ACR and Azure App Service and tells the App Service to pull the latest image. The second task simply restarts our app service. The third tasks creates a release on Github where it increments the release tag, attach assets from the artifact and add a changelog based on the commit history. This pipeline is triggered whenever a new image is pushed to ACR, thus the whole pipeline will be executed whenever new code is merged into our main branch. This ensures Continous deployment.
