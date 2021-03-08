@@ -2,11 +2,11 @@ trigger: none
 pr:
   branches:
     include:
-    - feature/NewProjectStructure
-    exclude:
     - develop
     - main
+    exclude:
     - hotfix/*
+    - feature/*
 
 resources:
 - repo: self
