@@ -36,7 +36,15 @@ func GetUser(userID uint) models.User {
 	return user
 }
 
+// CreateUser creates a new user in the database
 func CreateUser(user models.User) error {
 	err := d.db.Create(&user).Error
 	return err
+}
+
+// GetUserCount returns the number of users reigstered in the system
+func GetUserCount() int64 {
+	var count int64
+	d.db.Find(&models.User{}).Count(&count)
+	return count
 }
