@@ -6,8 +6,8 @@ import (
 
 	"github.com/heyjoakim/devops-21/services"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/shirou/gopsutil/cpu"
-	"github.com/shirou/gopsutil/mem"
+	cpu "github.com/shirou/gopsutil/cpu"
+	mem "github.com/shirou/gopsutil/mem"
 )
 
 // InitializeMetrics incvokes custom metric functions
