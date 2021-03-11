@@ -22,5 +22,5 @@ func AddUIRouter(router *mux.Router) {
 	router.HandleFunc("/public", ui.PublicTimelineHandler).Methods("GET")
 	router.HandleFunc("/favicon.ico", ui.FaviconHandler).Methods("GET")
 	router.Handle("/metrics", promhttp.Handler())
-	router.HandleFunc("/user/{username}", ui.UserTimelineHandler).Methods("GET")
+	router.HandleFunc("/{username}", ui.UserTimelineHandler).Methods("GET")
 }
