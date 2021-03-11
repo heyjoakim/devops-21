@@ -89,7 +89,7 @@ func cpuMetrics() {
 	go func() {
 		for {
 			percent, _ := cpu.Percent(0, true)
-			cpuGauge.Set(percent[cpu.CPUser])
+			cpuGauge.Set(percent[0])
 			time.Sleep(5 * time.Second)
 		}
 	}()
