@@ -17,7 +17,7 @@ services:
       - grafana
 
   grafana:
-    image: grafana/grafana:4.5.2
+    image: grafana/grafana:latest
     ports:
       - '3000:3000'
     networks:

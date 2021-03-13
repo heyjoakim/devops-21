@@ -17,9 +17,9 @@ datasources:
     # <string> database password, if used
     password:
     # <string> database user, if used
-    user: devops21
+    user:
     # <string> database name, if used
-    database: -lEtMEIn-
+    database:
     # <bool> enable/disable basic auth
     basicAuth: true
     # <string> basic auth username, if used
