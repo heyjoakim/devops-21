@@ -1,0 +1,24 @@
+version: '3.9'
+
+networks:
+  main:
+    name: itu-minitwit-network
+
+services:
+  go:
+    build:
+      context: .
+      dockerfile: './dockerfile'
+    ports:
+      - '8000:8000'
+    networks:
+      - main
+    depends_on:
+      - grafana
+
+  grafana:
+    image: grafana/grafana:4.5.2
+    ports:
+      - '3000:3000'
+    networks:
+      - main
