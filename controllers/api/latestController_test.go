@@ -13,19 +13,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMemoryApiRegister(t *testing.T) {
+func TestMemoryApiLatest(t *testing.T) {
 
 	data, _ := json.Marshal(models.RegisterRequest{
-		Username: "a",
-		Email:    "a@a.a",
-		Password: "a",
+		Username: "test",
+		Email:    "test@test",
+		Password: "foo",
 	})
 
 	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(data))
 	req.Header.Set("Content-Type", "application/json")
 
 	q := req.URL.Query()
-	q.Add("latest", "1")
+	q.Add("latest", "1337")
 	req.URL.RawQuery = q.Encode()
 
 	fmt.Println(req.Body)
@@ -43,6 +43,5 @@ func TestMemoryApiRegister(t *testing.T) {
 	newResp := newW.Result()
 	body, _ := ioutil.ReadAll(newResp.Body)
 
-	assert.Contains(t, string(body), `{"latest":1}`)
-
+	assert.Contains(t, string(body), `{"latest":1337}`)
 }
