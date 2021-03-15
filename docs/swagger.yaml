@@ -85,6 +85,51 @@ paths:
           schema:
             type: string
       summary: Gets the latest messages
+  /api/msgs/{username}:
+    get:
+      description: Gets the latest messages in descending order from a specific user.
+      parameters:
+      - description: Username
+        in: query
+        name: username
+        required: true
+        type: string
+      - description: Number of results returned
+        in: query
+        name: "no"
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      summary: Gets the latest messages from a specific user
+    post:
+      description: Creates a message from a specific user.
+      parameters:
+      - description: Username
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+      summary: Create a message from user
   /api/register:
     post:
       consumes:
