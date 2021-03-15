@@ -24,16 +24,16 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/fllws/{username}": {
-            "post": {
-                "description": "Eiter follows a user, unfollows a user or returns a list of users's followers",
+        "/api/fllws/{username}": {
+            "get": {
+                "description": "Returns a list of users followers",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Follow, unfollow or get followers",
+                "summary": "Get followers",
                 "parameters": [
                     {
                         "type": "integer",
@@ -55,6 +55,35 @@ var doc = `{
                             "type": "object"
                         }
                     },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "follows a user, unfollows a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "summary": "Follows a user, unfollows a user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Something about latest",
+                        "name": "latest",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
                     "204": {
                         "description": "No Content",
                         "schema": {
@@ -76,7 +105,7 @@ var doc = `{
                 }
             }
         },
-        "/latest": {
+        "/api/latest": {
             "get": {
                 "description": "Get the latest x",
                 "produces": [
@@ -93,7 +122,7 @@ var doc = `{
                 }
             }
         },
-        "/msgs": {
+        "/api/msgs": {
             "get": {
                 "description": "Gets the latest messages in descending order.",
                 "produces": [
@@ -124,50 +153,7 @@ var doc = `{
                 }
             }
         },
-        "/msgs/{username}": {
-            "post": {
-                "description": "Gets the latest messages per user",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Gets the latest messages per user",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Number of results returned",
-                        "name": "no",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Something about latest",
-                        "name": "latest",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object"
-                        }
-                    },
-                    "401": {
-                        "description": "unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/register": {
+        "/api/register": {
             "post": {
                 "description": "Registers a user, provided that the given info passes all checks.",
                 "consumes": [
