@@ -2,13 +2,14 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/gorilla/mux"
 	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 // MessagesHandler godoc
@@ -46,6 +47,15 @@ func MessagesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
+// GetMessagesFromUserHandler godoc
+// @Summary Gets the latest messages from a specific user
+// @Description Gets the latest messages in descending order from a specific user.
+// @Param username query string true "Username"
+// @Param no query int false "Number of results returned"
+// @Produce  json
+// @Success 200 {object} interface{}
+// @Failure 401 {string} string "unauthorized"
+// @Router /api/msgs/{username} [get]
 func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 	updateLatest(r)
 
@@ -88,6 +98,14 @@ func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
+// PostMessageHandler godoc
+// @Summary Create a message from user
+// @Description Creates a message from a specific user.
+// @Param username query string true "Username"
+// @Produce json
+// @Success 200 {object} interface{}
+// @Failure 401 {string} string "unauthorized"
+// @Router /api/msgs/{username} [post]
 func PostMessageHandler(w http.ResponseWriter, r *http.Request) {
 	updateLatest(r)
 	params := mux.Vars(r)
