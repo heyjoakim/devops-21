@@ -57,7 +57,7 @@ Swagger is used for API documentation. Documentation can be found on endpoint `/
 
 When annotations have been added or updated, run the command `swag init -g minitwit.go`
 
-#### Monitoring
+#### Monitoring tools
 
 Prometheus server `http://142.93.103.26:9090`
 
