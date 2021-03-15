@@ -1,6 +1,6 @@
 # DevOps, Software Evolution and Software Maintenance
 
- [![Build Status](https://dev.azure.com/kols/devops-21/_apis/build/status/CI%20Build?branchName=main)](https://dev.azure.com/kols/devops-21/_build/latest?definitionId=19&branchName=main)
+[![Build Status](https://dev.azure.com/kols/devops-21/_apis/build/status/CI%20Build?branchName=main)](https://dev.azure.com/kols/devops-21/_build/latest?definitionId=19&branchName=main)
 
 > This project revolves around a forum application called minitwit. The functionalities includes signing up, logging in, posting messages, following other users. The forum has a public timeline where all messages are displayed. Furthermore, if a user is signed in, a personal timeline exists that displays a users own messages aswell as messages of followed users.
 
@@ -38,7 +38,6 @@ The latest release is running in the cloud with Azure at <https://minitwut.azure
 | gorm.io/gorm                | 1.20.12                            | ORM for Go.                                        |
 | golang.org/x/crypto/bcrypt  | v0.0.0-20201221181555-eec23a3978ad | Used to hash passwords and verify password hashes. |
 
-
 ### Cloud dependencies
 
 > These services are responsible for cloud hosting.
@@ -57,6 +56,14 @@ Swagger is used for API documentation. Documentation can be found on endpoint `/
 #### Update docs
 
 When annotations have been added or updated, run the command `swag init -g minitwit.go`
+
+#### Monitoring
+
+Prometheus server `http://142.93.103.26:9090`
+
+Minitwit metrics from prometheus + custom `https://minitwut.azurewebsites.net/metrics`
+
+Grafana consuming prometheus `http://164.90.165.111:3000/d/JJQvP88Mz/prometheus-2-0-stats`, requires credentials
 
 ##### Requirements
 
