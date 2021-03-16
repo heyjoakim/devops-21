@@ -14,7 +14,8 @@ var username = "a"
 var email = "a@a.a"
 var password = "a"
 
-// Congratulations to golang on defining such a stupid way of exporting
+// Might be a better way to do this, but follower query cant be exported
+// as "no" and "latest" needs to be lowercase...
 type LatestMessageRequest struct {
 	no     int `json:"no"`
 	latest int `json:"latest"`

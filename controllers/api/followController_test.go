@@ -10,47 +10,53 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var username_a = "fa"
-var email_a = "fa@fa"
-var password_a = "fa"
+var userA = "fa"
+var emailA = "fa@fa"
+var passA = "fa"
 
-var username_b = "fb"
-var email_b = "fb@fb"
-var password_b = "fb"
+var userB = "fb"
+var emailB = "fb@fb"
+var passB = "fb"
 
-// Congratulations to golang on defining such a stupid way of exporting
+// Might be a better way to do this, but follower query cant be exported
+// as "no" and "latest" needs to be lowercase...
 type GetFollowerQuery struct {
 	no     int `json:"no"`
 	latest int `json:"latest"`
 }
 
 func TestMemoryApiFollow(t *testing.T) {
-	m_a := models.RegisterRequest{Username: username_a, Email: email_a, Password: password_a}
-	m_b := models.RegisterRequest{Username: username_b, Email: email_b, Password: password_b}
+	// Register users
+	ma := models.RegisterRequest{Username: userA, Email: emailA, Password: passA}
+	mb := models.RegisterRequest{Username: userB, Email: emailB, Password: passB}
 
-	data_a, _ := json.Marshal(m_a)
-	data_b, _ := json.Marshal(m_b)
+	dataA, _ := json.Marshal(ma)
+	dataB, _ := json.Marshal(mb)
 
-	MemoryRegisterHelper(data_a)
-	MemoryRegisterHelper(data_b)
-	m := models.FollowRequest{Follow: username_b}
-	data_f, _ := json.Marshal(m)
-	resp := MemoryFollowUserHelper(data_f, username_a)
+	MemoryRegisterHelper(dataA)
+	MemoryRegisterHelper(dataB)
+
+	// Send follow request
+	m := models.FollowRequest{Follow: userB}
+	followData, _ := json.Marshal(m)
+	resp := MemoryFollowUserHelper(followData, userA)
 
 	assert.Equal(t, resp.StatusCode, http.StatusNoContent)
 
+	// Query get follower
 	query := GetFollowerQuery{no: 1, latest: 6}
 	data_query, _ := json.Marshal(query)
-	newResp := MemoryGetFollowUserHelper(data_query, username_a)
+	newResp := MemoryGetFollowUserHelper(data_query, userA)
 	body, _ := ioutil.ReadAll(newResp.Body)
 
 	assert.Contains(t, string(body), "fb")
 }
 
 func TestMemoryApiUnfollow(t *testing.T) {
-	m := models.FollowRequest{Unfollow: username_b}
+	// Send unfollow request
+	m := models.FollowRequest{Unfollow: userB}
 	data, _ := json.Marshal(m)
-	resp := MemoryFollowUserHelper(data, username_a)
+	resp := MemoryFollowUserHelper(data, userA)
 	body, _ := ioutil.ReadAll(resp.Body)
 	assert.NotContains(t, string(body), "fb")
 

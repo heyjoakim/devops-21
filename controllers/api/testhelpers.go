@@ -16,6 +16,7 @@ var (
 	JSONCONTENT         = "application/json"
 )
 
+// MemoryRegisterHelepr sends a register user request
 func MemoryRegisterHelper(data []byte) *http.Response {
 	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(data))
 	req.Header.Add("Content-Type", JSONCONTENT)
@@ -30,6 +31,7 @@ func MemoryRegisterHelper(data []byte) *http.Response {
 	return w.Result()
 }
 
+// MemoryCreateMessageHelper sends a request to create a message
 func MemoryCreateMessageHelper(data []byte, username string) *http.Response {
 	URI := "/api/msgs/"
 	req, _ := http.NewRequest("POST", URI+username, bytes.NewBuffer(data))
@@ -54,6 +56,7 @@ func MemoryCreateMessageHelper(data []byte, username string) *http.Response {
 	return w.Result()
 }
 
+// MemoryGetLatestUserMessageHelper requests to get the latest message from a user
 func MemoryGetLatestUserMessageHelper(data []byte, username string) *http.Response {
 	URI := "/api/msgs/"
 
@@ -79,6 +82,7 @@ func MemoryGetLatestUserMessageHelper(data []byte, username string) *http.Respon
 	return w.Result()
 }
 
+// MemoryGetLatestMessageHelper requests the latest messages
 func MemoryGetLatestMessageHelper(data []byte, username string) *http.Response {
 	req, _ := http.NewRequest("GET", "api/msgs", bytes.NewBuffer(data))
 	req.Header.Add("Content-Type", JSONCONTENT)
@@ -95,6 +99,7 @@ func MemoryGetLatestMessageHelper(data []byte, username string) *http.Response {
 	return w.Result()
 }
 
+// MemoryFollowUserHelper sends a request to follow a user
 func MemoryFollowUserHelper(data []byte, username string) *http.Response {
 	URI := "/api/fllws/"
 	req, _ := http.NewRequest("POST", URI+username, bytes.NewBuffer(data))
@@ -119,6 +124,7 @@ func MemoryFollowUserHelper(data []byte, username string) *http.Response {
 	return w.Result()
 }
 
+// MemoryGetFollowUserHelper sends a request to get user followers
 func MemoryGetFollowUserHelper(data []byte, username string) *http.Response {
 	URI := "/api/fllws/"
 	req, _ := http.NewRequest("GET", URI+username, bytes.NewBuffer(data))
@@ -143,6 +149,7 @@ func MemoryGetFollowUserHelper(data []byte, username string) *http.Response {
 	return w.Result()
 }
 
+// MemoryLatestHelper sends a request to get the latest variable
 func MemoryLatestHelper() *http.Response {
 	req, _ := http.NewRequest("GET", "/latest", nil)
 	req.Header.Add("Content-Type", JSONCONTENT)
