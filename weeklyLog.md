@@ -76,9 +76,9 @@ The branch structure will therefore be as following :
 - [x] Continue refactoring
   - [x] Introduce a DB abstraction layer
   - [x] Arguments for choice of ORM framework and chosen DBMS
-  - [X] Rebase and deploy
+  - [x] Rebase and deploy
   - [x] Provide good arguments for choice of virtualization techniques and deployment targets
-- [X] Log dependencies
+- [x] Log dependencies
 
 #### Release and deploy
 
@@ -111,8 +111,8 @@ As we are already using the Microsoft Azure ecosystem, we decided it would be th
 
 ## Week 04 Continuous Integration (CI), Continuous Delivery (CD), and Continuous Deployment
 
-- [X] Complete implementing an API for the simulator
-- [X] Creating a CI/CD setup for your ITU-MiniTwit.
+- [x] Complete implementing an API for the simulator
+- [x] Creating a CI/CD setup for your ITU-MiniTwit.
 
 ### Choice of CI/CD provider
 
@@ -121,10 +121,12 @@ We have chosen to go with Azure DevOps Pipelines as our CI/CD provider. The reas
 We are running a CI pipeline on our develop branch in order to verify that the code we are continuously contributing to the project does not break any of the existing codebase. In our CI pipeline we are ensuring that all test are still passing, and the program is able to be compiled.
 
 **CI Piplines:**
+
 - CI Test: is a test pipeline that builds and execute all unit tests. This pipeline is triggered with every PR and has to pass before a merge can happen (configured as branch rules in Github).
 - CI build: builds a docker image and pushes it to Azure Container Registry (ACR) and publishes it as an artifact we can use in the CD pipeline. This pipeline is triggered whenever a PR is merged into main.
 
 **CD Pipeline / Release:**
+
 - Deploy to App Service: is configured to take the artifact from the CI build pipeline, which is the latest docker image from ACR, and execute a series of tasks. The first task called "Deploy Azure App Service" specifies a connection to our ACR and Azure App Service and tells the App Service to pull the latest image. The second task simply restarts our app service. The third tasks creates a release on Github where it increments the release tag, attach assets from the artifact and add a changelog based on the commit history. This pipeline is triggered whenever a new image is pushed to ACR, thus the whole pipeline will be executed whenever new code is merged into our main branch. This ensures Continous deployment.
 
 **Further notes:** As of right now we are considering our project Open Source, meaning that some measures described in this pipeline is based on other people contributing to the project. Was this to be closed source we would consider a Trunk based branching strategy with less manual steps.
@@ -135,7 +137,7 @@ Since part of next weeks work will be "cleaning and polishing of our ITU-MiniTwi
 
 The reason this refactoring is necessary so soon is, our initial refactoring from Python to Go was, very literally, a 1-1 translation from the python application. This has resulted in our current application having no separation in responsibilities in regard to which class does what, as well as the UI, and the API being to separate applications that need to be deployed. Since the API and the UI is each contained entirely in their own class, there is a lot of code duplication as well between the two.
 
-Our current idea is to follow the overall structure proposed [here](https://github.com/Mindinventory/Golang-Project-Structure). The API will therefore be merged into UI i.e. there will only be one application. This part of the work was already started this week. The data access layer will also be split into different services from the http handlers. The ending project structure should end up looking like the following, with the exception that we will only have a single version of the api that we will be maintaining. 
+Our current idea is to follow the overall structure proposed [here](https://github.com/Mindinventory/Golang-Project-Structure). The API will therefore be merged into UI i.e. there will only be one application. This part of the work was already started this week. The data access layer will also be split into different services from the http handlers. The ending project structure should end up looking like the following, with the exception that we will only have a single version of the api that we will be maintaining.
 
 ![](https://raw.githubusercontent.com/Mindinventory/Golang-Project-Structure/master/structure.png)
 
@@ -160,6 +162,7 @@ We performed the following tests on Group B's minitwit app, hosted on this [link
 changeset 0.1
 
 ### The Three Ways
+
 Some methodologies from the _Three Ways_ won't be covered, since they don't relate to how we work on this project.
 
 **Flow**
@@ -198,38 +201,86 @@ _Enabling organizational learning and a safety culture_
 
 Our project builds upon the generative culture, which means that we don't blame people for any mistakes, but sees it as a joint learning experience. When on team members discovers an issue and asks for help, most often one person knows the answer and shares it with the entire team. This ensures that errors and mistakes only happen once, which generally leads to more work on new features, instead of struggling with the system.
 
+### Software Maintenance
+
+We have not encountered nor received new bug reports
 
 ## Week 06 Monitoring
 
 - [x] Find metrics and user statistics for system (prep material)
-- [ ] Add monitoring
+- [x] Add monitoring
+- [x] Software Maintenance
 
 ### Metrics and user statistics
 
 #### CPU load during the last hour/the last day
+
 **Stakeholder:** Developer
 
 In Azure Portal, it is straight forward to find CPU usage of an _App Service_. Go to **Diagnose and solve problems** > **Availability and Performance** > **CPU Usage**. The resolution of CPU usage data is 5 minute intervals. The average CPU usage between 23.00 and 23.59 the 6th of March was **0.18%**.
 
 #### Average response time of your application's front page
+
 **Stakeholder:** Developer
 
 We can't get a reading for the front page, but we can get data from the entire site. Go to **Monitoring** > **Metrics**, then select **minitwut,Response Time,Avg** and select a time range and granularity. The average reponse time for the sustem the last 3 days was **28.88ms**.
 
 #### Amount of users registered in your system
+
 **Stakeholder:** C-level officers
 
 We can query our database to get the information. The following query returns the number of users in the system:
+
 ```sql
 SELECT COUNT(*) from "user";
 ```
+
 The number of users registered in the system: **8926** (2020-03-07 20.28).
 
 #### Average amount of followers a user has
+
 **Stakeholder:** C-level officers
 
 We can query our database to get the information. The following query returns the average number of followers each user has:
+
 ```sql
 SELECT AVG(flws) FROM (SELECT COUNT(*) AS flws FROM "user" LEFT JOIN follower ON (follower.who_id = "user".user_id) GROUP BY "user".user_id) _;
 ```
+
 The average number of followers a user has: **2.01 ~ 2** (2020-03-07 20.53).
+
+### Monitoring with Prometheus and Grafana
+
+In week 07 we created a Prometheus server, hosted on Digital ocean: `http://142.93.103.26:9090`, which contains the metrics tracked by prometheus and custom metrics for CPU and memory usage, total numbers of users and messages.
+
+All of the metrics can be found also on: `https://minitwut.azurewebsites.net/metrics`, the custom metrics are defined as: `group_l_minitwut_*`
+
+Once we setup the metrics tool, we used Grafana to consume and visualize the Prometheus data. We created a dockerfile for Grafana, downloading the latest image and specifying a custom data source and dashboard. All the settings can be found in the grafana folder. We then deployed the dashboard to Digital ocean: `http://164.90.165.111:3000/d/JJQvP88Mz/prometheus-2-0-stats`. By defining the Grafana configuration, we avoid loosing our metrics everytime when we restart the container.
+
+We decided to explore a different cloud provider - Digital ocean, as we encountered limitation on the free-tier plan in Azure, where our minitwit app is running. Before making the decision to fully migrate our minitwit app, we decided to use the monitoring tools as a try-out of another provider.
+
+### Software Maintenance
+
+We have not encountered nor received new bug reports
+
+## Week 07 Monitoring
+
+- [x] Add Maintainability and Technical Debt estimation tools to your projects
+- [x] Enhance your CI Pipelines with at least two static analysis tools
+- [x] Software Maintenance
+
+### Add Maintainability and Technical Debt estimation tools to your projects
+
+We integrated to our project the following tools:
+
+- [x] Sonarqube: 3 bugs, 0 vulnerabilities, 16 code smells
+- [x] Code Climate: 3 days maintainability, Technical debt is in steady decline since the beginning of the project (from almost 11% to 3.9%)
+- [x] Better Code Hub
+
+We found several issues relating to old Python code that we still kept in the repository and the api simulation tests. As well as some code smells. We solved those issues by removing old code, fixing bugs, rewriting the Python tests in Golang and refactoring repetitive code.
+
+### Enhance your CI Pipelines with at least two static analysis tools
+
+### Software Maintenance
+
+We found some issues reported by the static analysis tools and fixed them accordingly.
