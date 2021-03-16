@@ -1,36 +1,79 @@
 package api
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 	"testing"
+
+	"github.com/heyjoakim/devops-21/models"
+	"github.com/stretchr/testify/assert"
 )
 
+var username = "a"
+var email = "a@a.a"
+var password = "a"
+
+// Congratulations to golang on defining such a stupid way of exporting
+type LatestMessageRequest struct {
+	no     int `json:"no"`
+	latest int `json:"latest"`
+}
+
 func TestMemoryApiMessage(t *testing.T) {
+	// Register user
+	m := models.RegisterRequest{Username: username, Email: email, Password: password}
+	data, _ := json.Marshal(m)
+	resp := MemoryRegisterHelper(data)
 
-	// username := "a"
+	assert.Equal(t, resp.StatusCode, http.StatusNoContent)
 
-	// data, _ := json.Marshal(models.MessageRequest{
-	// 	Content: "Blub!",
-	// })
+	// Add message
+	c := models.MessageRequest{Content: "Blub!"}
+	msg, _ := json.Marshal(c)
+	msgResp := MemoryCreateMessageHelper(msg, username)
 
-	// req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(data))
-	// req.Header.Set("Content-Type", "application/json")
+	assert.Equal(t, msgResp.StatusCode, http.StatusNoContent)
 
-	// q := req.URL.Query()
-	// q.Add("latest", "2")
-	// req.URL.RawQuery = q.Encode()
+	// Verify that latest was updated
+	newResp := MemoryLatestHelper()
+	body, _ := ioutil.ReadAll(newResp.Body)
 
-	// w := httptest.NewRecorder()
-	// handler := http.HandlerFunc(RegisterHandler)
-	// handler.ServeHTTP(w, req)
-	// resp := w.Result()
+	assert.Contains(t, string(body), `{"latest":2}`)
 
-	// assert.Equal(t, resp.StatusCode, http.StatusNoContent)
+}
 
-	// newReq, _ := http.NewRequest("GET", "/latest", nil)
-	// newW := httptest.NewRecorder()
-	// newHandler := http.HandlerFunc(GetLatestHandler)
-	// newHandler.ServeHTTP(newW, newReq)
-	// newResp := newW.Result()
-	// body, _ := ioutil.ReadAll(newResp.Body)
+func TestGetLatestUserMessage(t *testing.T) {
+	// Prepare query
+	var m = LatestMessageRequest{no: 1, latest: 3}
+	query, _ := json.Marshal(m)
+	resp := MemoryGetLatestUserMessageHelper(query, username)
+	body, _ := ioutil.ReadAll(resp.Body)
 
+	assert.Equal(t, resp.StatusCode, 200)
+	assert.Contains(t, string(body), `Blub!`)
+
+	// Verify that latest was updated
+	newResp := MemoryLatestHelper()
+	newBody, _ := ioutil.ReadAll(newResp.Body)
+
+	assert.Contains(t, string(newBody), `{"latest":3}`)
+
+}
+
+func TestGetLatestMessage(t *testing.T) {
+	// Prepare query
+	var m = LatestMessageRequest{no: 1, latest: 4}
+	query, _ := json.Marshal(m)
+	resp := MemoryGetLatestMessageHelper(query, username)
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	assert.Equal(t, resp.StatusCode, 200)
+	assert.Contains(t, string(body), `Blub!`)
+
+	// Verify that latest was updated
+	newResp := MemoryLatestHelper()
+	newBody, _ := ioutil.ReadAll(newResp.Body)
+
+	assert.Contains(t, string(newBody), `{"latest":4}`)
 }
