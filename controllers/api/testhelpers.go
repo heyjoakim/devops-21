@@ -13,13 +13,26 @@ import (
 var (
 	CREDENTIALS         = []string{"simulator", "super_safe!"}
 	ENCODED_CREDENTILAS = b64.StdEncoding.EncodeToString([]byte(strings.Join(CREDENTIALS, ":")))
+	CONTENTTYPE         = "Content-Type"
 	JSONCONTENT         = "application/json"
 )
+
+func SendRequestHelper() {
+
+}
+
+func SetMuxVars(request *http.Request, username string) *http.Request {
+	var vars = map[string]string{
+		"username": username,
+	}
+
+	return mux.SetURLVars(request, vars)
+}
 
 // MemoryRegisterHelepr sends a register user request
 func MemoryRegisterHelper(data []byte) *http.Response {
 	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(data))
-	req.Header.Add("Content-Type", JSONCONTENT)
+	req.Header.Add(CONTENTTYPE, JSONCONTENT)
 
 	q := req.URL.Query()
 	q.Add("latest", "1")
@@ -35,7 +48,7 @@ func MemoryRegisterHelper(data []byte) *http.Response {
 func MemoryCreateMessageHelper(data []byte, username string) *http.Response {
 	URI := "/api/msgs/"
 	req, _ := http.NewRequest("POST", URI+username, bytes.NewBuffer(data))
-	req.Header.Add("Content-Type", JSONCONTENT)
+	req.Header.Add(CONTENTTYPE, JSONCONTENT)
 	req.Header.Add("Authorization", "Basic "+ENCODED_CREDENTILAS)
 
 	q := req.URL.Query()
@@ -43,13 +56,7 @@ func MemoryCreateMessageHelper(data []byte, username string) *http.Response {
 	req.URL.RawQuery = q.Encode()
 
 	w := httptest.NewRecorder()
-
-	// Set MUX vars
-	var vars = map[string]string{
-		"username": username,
-	}
-
-	req = mux.SetURLVars(req, vars)
+	req = SetMuxVars(req, username)
 
 	handler := http.HandlerFunc(PostMessageHandler)
 	handler.ServeHTTP(w, req)
@@ -61,7 +68,7 @@ func MemoryGetLatestUserMessageHelper(data []byte, username string) *http.Respon
 	URI := "/api/msgs/"
 
 	req, _ := http.NewRequest("GET", URI+username, bytes.NewBuffer(data))
-	req.Header.Add("Content-Type", JSONCONTENT)
+	req.Header.Add(CONTENTTYPE, JSONCONTENT)
 	req.Header.Add("Authorization", "Basic "+ENCODED_CREDENTILAS)
 
 	q := req.URL.Query()
@@ -69,13 +76,7 @@ func MemoryGetLatestUserMessageHelper(data []byte, username string) *http.Respon
 	req.URL.RawQuery = q.Encode()
 
 	w := httptest.NewRecorder()
-
-	// Set MUX vars
-	var vars = map[string]string{
-		"username": username,
-	}
-
-	req = mux.SetURLVars(req, vars)
+	req = SetMuxVars(req, username)
 
 	handler := http.HandlerFunc(GetMessagesFromUserHandler)
 	handler.ServeHTTP(w, req)
@@ -85,7 +86,7 @@ func MemoryGetLatestUserMessageHelper(data []byte, username string) *http.Respon
 // MemoryGetLatestMessageHelper requests the latest messages
 func MemoryGetLatestMessageHelper(data []byte, username string) *http.Response {
 	req, _ := http.NewRequest("GET", "api/msgs", bytes.NewBuffer(data))
-	req.Header.Add("Content-Type", JSONCONTENT)
+	req.Header.Add(CONTENTTYPE, JSONCONTENT)
 	req.Header.Add("Authorization", "Basic "+ENCODED_CREDENTILAS)
 
 	q := req.URL.Query()
@@ -103,7 +104,7 @@ func MemoryGetLatestMessageHelper(data []byte, username string) *http.Response {
 func MemoryFollowUserHelper(data []byte, username string) *http.Response {
 	URI := "/api/fllws/"
 	req, _ := http.NewRequest("POST", URI+username, bytes.NewBuffer(data))
-	req.Header.Add("Content-Type", JSONCONTENT)
+	req.Header.Add(CONTENTTYPE, JSONCONTENT)
 	req.Header.Add("Authorization", "Basic "+ENCODED_CREDENTILAS)
 
 	q := req.URL.Query()
@@ -111,13 +112,7 @@ func MemoryFollowUserHelper(data []byte, username string) *http.Response {
 	req.URL.RawQuery = q.Encode()
 
 	w := httptest.NewRecorder()
-
-	// Set MUX vars
-	var vars = map[string]string{
-		"username": username,
-	}
-
-	req = mux.SetURLVars(req, vars)
+	req = SetMuxVars(req, username)
 
 	handler := http.HandlerFunc(FollowHandler)
 	handler.ServeHTTP(w, req)
@@ -128,7 +123,7 @@ func MemoryFollowUserHelper(data []byte, username string) *http.Response {
 func MemoryGetFollowUserHelper(data []byte, username string) *http.Response {
 	URI := "/api/fllws/"
 	req, _ := http.NewRequest("GET", URI+username, bytes.NewBuffer(data))
-	req.Header.Add("Content-Type", JSONCONTENT)
+	req.Header.Add(CONTENTTYPE, JSONCONTENT)
 	req.Header.Add("Authorization", "Basic "+ENCODED_CREDENTILAS)
 
 	q := req.URL.Query()
@@ -136,13 +131,7 @@ func MemoryGetFollowUserHelper(data []byte, username string) *http.Response {
 	req.URL.RawQuery = q.Encode()
 
 	w := httptest.NewRecorder()
-
-	// Set MUX vars
-	var vars = map[string]string{
-		"username": username,
-	}
-
-	req = mux.SetURLVars(req, vars)
+	req = SetMuxVars(req, username)
 
 	handler := http.HandlerFunc(GetFollowersHandler)
 	handler.ServeHTTP(w, req)
