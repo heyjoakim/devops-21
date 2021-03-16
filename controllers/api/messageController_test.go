@@ -12,7 +12,7 @@ import (
 
 var username = "a"
 var email = "a@a.a"
-var password = "a"
+var pass = "a"
 
 // Might be a better way to do this, but follower query cant be exported
 // as "no" and "latest" needs to be lowercase...
@@ -23,7 +23,7 @@ type LatestMessageRequest struct {
 
 func TestMemoryApiMessage(t *testing.T) {
 	// Register user
-	m := models.RegisterRequest{Username: username, Email: email, Password: password}
+	m := models.RegisterRequest{Username: username, Email: email, Password: pass}
 	data, _ := json.Marshal(m)
 	resp := MemoryRegisterHelper(data)
 
