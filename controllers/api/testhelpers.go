@@ -13,13 +13,10 @@ import (
 var (
 	CREDENTIALS         = []string{"simulator", "super_safe!"}
 	ENCODED_CREDENTILAS = b64.StdEncoding.EncodeToString([]byte(strings.Join(CREDENTIALS, ":")))
+	AUTHENTICATION      = "Basic " + ENCODED_CREDENTILAS
 	CONTENTTYPE         = "Content-Type"
 	JSONCONTENT         = "application/json"
 )
-
-func SendRequestHelper() {
-
-}
 
 func SetMuxVars(request *http.Request, username string) *http.Request {
 	var vars = map[string]string{
@@ -49,7 +46,7 @@ func MemoryCreateMessageHelper(data []byte, username string) *http.Response {
 	URI := "/api/msgs/"
 	req, _ := http.NewRequest("POST", URI+username, bytes.NewBuffer(data))
 	req.Header.Add(CONTENTTYPE, JSONCONTENT)
-	req.Header.Add("Authorization", "Basic "+ENCODED_CREDENTILAS)
+	req.Header.Add("Authorization", AUTHENTICATION)
 
 	q := req.URL.Query()
 	q.Add("latest", "2")
@@ -69,7 +66,7 @@ func MemoryGetLatestUserMessageHelper(data []byte, username string) *http.Respon
 
 	req, _ := http.NewRequest("GET", URI+username, bytes.NewBuffer(data))
 	req.Header.Add(CONTENTTYPE, JSONCONTENT)
-	req.Header.Add("Authorization", "Basic "+ENCODED_CREDENTILAS)
+	req.Header.Add("Authorization", AUTHENTICATION)
 
 	q := req.URL.Query()
 	q.Add("latest", "3")
@@ -87,7 +84,7 @@ func MemoryGetLatestUserMessageHelper(data []byte, username string) *http.Respon
 func MemoryGetLatestMessageHelper(data []byte, username string) *http.Response {
 	req, _ := http.NewRequest("GET", "api/msgs", bytes.NewBuffer(data))
 	req.Header.Add(CONTENTTYPE, JSONCONTENT)
-	req.Header.Add("Authorization", "Basic "+ENCODED_CREDENTILAS)
+	req.Header.Add("Authorization", AUTHENTICATION)
 
 	q := req.URL.Query()
 	q.Add("latest", "4")
@@ -105,7 +102,7 @@ func MemoryFollowUserHelper(data []byte, username string) *http.Response {
 	URI := "/api/fllws/"
 	req, _ := http.NewRequest("POST", URI+username, bytes.NewBuffer(data))
 	req.Header.Add(CONTENTTYPE, JSONCONTENT)
-	req.Header.Add("Authorization", "Basic "+ENCODED_CREDENTILAS)
+	req.Header.Add("Authorization", AUTHENTICATION)
 
 	q := req.URL.Query()
 	q.Add("latest", "5")
@@ -124,7 +121,7 @@ func MemoryGetFollowUserHelper(data []byte, username string) *http.Response {
 	URI := "/api/fllws/"
 	req, _ := http.NewRequest("GET", URI+username, bytes.NewBuffer(data))
 	req.Header.Add(CONTENTTYPE, JSONCONTENT)
-	req.Header.Add("Authorization", "Basic "+ENCODED_CREDENTILAS)
+	req.Header.Add("Authorization", AUTHENTICATION)
 
 	q := req.URL.Query()
 	q.Add("latest", "5")
