@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	b64 "encoding/base64"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -26,6 +27,13 @@ func SetMuxVars(request *http.Request, username string) *http.Request {
 	return mux.SetURLVars(request, vars)
 }
 
+func sendRequest(method string, url string, body io.Reader) *http.Request {
+	req, _ := http.NewRequest(method, url, body)
+	req.Header.Add(CONTENTTYPE, JSONCONTENT)
+	req.Header.Add("Authorization", AUTHENTICATION)
+	return req
+}
+
 // MemoryRegisterHelepr sends a register user request
 func MemoryRegisterHelper(data []byte) *http.Response {
 	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(data))
@@ -44,9 +52,7 @@ func MemoryRegisterHelper(data []byte) *http.Response {
 // MemoryCreateMessageHelper sends a request to create a message
 func MemoryCreateMessageHelper(data []byte, username string) *http.Response {
 	URI := "/api/msgs/"
-	req, _ := http.NewRequest("POST", URI+username, bytes.NewBuffer(data))
-	req.Header.Add(CONTENTTYPE, JSONCONTENT)
-	req.Header.Add("Authorization", AUTHENTICATION)
+	req := sendRequest("POST", URI+username, bytes.NewBuffer(data))
 
 	q := req.URL.Query()
 	q.Add("latest", "2")
@@ -63,10 +69,7 @@ func MemoryCreateMessageHelper(data []byte, username string) *http.Response {
 // MemoryGetLatestUserMessageHelper requests to get the latest message from a user
 func MemoryGetLatestUserMessageHelper(data []byte, username string) *http.Response {
 	URI := "/api/msgs/"
-
-	req, _ := http.NewRequest("GET", URI+username, bytes.NewBuffer(data))
-	req.Header.Add(CONTENTTYPE, JSONCONTENT)
-	req.Header.Add("Authorization", AUTHENTICATION)
+	req := sendRequest("GET", URI+username, bytes.NewBuffer(data))
 
 	q := req.URL.Query()
 	q.Add("latest", "3")
@@ -82,9 +85,8 @@ func MemoryGetLatestUserMessageHelper(data []byte, username string) *http.Respon
 
 // MemoryGetLatestMessageHelper requests the latest messages
 func MemoryGetLatestMessageHelper(data []byte, username string) *http.Response {
-	req, _ := http.NewRequest("GET", "api/msgs", bytes.NewBuffer(data))
-	req.Header.Add(CONTENTTYPE, JSONCONTENT)
-	req.Header.Add("Authorization", AUTHENTICATION)
+	URI := "api/msgs"
+	req := sendRequest("GET", URI, bytes.NewBuffer(data))
 
 	q := req.URL.Query()
 	q.Add("latest", "4")
@@ -100,9 +102,7 @@ func MemoryGetLatestMessageHelper(data []byte, username string) *http.Response {
 // MemoryFollowUserHelper sends a request to follow a user
 func MemoryFollowUserHelper(data []byte, username string) *http.Response {
 	URI := "/api/fllws/"
-	req, _ := http.NewRequest("POST", URI+username, bytes.NewBuffer(data))
-	req.Header.Add(CONTENTTYPE, JSONCONTENT)
-	req.Header.Add("Authorization", AUTHENTICATION)
+	req := sendRequest("POST", URI+username, bytes.NewBuffer(data))
 
 	q := req.URL.Query()
 	q.Add("latest", "5")
@@ -119,9 +119,7 @@ func MemoryFollowUserHelper(data []byte, username string) *http.Response {
 // MemoryGetFollowUserHelper sends a request to get user followers
 func MemoryGetFollowUserHelper(data []byte, username string) *http.Response {
 	URI := "/api/fllws/"
-	req, _ := http.NewRequest("GET", URI+username, bytes.NewBuffer(data))
-	req.Header.Add(CONTENTTYPE, JSONCONTENT)
-	req.Header.Add("Authorization", AUTHENTICATION)
+	req := sendRequest("GET", URI+username, bytes.NewBuffer(data))
 
 	q := req.URL.Query()
 	q.Add("latest", "5")
@@ -137,8 +135,9 @@ func MemoryGetFollowUserHelper(data []byte, username string) *http.Response {
 
 // MemoryLatestHelper sends a request to get the latest variable
 func MemoryLatestHelper() *http.Response {
-	req, _ := http.NewRequest("GET", "/latest", nil)
-	req.Header.Add("Content-Type", JSONCONTENT)
+	URI := "/latest"
+	req := sendRequest("GET", URI, nil)
+
 	w := httptest.NewRecorder()
 	handler := http.HandlerFunc(GetLatestHandler)
 	handler.ServeHTTP(w, req)
