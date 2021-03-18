@@ -25,7 +25,6 @@ var timelineUser = &models.User{
 }
 
 func TestMemoryTimeline(t *testing.T) {
-
 	// Expected message
 	var msg string = "Test message on timeline"
 	var msgData url.Values = url.Values{
@@ -45,7 +44,7 @@ func TestMemoryTimeline(t *testing.T) {
 	session, _ := store.Get(req, "_cookie")
 	session.Values["user_id"] = timelineUser.UserID
 	session.Values["username"] = timelineUser.Username
-	session.Save(req, w)
+	_ = session.Save(req, w)
 
 	handler := http.HandlerFunc(PublicTimelineHandler)
 	handler.ServeHTTP(w, req)
@@ -54,5 +53,4 @@ func TestMemoryTimeline(t *testing.T) {
 
 	// Assert that new message is added to the page
 	assert.Contains(t, string(body), msg)
-
 }

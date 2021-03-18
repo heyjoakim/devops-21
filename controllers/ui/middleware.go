@@ -18,7 +18,7 @@ func BeforeRequest(next http.Handler) http.Handler {
 			tmpUser := services.GetUser(id)
 			session.Values["user_id"] = tmpUser.UserID
 			session.Values["username"] = tmpUser.Username
-			session.Save(r, w)
+			_ = session.Save(r, w)
 		}
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)

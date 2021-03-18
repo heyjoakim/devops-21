@@ -23,7 +23,6 @@ func GetRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 		"username": session.Values["username"],
 	}
 	redirectToRegister(w, data)
-
 }
 
 // PostRegisterUserHandler handles user signup requests.
@@ -69,10 +68,9 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 		"error": registerError,
 	}
 	redirectToRegister(w, data)
-
 }
 
 func redirectToRegister(w http.ResponseWriter, data models.PageData) {
 	tmpl := LoadTemplate(RegisterPath)
-	tmpl.Execute(w, data)
+	_ = tmpl.Execute(w, data)
 }

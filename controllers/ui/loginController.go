@@ -55,5 +55,5 @@ func PostLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func redirectToLogin(w http.ResponseWriter, data models.PageData) {
 	tmpl := LoadTemplate(LoginPath)
-	tmpl.Execute(w, data)
+	_ = tmpl.Execute(w, data)
 }
