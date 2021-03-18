@@ -284,3 +284,9 @@ We found several issues relating to old Python code that we still kept in the re
 ### Software Maintenance
 
 We found some issues reported by the static analysis tools and fixed them accordingly.
+
+### New brahnching strategy
+Previously we noted the use of a Git Flow branching strategy, meaning that contributions were to be made off of a branch from develop, though due to the addition of Static Code analysis and the rewrite of API simulation tests from Python to Golang, we have decided to adopt a new strategy. The motivation for the change in stratgy is a move towards Continous deployment. Our pipelines now support a full deployment process from main branch to our productions servers with automatic releases. This means that a Git Flow strategy will only hinder our lead time from user story to production. As this project is a Open Source project we do not intend to adopt a trunk based stragy but a Github Flow strategy.
+
+##### Github Flow branching strategy
+The adoption of this new strategy means that branches are to be made from the `main` branch, with the one rule that `main` always should be deployable. When changes are made you open a pull request whereas a discussion and review of the code will be conducted.
