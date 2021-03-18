@@ -59,5 +59,4 @@ func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	AddFlash(session, w, r, "You are no longer following "+username, "Info")
 	http.Redirect(w, r, "/"+username, http.StatusFound)
-	return
 }

@@ -50,7 +50,7 @@ func PublicTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl := LoadTemplate(TimelinePath)
-	tmpl.Execute(w, data)
+	_ = tmpl.Execute(w, data)
 }
 
 // UserTimelineHandler shows the posts from one user
@@ -60,7 +60,8 @@ func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 	profileUserID, err := services.GetUserID(profileUsername)
 	if err != nil {
-		w.WriteHeader(404)
+		errorCode := 404
+		w.WriteHeader(errorCode)
 		fmt.Println(err)
 		return
 	}
@@ -100,13 +101,13 @@ func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	data["username"] = session.Values["username"]
 	data["MsgInfo"] = session.Flashes("Info")
 	data["MsgWarn"] = session.Flashes("Warn")
-	session.Save(r, w)
+	_ = session.Save(r, w)
 
 	tmpl, err := template.ParseFiles(TimelinePath, LayoutPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	tmpl.Execute(w, data)
+	_ = tmpl.Execute(w, data)
 }
 
 func getPostsForUser(id uint) []models.MessageViewModel {

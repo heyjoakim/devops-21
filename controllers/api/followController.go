@@ -12,7 +12,6 @@ import (
 	"strconv"
 )
 
-
 // FollowHandler godoc
 // @Summary Follows a user, unfollows a user
 // @Description follows a user, unfollows a user
@@ -22,14 +21,14 @@ import (
 // @Failure 401 {string} string "unauthorized"
 // @Failure 500 {string} string response.Error
 // @Router /api/fllws/{username} [post]
-func FollowHandler(w http.ResponseWriter, r *http.Request){
+func FollowHandler(w http.ResponseWriter, r *http.Request) {
 	updateLatest(r)
 
 	notFromSimResponse := helpers.NotReqFromSimulator(r)
 	if notFromSimResponse != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write(notFromSimResponse)
+		_, _ = w.Write(notFromSimResponse)
 		return
 	}
 
@@ -41,35 +40,37 @@ func FollowHandler(w http.ResponseWriter, r *http.Request){
 	}
 
 	var followRequest models.FollowRequest
-	json.NewDecoder(r.Body).Decode(&followRequest)
-	if followRequest.Follow != "" && followRequest.Unfollow != "" {
+	_ = json.NewDecoder(r.Body).Decode(&followRequest)
+	if followRequest.Follow == "" || followRequest.Unfollow == "" {
+		if followRequest.Follow != "" {
+			followsUserID, err := services.GetUserID(followRequest.Follow)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusNotFound)
+				return
+			}
+			follower := models.Follower{WhoID: userID, WhomID: followsUserID}
+			err = services.CreateFollower(follower)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			w.WriteHeader(http.StatusNoContent)
+		} else if followRequest.Unfollow != "" {
+			unfollowsUserID, err := services.GetUserID(followRequest.Unfollow)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusNotFound)
+				log.Fatal(err)
+			}
+
+			err = services.UnfollowUser(userID, unfollowsUserID)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				log.Fatal()
+			}
+
+			w.WriteHeader(http.StatusNoContent)
+		}
+	} else {
 		http.Error(w, "Invalid input. Can ONLY handle either follow OR unfollow.", http.StatusUnprocessableEntity)
-	} else if followRequest.Follow != "" {
-		followsUserID, err := services.GetUserID(followRequest.Follow)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			return
-		}
-		follower := models.Follower{WhoID: userID, WhomID: followsUserID}
-		err = services.CreateFollower(follower)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		w.WriteHeader(http.StatusNoContent)
-	} else if followRequest.Unfollow != "" {
-		unfollowsUserID, err := services.GetUserID(followRequest.Unfollow)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotFound)
-			log.Fatal(err)
-		}
-
-		err = services.UnfollowUser(userID, unfollowsUserID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Fatal()
-		}
-
-		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
@@ -84,14 +85,14 @@ func FollowHandler(w http.ResponseWriter, r *http.Request){
 // @Failure 401 {string} string "unauthorized"
 // @Failure 500 {string} string response.Error
 // @Router /api/fllws/{username} [get]
-func GetFollowersHandler(w http.ResponseWriter, r *http.Request){
+func GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
 	updateLatest(r)
 
 	notFromSimResponse := helpers.NotReqFromSimulator(r)
 	if notFromSimResponse != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write(notFromSimResponse)
+		_, _ = w.Write(notFromSimResponse)
 		return
 	}
 
@@ -114,5 +115,5 @@ func GetFollowersHandler(w http.ResponseWriter, r *http.Request){
 
 	jsonData, _ := helpers.Serialize(map[string]interface{}{"follows": users})
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonData)
+	_, _ = w.Write(jsonData)
 }

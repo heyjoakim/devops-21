@@ -21,8 +21,8 @@ var passB = "fb"
 // Might be a better way to do this, but follower query cant be exported
 // as "no" and "latest" needs to be lowercase...
 type GetFollowerQuery struct {
-	no     int `json:"no"`
-	latest int `json:"latest"`
+	No     int `json:"no"`
+	Latest int `json:"latest"`
 }
 
 func TestMemoryApiFollow(t *testing.T) {
@@ -44,9 +44,9 @@ func TestMemoryApiFollow(t *testing.T) {
 	assert.Equal(t, resp.StatusCode, http.StatusNoContent)
 
 	// Query get follower
-	query := GetFollowerQuery{no: 1, latest: 6}
-	data_query, _ := json.Marshal(query)
-	newResp := MemoryGetFollowUserHelper(data_query, userA)
+	query := GetFollowerQuery{No: 1, Latest: 6}
+	dataQuery, _ := json.Marshal(query)
+	newResp := MemoryGetFollowUserHelper(dataQuery, userA)
 	body, _ := ioutil.ReadAll(newResp.Body)
 
 	assert.Contains(t, string(body), "fb")
@@ -59,5 +59,4 @@ func TestMemoryApiUnfollow(t *testing.T) {
 	resp := MemoryFollowUserHelper(data, userA)
 	body, _ := ioutil.ReadAll(resp.Body)
 	assert.NotContains(t, string(body), "fb")
-
 }

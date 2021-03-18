@@ -31,7 +31,7 @@ func TestMemoryLogout(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/login", nil)
 	session, _ := store.Get(req, "_cookie")
 	session.Values["user_id"] = logoutUser.UserID
-	session.Save(req, w)
+	_ = session.Save(req, w)
 	cookie := session.Values["user_id"]
 
 	// Assert that a cookie is actually set

@@ -53,7 +53,7 @@ func TestMemoryAddMessage(t *testing.T) {
 	session, _ := store.Get(req, "_cookie")
 	session.Values["user_id"] = messageUser.UserID
 	session.Values["username"] = messageUser.Username
-	session.Save(req, w)
+	_ = session.Save(req, w)
 
 	// Handle request
 	handler := http.HandlerFunc(UserTimelineHandler)
@@ -63,5 +63,4 @@ func TestMemoryAddMessage(t *testing.T) {
 
 	// Assert that new message is added to the personal page
 	assert.Contains(t, string(body), msg)
-
 }

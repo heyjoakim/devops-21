@@ -19,6 +19,8 @@ func InitializeMetrics() {
 	messageCountMetrics()
 }
 
+const measurementDelay = 5
+
 func messageCountMetrics() {
 	messagesGauge := prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace: "group_l",
@@ -33,7 +35,7 @@ func messageCountMetrics() {
 		for {
 			count := services.GetMessageCount()
 			messagesGauge.Set(float64(count))
-			time.Sleep(5 * time.Second)
+			time.Sleep(measurementDelay * time.Second)
 		}
 	}()
 }
@@ -52,7 +54,7 @@ func userCountMetrics() {
 		for {
 			count := services.GetUserCount()
 			userGauge.Set(float64(count))
-			time.Sleep(5 * time.Second)
+			time.Sleep(measurementDelay * time.Second)
 		}
 	}()
 }
@@ -71,7 +73,7 @@ func memoryMetrics() {
 		for {
 			v, _ := mem.VirtualMemory()
 			memoryGauge.Set(v.UsedPercent)
-			time.Sleep(5 * time.Second)
+			time.Sleep(measurementDelay * time.Second)
 		}
 	}()
 }
@@ -90,7 +92,7 @@ func cpuMetrics() {
 		for {
 			percent, _ := cpu.Percent(0, true)
 			cpuGauge.Set(percent[0])
-			time.Sleep(5 * time.Second)
+			time.Sleep(measurementDelay * time.Second)
 		}
 	}()
 }

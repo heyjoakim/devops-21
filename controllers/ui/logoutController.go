@@ -9,7 +9,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	session.Values["user_id"] = ""
 	session.Values["username"] = ""
 	session.Options.MaxAge = -1
-	session.Save(r, w)
+	_ = session.Save(r, w)
 
 	http.Redirect(w, r, "/", http.StatusFound)
 }

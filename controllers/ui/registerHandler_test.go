@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var defaultUserData url.Values = url.Values{
+var defaultUserData url.Values = url.Values{ //nolint
 	"username":  {"Rob"},
 	"email":     {"rob@go.com"},
 	"password":  {"secret"},
@@ -53,5 +53,4 @@ func TestMemoryRegister(t *testing.T) {
 	resp = MemoryRegisterHelper(mock)
 	assert.Equal(t, resp.StatusCode, 302, "A successful register should redirrect")
 	assert.Equal(t, "/login", resp.Header.Get("Location"))
-
 }

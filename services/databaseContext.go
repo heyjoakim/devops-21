@@ -15,15 +15,15 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-// DbContext defines the application
-type DbContext struct {
+// DBContext defines the application
+type DBContext struct {
 	db *gorm.DB
 }
 
 var (
 	dsn         string
 	environment string
-	dbContext   DbContext
+	dbContext   DBContext
 	lock        = &sync.Mutex{}
 )
 
@@ -38,18 +38,19 @@ func configureEnv() {
 	dsn = os.Getenv("DB_CONNECTION")
 }
 
-func (d *DbContext) initialize() {
+func (d *DBContext) initialize() {
 	configureEnv()
-	db, err := d.connectDb()
+	db, err := d.connectDB()
 	if err != nil {
 		log.Panic(err)
 	}
 	d.db = db
 }
 
-func (d *DbContext) connectDb() (*gorm.DB, error) {
+func (d *DBContext) connectDB() (*gorm.DB, error) {
 	fmt.Println(environment)
-	if environment == "develop" {
+	switch environment {
+	case "develop":
 		fmt.Println("Using local SQLite db")
 		return gorm.Open(sqlite.Open("./tmp/minitwit.db"), &gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
@@ -57,7 +58,7 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 			},
 			DisableForeignKeyConstraintWhenMigrating: true,
 		})
-	} else if environment == "production" {
+	case "production":
 		fmt.Println("Using remote postgres db")
 		return gorm.Open(postgres.New(
 			postgres.Config{
@@ -69,7 +70,7 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 					SingularTable: true,
 				},
 			})
-	} else if environment == "testing" {
+	case "testing":
 		fmt.Println("Using in memory SQLite db")
 
 		return gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
@@ -83,8 +84,8 @@ func (d *DbContext) connectDb() (*gorm.DB, error) {
 	return nil, nil
 }
 
-// initDb creates the database tables.
-func (d *DbContext) initDb() {
+// initDB creates the database tables.
+func (d *DBContext) initDB() {
 	err := d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{}, &models.Config{})
 
 	if err != nil {
@@ -92,17 +93,16 @@ func (d *DbContext) initDb() {
 	}
 }
 
-// GetDbInstance returns DbContext with specific environment db
-func GetDbInstance() DbContext {
+// GetDBInstance returns DBContext with specific environment db
+func GetDBInstance() DBContext {
 	if dbContext.db == nil {
 		lock.Lock()
 		defer lock.Unlock()
 		if dbContext.db == nil {
 			log.Println("Creating Single Instance Now")
 			dbContext.initialize()
-			dbContext.initDb() // AutoMigrate
+			dbContext.initDB() // AutoMigrate
 		}
 	}
 	return dbContext
-
 }

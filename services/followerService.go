@@ -6,39 +6,36 @@ func CreateFollower(follower models.Follower) error {
 	return d.db.Create(&follower).Error
 }
 
-func UnfollowUser(followingUsersId uint, userToUnfollowId uint) error {
+func UnfollowUser(followingUsersID uint, userToUnfollowID uint) error {
 	var follower models.Follower
-	err := d.db.Where("who_id = ?", followingUsersId).
-		Where("whom_id = ?", userToUnfollowId).
+	err := d.db.Where("who_id = ?", followingUsersID).
+		Where("whom_id = ?", userToUnfollowID).
 		Delete(&follower).
 		Error
 	return err
 }
 
-func GetAllUsersFollowers(userId uint, noFollowers int) []string {
+func GetAllUsersFollowers(userID uint, noFollowers int) []string {
 	var users []string
 	d.db.Model(&models.User{}).
 		Select("\"user\".username").
 		Joins("LEFT JOIN follower ON (follower.whom_id = \"user\".user_id)").
-		Where("follower.who_id=?", userId).
+		Where("follower.who_id=?", userID).
 		Limit(noFollowers).
 		Scan(&users)
 	return users
 }
 
-func GetUsersFollowedBy(userId uint) []models.Follower {
+func GetUsersFollowedBy(userID uint) []models.Follower {
 	var followers []models.Follower
-	d.db.Where("who_id = ?", userId).Find(&followers)
+	d.db.Where("who_id = ?", userID).Find(&followers)
 	return followers
 }
 
-func IsUserFollower(userId uint, followedId uint) bool {
+func IsUserFollower(userID uint, followedID uint) bool {
 	var follower models.Follower
-	d.db.Where("who_id = ?", userId).
-		Where("whom_id = ?", followedId).
+	d.db.Where("who_id = ?", userID).
+		Where("whom_id = ?", followedID).
 		Find(&follower)
-	if follower.WhoID != 0 {
-		return true
-	}
-	return false
+	return follower.WhoID != 0
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/heyjoakim/devops-21/models"
 )
 
-var d = GetDbInstance()
+var d = GetDBInstance()
 
 // GetUserID returns user ID for username
 func GetUserID(username string) (uint, error) {
