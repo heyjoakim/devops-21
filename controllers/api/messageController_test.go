@@ -17,8 +17,8 @@ var pass = "a"
 // Might be a better way to do this, but follower query cant be exported
 // as "no" and "latest" needs to be lowercase...
 type LatestMessageRequest struct {
-	no     int `json:"no"`
-	latest int `json:"latest"`
+	No     int `json:"no"`
+	Latest int `json:"latest"`
 }
 
 func TestMemoryApiMessage(t *testing.T) {
@@ -41,12 +41,11 @@ func TestMemoryApiMessage(t *testing.T) {
 	body, _ := ioutil.ReadAll(newResp.Body)
 
 	assert.Contains(t, string(body), `{"latest":2}`)
-
 }
 
 func TestGetLatestUserMessage(t *testing.T) {
 	// Prepare query
-	var m = LatestMessageRequest{no: 1, latest: 3}
+	var m = LatestMessageRequest{No: 1, Latest: 3}
 	query, _ := json.Marshal(m)
 	resp := MemoryGetLatestUserMessageHelper(query, username)
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -59,12 +58,11 @@ func TestGetLatestUserMessage(t *testing.T) {
 	newBody, _ := ioutil.ReadAll(newResp.Body)
 
 	assert.Contains(t, string(newBody), `{"latest":3}`)
-
 }
 
 func TestGetLatestMessage(t *testing.T) {
 	// Prepare query
-	var m = LatestMessageRequest{no: 1, latest: 4}
+	var m = LatestMessageRequest{No: 1, Latest: 4}
 	query, _ := json.Marshal(m)
 	resp := MemoryGetLatestMessageHelper(query, username)
 	body, _ := ioutil.ReadAll(resp.Body)

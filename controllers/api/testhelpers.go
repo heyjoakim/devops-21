@@ -12,11 +12,11 @@ import (
 )
 
 var (
-	CREDENTIALS         = []string{"simulator", "super_safe!"}
-	ENCODED_CREDENTILAS = b64.StdEncoding.EncodeToString([]byte(strings.Join(CREDENTIALS, ":")))
-	AUTHENTICATION      = "Basic " + ENCODED_CREDENTILAS
-	CONTENTTYPE         = "Content-Type"
-	JSONCONTENT         = "application/json"
+	Credentials        = []string{"simulator", "super_safe!"}
+	EncodedCredentials = b64.StdEncoding.EncodeToString([]byte(strings.Join(Credentials, ":")))
+	Authentication     = "Basic " + EncodedCredentials
+	ContentType        = "Content-Type"
+	JSONContent        = "application/json"
 )
 
 func SetMuxVars(request *http.Request, username string) *http.Request {
@@ -29,15 +29,15 @@ func SetMuxVars(request *http.Request, username string) *http.Request {
 
 func sendRequest(method string, url string, body io.Reader) *http.Request {
 	req, _ := http.NewRequest(method, url, body)
-	req.Header.Add(CONTENTTYPE, JSONCONTENT)
-	req.Header.Add("Authorization", AUTHENTICATION)
+	req.Header.Add(ContentType, JSONContent)
+	req.Header.Add("Authorization", Authentication)
 	return req
 }
 
 // MemoryRegisterHelepr sends a register user request
 func MemoryRegisterHelper(data []byte) *http.Response {
 	req, _ := http.NewRequest("POST", "/register", bytes.NewBuffer(data))
-	req.Header.Add(CONTENTTYPE, JSONCONTENT)
+	req.Header.Add(ContentType, JSONContent)
 
 	q := req.URL.Query()
 	q.Add("latest", "1")

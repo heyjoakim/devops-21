@@ -27,7 +27,7 @@ func MessagesHandler(w http.ResponseWriter, r *http.Request) {
 	if notFromSimResponse != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write(notFromSimResponse)
+		_, _ = w.Write(notFromSimResponse)
 		return
 	}
 
@@ -44,7 +44,7 @@ func MessagesHandler(w http.ResponseWriter, r *http.Request) {
 	jsonData, _ := helpers.Serialize(results)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonData)
+	_, _ = w.Write(jsonData)
 }
 
 // GetMessagesFromUserHandler godoc
@@ -68,7 +68,7 @@ func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 	if notFromSimResponse != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write(notFromSimResponse)
+		_, _ = w.Write(notFromSimResponse)
 		return
 	}
 
@@ -95,7 +95,7 @@ func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 	jsonData, _ := helpers.Serialize(messages)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonData)
+	_, _ = w.Write(jsonData)
 }
 
 // PostMessageHandler godoc
@@ -117,7 +117,7 @@ func PostMessageHandler(w http.ResponseWriter, r *http.Request) {
 	if notFromSimResponse != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write(notFromSimResponse)
+		_, _ = w.Write(notFromSimResponse)
 		return
 	}
 

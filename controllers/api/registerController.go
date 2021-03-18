@@ -23,14 +23,14 @@ import (
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO Consider if this functionality can be shared with ui controller. Logic should probably be in service.
 	var registerRequest models.RegisterRequest
-	json.NewDecoder(r.Body).Decode(&registerRequest)
+	_ = json.NewDecoder(r.Body).Decode(&registerRequest)
 
 	updateLatest(r)
 	var registerError string
 	if r.Method == "POST" {
 		if len(registerRequest.Username) == 0 {
 			registerError = "You have to enter a username"
-		} else if len(registerRequest.Email) == 0 || strings.Contains(registerRequest.Email, "@") == false {
+		} else if len(registerRequest.Email) == 0 || !strings.Contains(registerRequest.Email, "@") {
 			registerError = "You have to enter a valid email address"
 		} else if len(registerRequest.Password) == 0 {
 			registerError = "You have to enter a password"
@@ -52,20 +52,20 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if registerError != "" {
+			var errorCode = 400
 			error := map[string]interface{}{
-				"status":    400,
+				"status":    errorCode,
 				"error_msg": registerError,
 			}
 			jsonData, _ := helpers.Serialize(error)
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write(jsonData)
+			_, _ = w.Write(jsonData)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNoContent)
-
 	}
 }

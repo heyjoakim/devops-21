@@ -7,8 +7,6 @@ import (
 	"github.com/heyjoakim/devops-21/services"
 )
 
-var d = services.GetDbInstance()
-
 func updateLatest(r *http.Request) {
 	tryLatestQuery := r.URL.Query().Get("latest")
 

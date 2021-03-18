@@ -1,7 +1,6 @@
 linters:
   disable-all: true
   enable:
-    - bodyclose
     - deadcode
     - depguard
     - dogsled
@@ -25,7 +24,6 @@ linters:
     - lll
     - misspell
     - nakedret
-    - noctx
     - nolintlint
     - rowserrcheck
     - scopelint
@@ -42,6 +40,7 @@ linters:
   
   # don't enable:
   # - asciicheck
+  # - bodyclose
   # - gochecknoglobals
   # - godot
   # - godox
@@ -49,6 +48,7 @@ linters:
   # - interfacer
   # - maligned
   # - nestif
+  # - noctx
   # - prealloc
   # - testpackage
   # - revive
