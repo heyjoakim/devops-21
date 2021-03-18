@@ -58,8 +58,7 @@ func GetGravatarURL(email string, size int) string {
 }
 
 var (
-	_, b, _, _ = runtime.Caller(0)
-	basepath   = filepath.Dir(b)
+	_, _, _, _ = runtime.Caller(0)
 )
 
 // GetFullPath loads full path of file
