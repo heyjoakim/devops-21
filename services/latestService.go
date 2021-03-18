@@ -23,7 +23,7 @@ func UpdateLatest(latest int) {
 func GetLatest() int {
 	var result int
 
-	d.db.Model(models.Config{}).Select("value").First(&result).Where("key = ?", "latest")
+	d.db.Model(models.Config{}).Select("value").First(&result)
 
 	return result
 }
