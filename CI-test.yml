@@ -2,7 +2,6 @@ trigger: none
 pr:
   branches:
     include:
-    - develop
     - main
     exclude:
     - hotfix/*
