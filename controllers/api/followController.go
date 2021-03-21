@@ -3,13 +3,14 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"strconv"
+
 	"github.com/gorilla/mux"
 	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
-	"log"
-	"net/http"
-	"strconv"
 )
 
 // FollowHandler godoc
@@ -22,6 +23,10 @@ import (
 // @Failure 500 {string} string response.Error
 // @Router /api/fllws/{username} [post]
 func FollowHandler(w http.ResponseWriter, r *http.Request) {
+	timer := RegisterEndpoint("post_api_fllws_username")
+	defer func() {
+		timer.ObserveDuration()
+	}()
 	updateLatest(r)
 
 	notFromSimResponse := helpers.NotReqFromSimulator(r)
@@ -86,6 +91,10 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string response.Error
 // @Router /api/fllws/{username} [get]
 func GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
+	timer := RegisterEndpoint("get_api_fllws_username")
+	defer func() {
+		timer.ObserveDuration()
+	}()
 	updateLatest(r)
 
 	notFromSimResponse := helpers.NotReqFromSimulator(r)

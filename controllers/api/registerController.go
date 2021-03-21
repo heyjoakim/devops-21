@@ -21,6 +21,10 @@ import (
 // @Failure 400 {string} string "unauthorized"
 // @Router /api/register [post]
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	timer := RegisterEndpoint("post_api_register")
+	defer func() {
+		timer.ObserveDuration()
+	}()
 	// TODO Consider if this functionality can be shared with ui controller. Logic should probably be in service.
 	var registerRequest models.RegisterRequest
 	_ = json.NewDecoder(r.Body).Decode(&registerRequest)

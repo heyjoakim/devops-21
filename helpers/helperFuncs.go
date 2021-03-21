@@ -33,13 +33,14 @@ func Serialize(input interface{}) ([]byte, error) {
 func NotReqFromSimulator(r *http.Request) []byte {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader != "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh" {
-		data := map[string]interface{}{
-			"status":    http.StatusForbidden,
-			"error_msg": "You are not authorized to use this resource!",
-		}
+		// data := map[string]interface{}{
+		// 	"status":    http.StatusForbidden,
+		// 	"error_msg": "You are not authorized to use this resource!",
+		// }
 
-		jsonData, _ := Serialize(data)
-		return jsonData
+		// jsonData, _ := Serialize(data)
+		// return jsonData
+		return nil
 	}
 	return nil
 }

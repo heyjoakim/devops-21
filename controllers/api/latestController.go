@@ -14,6 +14,10 @@ import (
 // @Success 200 {object} interface{}
 // @Router /api/latest [get]
 func GetLatestHandler(w http.ResponseWriter, r *http.Request) {
+	timer := RegisterEndpoint("get_api_latest")
+	defer func() {
+		timer.ObserveDuration()
+	}()
 	data := map[string]interface{}{
 		"latest": services.GetLatest(),
 	}

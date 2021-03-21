@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/models"
@@ -13,6 +14,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"gorm.io/plugin/prometheus"
 )
 
 // DBContext defines the application
@@ -44,7 +46,34 @@ func (d *DBContext) initialize() {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	db.Use(prometheus.New(prometheus.Config{
+		DBName:          "Pushgateway",                // use `DBName` as metrics label
+		RefreshInterval: 2,                            // Refresh metrics interval (default 15 seconds)
+		PushAddr:        "http://142.93.103.26:9091/", // push metrics if `PushAddr` configured
+		StartServer:     true,                         // start http server to expose metrics
+		HTTPServerPort:  8080,                         // configure http server port, default port 8080 (if you have configured multiple instances, only the first `HTTPServerPort` will be used to start server)
+		// MetricsCollector: []prometheus.MetricsCollector{
+		// 	&prometheus.MySQL{
+		// 		VariableNames: []string{"Threads_running"},
+		// 	},
+		// }, // user defined metrics
+	}))
+
+	// db.Callback().Query().Before("gorm:query").Register("my_plugin:before_query", beforeQuery)
+	// db.Callback().Query().After("gorm:query").Register("my_plugin:after_query", afterQuery)
 	d.db = db
+}
+
+var start time.Time
+
+func beforeQuery(db *gorm.DB) {
+	start = time.Now()
+}
+
+func afterQuery(db *gorm.DB) {
+	elapsed := time.Since(start)
+	log.Printf("Binomial took %s", elapsed)
 }
 
 func (d *DBContext) connectDB() (*gorm.DB, error) {

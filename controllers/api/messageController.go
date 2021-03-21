@@ -21,6 +21,11 @@ import (
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs [get]
 func MessagesHandler(w http.ResponseWriter, r *http.Request) {
+	timer := RegisterEndpoint("get_api_msgs")
+	defer func() {
+		timer.ObserveDuration()
+	}()
+
 	updateLatest(r)
 
 	notFromSimResponse := helpers.NotReqFromSimulator(r)
@@ -57,6 +62,10 @@ func MessagesHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs/{username} [get]
 func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
+	timer := RegisterEndpoint("get_api_msgs_username")
+	defer func() {
+		timer.ObserveDuration()
+	}()
 	updateLatest(r)
 
 	params := mux.Vars(r)
@@ -107,6 +116,10 @@ func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs/{username} [post]
 func PostMessageHandler(w http.ResponseWriter, r *http.Request) {
+	timer := RegisterEndpoint("post_api_msgs_username")
+	defer func() {
+		timer.ObserveDuration()
+	}()
 	updateLatest(r)
 	params := mux.Vars(r)
 	username := params["username"]
