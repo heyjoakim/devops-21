@@ -20,11 +20,17 @@ func updateLatest(r *http.Request) {
 }
 
 func RegisterEndpoint(name string) *prometheus.Timer {
+	var (
+		bucketStart = 0.01
+		bucketWidth = 0.05
+		bucketCount = 10
+	)
+
 	hist := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    fmt.Sprintf("http_request_%s_duration_seconds", name),
 			Help:    fmt.Sprintf("http_request_%s_duration_seconds", name),
-			Buckets: prometheus.LinearBuckets(0.01, 0.05, 10),
+			Buckets: prometheus.LinearBuckets(bucketStart, bucketWidth, bucketCount),
 		},
 		[]string{"status"},
 	)

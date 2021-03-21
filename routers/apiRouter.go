@@ -7,7 +7,6 @@ import (
 
 // AddAPIRoutes creates endpoints for the API router
 func AddAPIRoutes(r *mux.Router) {
-	r.Use(api.BeforeRequest)
 	r.HandleFunc("/latest", api.GetLatestHandler).Methods("GET")
 	r.HandleFunc("/register", api.RegisterHandler).Methods("POST")
 	r.HandleFunc("/msgs", api.MessagesHandler).Methods("GET")

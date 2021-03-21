@@ -63,13 +63,13 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 			unfollowsUserID, err := services.GetUserID(followRequest.Unfollow)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotFound)
-				log.Fatal(err)
+				log.Println(err)
 			}
 
 			err = services.UnfollowUser(userID, unfollowsUserID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
-				log.Fatal()
+				log.Println(err)
 			}
 
 			w.WriteHeader(http.StatusNoContent)
