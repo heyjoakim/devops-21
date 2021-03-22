@@ -9,7 +9,7 @@ import (
 // "user" is a reserved word in postgres, so it needs to be quoted in the queries
 func GetPublicMessages(numberOfMessages int) []models.MessageDto {
 	var results []models.MessageDto
-	err :=  d.db.Model(&models.Message{}).
+	GetPublicMessagesErr :=  d.db.Model(&models.Message{}).
 		Select("message.text, message.pub_date, \"user\".username, \"user\".email").
 		Joins("left join \"user\" on message.author_id = \"user\".user_id").
 		Where("message.flagged=0").
@@ -17,9 +17,9 @@ func GetPublicMessages(numberOfMessages int) []models.MessageDto {
 		Limit(numberOfMessages).
 		Scan(&results).Error
 
-	if err != nil {
+	if GetPublicMessagesErr != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"GetPublicMessagesErr": GetPublicMessagesErr,
 			"numberOfMessages": numberOfMessages,
 		}).Error("GetPublicMessages: DB err")
 	}
@@ -32,7 +32,7 @@ func GetPublicMessages(numberOfMessages int) []models.MessageDto {
 // "user" is a reserved word in postgres, so it needs to be quoted in the queries
 func GetMessagesForUser(numberOfMessages int, userID uint) []models.MessageDto {
 	var results []models.MessageDto
-	err := d.db.Model(models.Message{}).
+	er := d.db.Model(models.Message{}).
 		Order("pub_date desc").
 		Select("message.text,message.pub_date, \"user\".email, \"user\".username").
 		Joins("left join \"user\" on \"user\".user_id = message.author_id").
@@ -40,9 +40,9 @@ func GetMessagesForUser(numberOfMessages int, userID uint) []models.MessageDto {
 		Limit(numberOfMessages).
 		Scan(&results).Error
 
-	if err != nil {
+	if er != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"err": er,
 			"message": userID,
 			"numberOfMessages": numberOfMessages,
 		}).Error("GetMessagesForUser: DB err")
@@ -66,10 +66,10 @@ func CreateMessage(message models.Message) error {
 // GetMessageCount returns the number of messages in the system
 func GetMessageCount() int64 {
 	var count int64
-	err := d.db.Find(&models.Message{}).Count(&count).Error
-	if err != nil {
+	GetMessageCountErr := d.db.Find(&models.Message{}).Count(&count).Error
+	if GetMessageCountErr != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"GetMessageCountErr": GetMessageCountErr,
 		}).Error("GetMessageCount: DB err")
 	}
 	return count

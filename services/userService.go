@@ -10,14 +10,14 @@ var d = GetDBInstance()
 // GetUserID returns user ID for username
 func GetUserID(username string) (uint, error) {
 	var user models.User
-	err := d.db.First(&user, "username = ?", username).Error
-	if err != nil {
+	getUserIDErr := d.db.First(&user, "username = ?", username).Error
+	if getUserIDErr != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"err": getUserIDErr,
 			"username": username,
 		}).Error("Error in GetUserID")
 	}
-	return user.UserID, err
+	return user.UserID, getUserIDErr
 }
 
 func GetUserFromUsername(username string) (models.User, error) {
@@ -34,10 +34,10 @@ func GetUserFromUsername(username string) (models.User, error) {
 
 func GetUser(userID uint) models.User {
 	var user models.User
-	err := d.db.First(&user, "user_id = ?", userID).Error
-	if err != nil {
+	getUserErr := d.db.First(&user, "user_id = ?", userID).Error
+	if getUserErr != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"getUserErr": getUserErr,
 			"userID": userID,
 		}).Error("GetUser error")
 	}
@@ -46,23 +46,23 @@ func GetUser(userID uint) models.User {
 
 // CreateUser creates a new user in the database
 func CreateUser(user models.User) error {
-	err := d.db.Create(&user).Error
-	if err != nil {
+	createUserErr := d.db.Create(&user).Error
+	if createUserErr != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"createUserErr": createUserErr,
 			"userObject": user,
 		}).Error("CreateUser error")
 	}
-	return err
+	return createUserErr
 }
 
 // GetUserCount returns the number of users reigstered in the system
 func GetUserCount() int64 {
 	var count int64
-	err := d.db.Find(&models.User{}).Count(&count).Error
-	if err != nil {
+	countErr := d.db.Find(&models.User{}).Count(&count).Error
+	if countErr != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"GetUserCountErr": countErr,
 		}).Error("GetUserCount: DB err")
 	}
 	return count
