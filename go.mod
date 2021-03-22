@@ -12,6 +12,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.6
 	github.com/prometheus/client_golang v1.9.0
 	github.com/shirou/gopsutil v3.21.2+incompatible
+	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.6.1
 	github.com/swaggo/http-swagger v1.0.0
 	github.com/swaggo/swag v1.7.0

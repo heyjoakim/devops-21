@@ -7,9 +7,9 @@ import (
 	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
-	"log"
 	"net/http"
 	"strconv"
+	log "github.com/sirupsen/logrus"
 )
 
 // FollowHandler godoc
@@ -36,6 +36,7 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := services.GetUserID(username)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("User not found: %s", username), http.StatusNotFound)
+		log.Error(fmt.Sprintf("FollowHandler: User not found: %s", username))
 		return
 	}
 
@@ -58,13 +59,11 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 			unfollowsUserID, err := services.GetUserID(followRequest.Unfollow)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusNotFound)
-				log.Fatal(err)
 			}
 
 			err = services.UnfollowUser(userID, unfollowsUserID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
-				log.Fatal()
 			}
 
 			w.WriteHeader(http.StatusNoContent)
