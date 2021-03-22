@@ -2,12 +2,12 @@ package ui
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -47,7 +47,7 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
 		if err != nil {
-			log.Fatal(err)
+			log.WithField("err", err).Error("Hashing error in PostRegisterUserHandler")
 			return
 		}
 		username := r.FormValue("username")
@@ -56,7 +56,6 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 		error := services.CreateUser(user)
 
 		if error != nil {
-			log.Println(error)
 			registerError = "Error while creating user"
 		}
 

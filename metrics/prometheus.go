@@ -1,18 +1,17 @@
 package metrics
 
 import (
-	"fmt"
 	"time"
-
 	"github.com/heyjoakim/devops-21/services"
 	"github.com/prometheus/client_golang/prometheus"
 	cpu "github.com/shirou/gopsutil/cpu"
 	mem "github.com/shirou/gopsutil/mem"
+	log "github.com/sirupsen/logrus"
 )
 
 // InitializeMetrics incvokes custom metric functions
 func InitializeMetrics() {
-	fmt.Println("Init metrics")
+	log.Info("Init metrics")
 	cpuMetrics()
 	memoryMetrics()
 	userCountMetrics()
