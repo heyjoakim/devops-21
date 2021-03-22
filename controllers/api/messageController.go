@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/heyjoakim/devops-21/helpers"
+	"github.com/heyjoakim/devops-21/metrics"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
 )
@@ -21,7 +22,8 @@ import (
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs [get]
 func MessagesHandler(w http.ResponseWriter, r *http.Request) {
-	timer := RegisterEndpoint("get_api_msgs")
+	hist, _ := metrics.GetHistogramVec("get_api_msgs")
+	timer := createEndpointTimer(hist)
 	defer func() {
 		timer.ObserveDuration()
 	}()
@@ -62,10 +64,12 @@ func MessagesHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs/{username} [get]
 func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
-	timer := RegisterEndpoint("get_api_msgs_username")
+	hist, _ := metrics.GetHistogramVec("get_api_msgs_username")
+	timer := createEndpointTimer(hist)
 	defer func() {
 		timer.ObserveDuration()
 	}()
+
 	updateLatest(r)
 
 	params := mux.Vars(r)
@@ -116,10 +120,12 @@ func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs/{username} [post]
 func PostMessageHandler(w http.ResponseWriter, r *http.Request) {
-	timer := RegisterEndpoint("post_api_msgs_username")
+	hist, _ := metrics.GetHistogramVec("post_api_msgs_username")
+	timer := createEndpointTimer(hist)
 	defer func() {
 		timer.ObserveDuration()
 	}()
+
 	updateLatest(r)
 	params := mux.Vars(r)
 	username := params["username"]

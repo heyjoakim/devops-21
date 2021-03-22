@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/heyjoakim/devops-21/helpers"
+	"github.com/heyjoakim/devops-21/metrics"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
 	"golang.org/x/crypto/bcrypt"
@@ -21,10 +22,12 @@ import (
 // @Failure 400 {string} string "unauthorized"
 // @Router /api/register [post]
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	timer := RegisterEndpoint("post_api_register")
+	hist, _ := metrics.GetHistogramVec("post_api_register")
+	timer := createEndpointTimer(hist)
 	defer func() {
 		timer.ObserveDuration()
 	}()
+
 	// TODO Consider if this functionality can be shared with ui controller. Logic should probably be in service.
 	var registerRequest models.RegisterRequest
 	_ = json.NewDecoder(r.Body).Decode(&registerRequest)

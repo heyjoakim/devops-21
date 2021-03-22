@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/heyjoakim/devops-21/helpers"
+	"github.com/heyjoakim/devops-21/metrics"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
 	log "github.com/sirupsen/logrus"
@@ -23,10 +24,12 @@ import (
 // @Failure 500 {string} string response.Error
 // @Router /api/fllws/{username} [post]
 func FollowHandler(w http.ResponseWriter, r *http.Request) {
-	timer := RegisterEndpoint("post_api_fllws_username")
+	hist, _ := metrics.GetHistogramVec("post_api_fllws_username")
+	timer := createEndpointTimer(hist)
 	defer func() {
 		timer.ObserveDuration()
 	}()
+
 	updateLatest(r)
 
 	notFromSimResponse := helpers.NotReqFromSimulator(r)
@@ -92,10 +95,12 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string response.Error
 // @Router /api/fllws/{username} [get]
 func GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
-	timer := RegisterEndpoint("get_api_fllws_username")
+	hist, _ := metrics.GetHistogramVec("get_api_fllws_username")
+	timer := createEndpointTimer(hist)
 	defer func() {
 		timer.ObserveDuration()
 	}()
+
 	updateLatest(r)
 
 	notFromSimResponse := helpers.NotReqFromSimulator(r)

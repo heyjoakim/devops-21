@@ -11,13 +11,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var HistogramVecs map[string]*prometheus.HistogramVec
-var GaugeOpts map[string]*prometheus.GaugeOpts
+var histogramVecs = make(map[string]*prometheus.HistogramVec)
+var GaugeOpts = make(map[string]*prometheus.GaugeOpts)
 
 func GetHistogramVec(name string) (*prometheus.HistogramVec, error) {
-	result := HistogramVecs[name]
+	result := histogramVecs[name]
 	if result == nil {
-		return nil, fmt.Errorf("Could not find historgram with name: %s", name)
+		return nil, fmt.Errorf("could not find historgram with name: %s", name)
 	}
 	return result, nil
 }
@@ -111,5 +111,31 @@ func cpuMetrics() {
 }
 
 func apiEndpointDurationsMetrics() {
+	var (
+		bucketStart = 0.01
+		bucketWidth = 0.05
+		bucketCount = 10
+		endpoints   = []string{
+			"post_api_fllws_username",
+			"get_api_fllws_username",
+			"get_api_latest",
+			"get_api_msgs",
+			"get_api_msgs_username",
+			"post_api_msgs_username",
+			"post_api_register",
+		}
+	)
 
+	for _, e := range endpoints {
+		hist := prometheus.NewHistogramVec(
+			prometheus.HistogramOpts{
+				Name:    fmt.Sprintf("http_request_%s_duration_seconds", e),
+				Help:    fmt.Sprintf("http_request_%s_duration_seconds", e),
+				Buckets: prometheus.LinearBuckets(bucketStart, bucketWidth, bucketCount),
+			},
+			[]string{"status"},
+		)
+		prometheus.MustRegister(hist)
+		histogramVecs[e] = hist
+	}
 }
