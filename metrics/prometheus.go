@@ -1,7 +1,9 @@
 package metrics
 
 import (
+	"fmt"
 	"time"
+
 	"github.com/heyjoakim/devops-21/services"
 	"github.com/prometheus/client_golang/prometheus"
 	cpu "github.com/shirou/gopsutil/cpu"
@@ -9,13 +11,25 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// InitializeMetrics incvokes custom metric functions
+var HistogramVecs map[string]*prometheus.HistogramVec
+var GaugeOpts map[string]*prometheus.GaugeOpts
+
+func GetHistogramVec(name string) (*prometheus.HistogramVec, error) {
+	result := HistogramVecs[name]
+	if result == nil {
+		return nil, fmt.Errorf("Could not find historgram with name: %s", name)
+	}
+	return result, nil
+}
+
+// InitializeMetrics invokes custom metric functions
 func InitializeMetrics() {
 	log.Info("Init metrics")
 	cpuMetrics()
 	memoryMetrics()
 	userCountMetrics()
 	messageCountMetrics()
+	apiEndpointDurationsMetrics()
 }
 
 const measurementDelay = 5
@@ -94,4 +108,8 @@ func cpuMetrics() {
 			time.Sleep(measurementDelay * time.Second)
 		}
 	}()
+}
+
+func apiEndpointDurationsMetrics() {
+
 }

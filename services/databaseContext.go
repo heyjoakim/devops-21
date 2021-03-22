@@ -32,7 +32,6 @@ func configureEnv() {
 	err := godotenv.Load(envFilePath)
 	if err != nil {
 		log.Error("Error loading .env file - using system variables.")
-
 	}
 
 	environment = os.Getenv("ENVIRONMENT")
