@@ -52,35 +52,43 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&followRequest)
 	if followRequest.Follow == "" || followRequest.Unfollow == "" {
 		if followRequest.Follow != "" {
-			followsUserID, err := services.GetUserID(followRequest.Follow)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			follower := models.Follower{WhoID: userID, WhomID: followsUserID}
-			err = services.CreateFollower(follower)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			w.WriteHeader(http.StatusNoContent)
+			follow(followRequest, userID, w)
 		} else if followRequest.Unfollow != "" {
-			unfollowsUserID, err := services.GetUserID(followRequest.Unfollow)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				log.Println(err)
-			}
-
-			err = services.UnfollowUser(userID, unfollowsUserID)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				log.Println(err)
-			}
-
-			w.WriteHeader(http.StatusNoContent)
+			unfollow(followRequest, userID, w)
 		}
 	} else {
 		http.Error(w, "Invalid input. Can ONLY handle either follow OR unfollow.", http.StatusUnprocessableEntity)
 	}
+}
+
+func follow(followRequest models.FollowRequest, userID uint, w http.ResponseWriter) {
+	followsUserID, err := services.GetUserID(followRequest.Follow)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	follower := models.Follower{WhoID: userID, WhomID: followsUserID}
+	err = services.CreateFollower(follower)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func unfollow(followRequest models.FollowRequest, userID uint, w http.ResponseWriter) {
+	unfollowsUserID, err := services.GetUserID(followRequest.Unfollow)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		log.Println(err)
+	}
+
+	err = services.UnfollowUser(userID, unfollowsUserID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // GetFollowersHandler godoc
