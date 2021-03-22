@@ -1,11 +1,11 @@
 package ui
 
 import (
-	"log"
 	"net/http"
 	"text/template"
 
 	"github.com/gorilla/sessions"
+	log "github.com/sirupsen/logrus"
 )
 
 // AddFlash add a flash to the session
@@ -18,7 +18,7 @@ func AddFlash(session *sessions.Session, w http.ResponseWriter, r *http.Request,
 func LoadTemplate(path string) *template.Template {
 	tmpl, err := template.ParseFiles(path, LayoutPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	return tmpl
 }

@@ -1,9 +1,8 @@
 package services
 
 import (
-	"log"
-
 	"github.com/heyjoakim/devops-21/models"
+	log "github.com/sirupsen/logrus"
 )
 
 var d = GetDBInstance()
@@ -11,40 +10,60 @@ var d = GetDBInstance()
 // GetUserID returns user ID for username
 func GetUserID(username string) (uint, error) {
 	var user models.User
-	err := d.db.First(&user, "username = ?", username).Error
-	if err != nil {
-		log.Println(err)
+	getUserIDErr := d.db.First(&user, "username = ?", username).Error
+	if getUserIDErr != nil {
+		log.WithFields(log.Fields{
+			"err": getUserIDErr,
+			"username": username,
+		}).Error("Error in GetUserID")
 	}
-	return user.UserID, err
+	return user.UserID, getUserIDErr
 }
 
 func GetUserFromUsername(username string) (models.User, error) {
 	var user models.User
 	err := d.db.Where("username = ?", username).First(&user).Error
 	if err != nil {
-		log.Println(err)
+		log.WithFields(log.Fields{
+			"err": err,
+			"username": username,
+		}).Error("GetUserFromUsername error")
 	}
 	return user, err
 }
 
 func GetUser(userID uint) models.User {
 	var user models.User
-	err := d.db.First(&user, "user_id = ?", userID).Error
-	if err != nil {
-		log.Println(err)
+	getUserErr := d.db.First(&user, "user_id = ?", userID).Error
+	if getUserErr != nil {
+		log.WithFields(log.Fields{
+			"getUserErr": getUserErr,
+			"userID": userID,
+		}).Error("GetUser error")
 	}
 	return user
 }
 
 // CreateUser creates a new user in the database
 func CreateUser(user models.User) error {
-	err := d.db.Create(&user).Error
-	return err
+	createUserErr := d.db.Create(&user).Error
+	if createUserErr != nil {
+		log.WithFields(log.Fields{
+			"createUserErr": createUserErr,
+			"userObject": user,
+		}).Error("CreateUser error")
+	}
+	return createUserErr
 }
 
 // GetUserCount returns the number of users reigstered in the system
 func GetUserCount() int64 {
 	var count int64
-	d.db.Find(&models.User{}).Count(&count)
+	countErr := d.db.Find(&models.User{}).Count(&count).Error
+	if countErr != nil {
+		log.WithFields(log.Fields{
+			"GetUserCountErr": countErr,
+		}).Error("GetUserCount: DB err")
+	}
 	return count
 }

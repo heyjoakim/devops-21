@@ -1,13 +1,12 @@
 package ui
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
+	log "github.com/sirupsen/logrus"
 )
 
 // FollowUserHandler handles following another user
@@ -21,7 +20,7 @@ func FollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	follower := models.Follower{WhoID: currentUserID, WhomID: userToFollowID}
 	err := services.CreateFollower(follower)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 
 	AddFlash(session, w, r, "You are now following "+username, "Info")
@@ -44,6 +43,7 @@ func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	id2, user2Err := services.GetUserID(username)
 	if user2Err != nil {
 		AddFlash(session, w, r, "User does not exist", "Warn")
+		log.Error("Error following user. User does not exist")
 		http.Redirect(w, r, "timeline", http.StatusFound)
 		return
 	}
@@ -52,7 +52,7 @@ func UnfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		AddFlash(session, w, r, "Error following user", "Warn")
-		fmt.Println("db error: ", err)
+		log.Error("Error following user. DB error: ", err)
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}

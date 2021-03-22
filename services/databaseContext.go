@@ -1,14 +1,13 @@
 package services
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"sync"
 
 	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/joho/godotenv"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -32,7 +31,8 @@ func configureEnv() {
 	envFilePath := helpers.GetFullPath("../.env")
 	err := godotenv.Load(envFilePath)
 	if err != nil {
-		log.Println("Error loading .env file - using system variables.")
+		log.Error("Error loading .env file - using system variables.")
+
 	}
 
 	environment = os.Getenv("ENVIRONMENT")
@@ -43,7 +43,7 @@ func (d *DBContext) initialize() {
 	configureEnv()
 	db, err := d.connectDB()
 	if err != nil {
-		log.Panic(err)
+		log.Error(err)
 	}
 
 	var (
@@ -68,10 +68,9 @@ func (d *DBContext) initialize() {
 }
 
 func (d *DBContext) connectDB() (*gorm.DB, error) {
-	fmt.Println(environment)
 	switch environment {
 	case "develop":
-		fmt.Println("Using local SQLite db")
+		log.Info("Using local SQLite db")
 		return gorm.Open(sqlite.Open("./tmp/minitwit.db"), &gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
@@ -79,7 +78,7 @@ func (d *DBContext) connectDB() (*gorm.DB, error) {
 			DisableForeignKeyConstraintWhenMigrating: true,
 		})
 	case "production":
-		fmt.Println("Using remote postgres db")
+		log.Info("Using remote postgres db")
 		return gorm.Open(postgres.New(
 			postgres.Config{
 				DSN:                  dsn,
@@ -91,7 +90,7 @@ func (d *DBContext) connectDB() (*gorm.DB, error) {
 				},
 			})
 	case "testing":
-		fmt.Println("Using in memory SQLite db")
+		log.Info("Using in memory SQLite db")
 
 		return gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
 			NamingStrategy: schema.NamingStrategy{
@@ -107,9 +106,8 @@ func (d *DBContext) connectDB() (*gorm.DB, error) {
 // initDB creates the database tables.
 func (d *DBContext) initDB() {
 	err := d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{}, &models.Config{})
-
 	if err != nil {
-		log.Println("Migration error:", err)
+		log.Fatal("Migration error:", err)
 	}
 }
 
@@ -119,7 +117,7 @@ func GetDBInstance() DBContext {
 		lock.Lock()
 		defer lock.Unlock()
 		if dbContext.db == nil {
-			log.Println("Creating Single Instance Now")
+			log.Info("Creating Single Instance Now")
 			dbContext.initialize()
 			dbContext.initDB() // AutoMigrate
 		}

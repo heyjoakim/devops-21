@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
+	log "github.com/sirupsen/logrus"
 )
 
 // FollowHandler godoc
@@ -41,6 +41,7 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := services.GetUserID(username)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("User not found: %s", username), http.StatusNotFound)
+		log.Error(fmt.Sprintf("FollowHandler: User not found: %s", username))
 		return
 	}
 

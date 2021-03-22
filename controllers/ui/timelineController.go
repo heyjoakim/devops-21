@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"text/template"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
+	log "github.com/sirupsen/logrus"
 )
 
 // TimelineHandler a users timeline or if no user is logged in it will
@@ -62,7 +62,7 @@ func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errorCode := 404
 		w.WriteHeader(errorCode)
-		fmt.Println(err)
+		log.WithField("err", err).Error("UserTimelineHandler error")
 		return
 	}
 
@@ -105,7 +105,7 @@ func UserTimelineHandler(w http.ResponseWriter, r *http.Request) {
 
 	tmpl, err := template.ParseFiles(TimelinePath, LayoutPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	_ = tmpl.Execute(w, data)
 }
