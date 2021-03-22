@@ -17,9 +17,7 @@ import (
 func GetLatestHandler(w http.ResponseWriter, r *http.Request) {
 	hist, _ := metrics.GetHistogramVec("get_api_latest")
 	timer := createEndpointTimer(hist)
-	defer func() {
-		timer.ObserveDuration()
-	}()
+	defer timer.ObserveDuration()
 
 	data := map[string]interface{}{
 		"latest": services.GetLatest(),

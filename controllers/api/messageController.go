@@ -24,9 +24,7 @@ import (
 func MessagesHandler(w http.ResponseWriter, r *http.Request) {
 	hist, _ := metrics.GetHistogramVec("get_api_msgs")
 	timer := createEndpointTimer(hist)
-	defer func() {
-		timer.ObserveDuration()
-	}()
+	defer timer.ObserveDuration()
 
 	updateLatest(r)
 
@@ -66,9 +64,7 @@ func MessagesHandler(w http.ResponseWriter, r *http.Request) {
 func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 	hist, _ := metrics.GetHistogramVec("get_api_msgs_username")
 	timer := createEndpointTimer(hist)
-	defer func() {
-		timer.ObserveDuration()
-	}()
+	defer timer.ObserveDuration()
 
 	updateLatest(r)
 
@@ -122,9 +118,7 @@ func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 func PostMessageHandler(w http.ResponseWriter, r *http.Request) {
 	hist, _ := metrics.GetHistogramVec("post_api_msgs_username")
 	timer := createEndpointTimer(hist)
-	defer func() {
-		timer.ObserveDuration()
-	}()
+	defer timer.ObserveDuration()
 
 	updateLatest(r)
 	params := mux.Vars(r)

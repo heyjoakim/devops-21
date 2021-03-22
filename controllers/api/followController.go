@@ -26,9 +26,7 @@ import (
 func FollowHandler(w http.ResponseWriter, r *http.Request) {
 	hist, _ := metrics.GetHistogramVec("post_api_fllws_username")
 	timer := createEndpointTimer(hist)
-	defer func() {
-		timer.ObserveDuration()
-	}()
+	defer timer.ObserveDuration()
 
 	updateLatest(r)
 
@@ -105,9 +103,7 @@ func unfollow(followRequest models.FollowRequest, userID uint, w http.ResponseWr
 func GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
 	hist, _ := metrics.GetHistogramVec("get_api_fllws_username")
 	timer := createEndpointTimer(hist)
-	defer func() {
-		timer.ObserveDuration()
-	}()
+	defer timer.ObserveDuration()
 
 	updateLatest(r)
 
