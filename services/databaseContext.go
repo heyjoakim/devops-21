@@ -51,11 +51,11 @@ func (d *DBContext) initialize() {
 	)
 
 	err = db.Use(prometheus.New(prometheus.Config{
-		DBName:          "Pushgateway",                // use `DBName` as metrics label
-		RefreshInterval: logInterval,                  // Refresh metrics interval (default 15 seconds)
-		PushAddr:        "http://142.93.103.26:9091/", // push metrics if `PushAddr` configured
-		StartServer:     true,                         // start http server to expose metrics
-		HTTPServerPort:  HTTPPort,                     // configure http server port, default port 8080
+		DBName:          "Pushgateway",                     // use `DBName` as metrics label
+		RefreshInterval: logInterval,                       // Refresh metrics interval (default 15 seconds)
+		PushAddr:        os.Getenv("PROMETHEUS_PUSH_ADDR"), // push metrics if `PushAddr` configured
+		StartServer:     true,                              // start http server to expose metrics
+		HTTPServerPort:  HTTPPort,                          // configure http server port, default port 8080
 		// (if you have configured multiple instances, only the first `HTTPServerPort` will be used to start server)
 	}))
 
