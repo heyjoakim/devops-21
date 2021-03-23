@@ -22,9 +22,11 @@ import (
 // @Failure 400 {string} string "unauthorized"
 // @Router /api/register [post]
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	hist, _ := metrics.GetHistogramVec("post_api_register")
-	timer := createEndpointTimer(hist)
-	defer timer.ObserveDuration()
+	hist := metrics.GetHistogramVec("post_api_register")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
 
 	// TODO Consider if this functionality can be shared with ui controller. Logic should probably be in service.
 	var registerRequest models.RegisterRequest

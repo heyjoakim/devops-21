@@ -14,12 +14,9 @@ import (
 var histogramVecs = make(map[string]*prometheus.HistogramVec)
 var GaugeOpts = make(map[string]*prometheus.GaugeOpts)
 
-func GetHistogramVec(name string) (*prometheus.HistogramVec, error) {
+func GetHistogramVec(name string) *prometheus.HistogramVec {
 	result := histogramVecs[name]
-	if result == nil {
-		return nil, fmt.Errorf("could not find historgram with name: %s", name)
-	}
-	return result, nil
+	return result
 }
 
 // InitializeMetrics invokes custom metric functions
@@ -29,7 +26,7 @@ func InitializeMetrics() {
 	memoryMetrics()
 	userCountMetrics()
 	messageCountMetrics()
-	apiEndpointDurationsMetrics()
+	// apiEndpointDurationsMetrics()
 }
 
 const measurementDelay = 5

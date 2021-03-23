@@ -15,9 +15,11 @@ import (
 // @Success 200 {object} interface{}
 // @Router /api/latest [get]
 func GetLatestHandler(w http.ResponseWriter, r *http.Request) {
-	hist, _ := metrics.GetHistogramVec("get_api_latest")
-	timer := createEndpointTimer(hist)
-	defer timer.ObserveDuration()
+	hist := metrics.GetHistogramVec("get_api_latest")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
 
 	data := map[string]interface{}{
 		"latest": services.GetLatest(),

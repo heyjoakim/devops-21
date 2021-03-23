@@ -22,9 +22,11 @@ import (
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs [get]
 func MessagesHandler(w http.ResponseWriter, r *http.Request) {
-	hist, _ := metrics.GetHistogramVec("get_api_msgs")
-	timer := createEndpointTimer(hist)
-	defer timer.ObserveDuration()
+	hist := metrics.GetHistogramVec("get_api_msgs")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
 
 	updateLatest(r)
 
@@ -59,9 +61,11 @@ func MessagesHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs/{username} [get]
 func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
-	hist, _ := metrics.GetHistogramVec("get_api_msgs_username")
-	timer := createEndpointTimer(hist)
-	defer timer.ObserveDuration()
+	hist := metrics.GetHistogramVec("get_api_msgs_username")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
 
 	updateLatest(r)
 
@@ -110,9 +114,11 @@ func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs/{username} [post]
 func PostMessageHandler(w http.ResponseWriter, r *http.Request) {
-	hist, _ := metrics.GetHistogramVec("post_api_msgs_username")
-	timer := createEndpointTimer(hist)
-	defer timer.ObserveDuration()
+	hist := metrics.GetHistogramVec("post_api_msgs_username")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
 
 	updateLatest(r)
 	params := mux.Vars(r)

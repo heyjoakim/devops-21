@@ -24,9 +24,11 @@ import (
 // @Failure 500 {string} string response.Error
 // @Router /api/fllws/{username} [post]
 func FollowHandler(w http.ResponseWriter, r *http.Request) {
-	hist, _ := metrics.GetHistogramVec("post_api_fllws_username")
-	timer := createEndpointTimer(hist)
-	defer timer.ObserveDuration()
+	hist := metrics.GetHistogramVec("post_api_fllws_username")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
 
 	updateLatest(r)
 
@@ -98,9 +100,11 @@ func unfollow(followRequest models.FollowRequest, userID uint, w http.ResponseWr
 // @Failure 500 {string} string response.Error
 // @Router /api/fllws/{username} [get]
 func GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
-	hist, _ := metrics.GetHistogramVec("get_api_fllws_username")
-	timer := createEndpointTimer(hist)
-	defer timer.ObserveDuration()
+	hist := metrics.GetHistogramVec("get_api_fllws_username")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
 
 	updateLatest(r)
 
