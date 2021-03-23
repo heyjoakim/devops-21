@@ -26,7 +26,7 @@ func InitializeMetrics() {
 	memoryMetrics()
 	userCountMetrics()
 	messageCountMetrics()
-	// apiEndpointDurationsMetrics()
+	apiEndpointDurationsMetrics()
 }
 
 const measurementDelay = 5
