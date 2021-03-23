@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/heyjoakim/devops-21/helpers"
+	"github.com/heyjoakim/devops-21/metrics"
 	"github.com/heyjoakim/devops-21/services"
 )
 
@@ -14,6 +15,12 @@ import (
 // @Success 200 {object} interface{}
 // @Router /api/latest [get]
 func GetLatestHandler(w http.ResponseWriter, r *http.Request) {
+	hist := metrics.GetHistogramVec("get_api_latest")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
+
 	data := map[string]interface{}{
 		"latest": services.GetLatest(),
 	}

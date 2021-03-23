@@ -29,8 +29,8 @@ func Serialize(input interface{}) ([]byte, error) {
 	return js, nil
 }
 
-// NotReqFromSimulator checks if the request comes from the simulator.
-func NotReqFromSimulator(r *http.Request) []byte {
+// IsFromSimulator checks if the request comes from the simulator.
+func IsFromSimulator(w http.ResponseWriter, r *http.Request) bool {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader != "Basic c2ltdWxhdG9yOnN1cGVyX3NhZmUh" {
 		data := map[string]interface{}{
@@ -39,9 +39,12 @@ func NotReqFromSimulator(r *http.Request) []byte {
 		}
 
 		jsonData, _ := Serialize(data)
-		return jsonData
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = w.Write(jsonData)
+		return true
 	}
-	return nil
+	return false
 }
 
 // FormatDatetime formats a timestamp for display.

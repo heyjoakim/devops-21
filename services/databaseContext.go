@@ -12,6 +12,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"gorm.io/plugin/prometheus"
 )
 
 // DBContext defines the application
@@ -31,7 +32,6 @@ func configureEnv() {
 	err := godotenv.Load(envFilePath)
 	if err != nil {
 		log.Error("Error loading .env file - using system variables.")
-
 	}
 
 	environment = os.Getenv("ENVIRONMENT")
@@ -44,6 +44,25 @@ func (d *DBContext) initialize() {
 	if err != nil {
 		log.Error(err)
 	}
+
+	var (
+		logInterval = uint32(2)    //nolint
+		HTTPPort    = uint32(8080) //nolint
+	)
+
+	err = db.Use(prometheus.New(prometheus.Config{
+		DBName:          "Pushgateway",                     // use `DBName` as metrics label
+		RefreshInterval: logInterval,                       // Refresh metrics interval (default 15 seconds)
+		PushAddr:        os.Getenv("PROMETHEUS_PUSH_ADDR"), // push metrics if `PushAddr` configured
+		StartServer:     true,                              // start http server to expose metrics
+		HTTPServerPort:  HTTPPort,                          // configure http server port, default port 8080
+		// (if you have configured multiple instances, only the first `HTTPServerPort` will be used to start server)
+	}))
+
+	if err != nil {
+		log.Println("Could not register prometheus logger.")
+	}
+
 	d.db = db
 }
 

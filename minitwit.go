@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -12,13 +13,11 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-func init() {
-  // Log as JSON instead of the default ASCII formatter.
-  log.SetFormatter(&log.JSONFormatter{})
-}
-
 func main() {
 	metrics.InitializeMetrics()
+
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
 
 	router := mux.NewRouter()
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))
@@ -32,6 +31,6 @@ func main() {
 	apiRouter.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
 
 	PORT := ":8000"
-	log.Info("Server is running on http://localhost:" + PORT)
+	log.Info(fmt.Sprintf("Server is running on http://localhost%s", PORT))
 	log.Fatal(http.ListenAndServe(PORT, router))
 }

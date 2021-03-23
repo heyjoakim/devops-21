@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/heyjoakim/devops-21/helpers"
+	"github.com/heyjoakim/devops-21/metrics"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
 )
@@ -21,13 +22,16 @@ import (
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs [get]
 func MessagesHandler(w http.ResponseWriter, r *http.Request) {
+	hist := metrics.GetHistogramVec("get_api_msgs")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
+
 	updateLatest(r)
 
-	notFromSimResponse := helpers.NotReqFromSimulator(r)
-	if notFromSimResponse != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write(notFromSimResponse)
+	notFromSimResponse := helpers.IsFromSimulator(w, r)
+	if notFromSimResponse {
 		return
 	}
 
@@ -57,6 +61,12 @@ func MessagesHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs/{username} [get]
 func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
+	hist := metrics.GetHistogramVec("get_api_msgs_username")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
+
 	updateLatest(r)
 
 	params := mux.Vars(r)
@@ -64,11 +74,8 @@ func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := services.GetUserID(username)
 
-	notFromSimResponse := helpers.NotReqFromSimulator(r)
-	if notFromSimResponse != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write(notFromSimResponse)
+	notFromSimResponse := helpers.IsFromSimulator(w, r)
+	if notFromSimResponse {
 		return
 	}
 
@@ -107,17 +114,20 @@ func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {string} string "unauthorized"
 // @Router /api/msgs/{username} [post]
 func PostMessageHandler(w http.ResponseWriter, r *http.Request) {
+	hist := metrics.GetHistogramVec("post_api_msgs_username")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
+
 	updateLatest(r)
 	params := mux.Vars(r)
 	username := params["username"]
 
 	userID, _ := services.GetUserID(username)
 
-	notFromSimResponse := helpers.NotReqFromSimulator(r)
-	if notFromSimResponse != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write(notFromSimResponse)
+	notFromSimResponse := helpers.IsFromSimulator(w, r)
+	if notFromSimResponse {
 		return
 	}
 

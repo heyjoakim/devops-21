@@ -1,7 +1,9 @@
 package metrics
 
 import (
+	"fmt"
 	"time"
+
 	"github.com/heyjoakim/devops-21/services"
 	"github.com/prometheus/client_golang/prometheus"
 	cpu "github.com/shirou/gopsutil/cpu"
@@ -9,13 +11,22 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// InitializeMetrics incvokes custom metric functions
+var histogramVecs = make(map[string]*prometheus.HistogramVec)
+var GaugeOpts = make(map[string]*prometheus.GaugeOpts)
+
+func GetHistogramVec(name string) *prometheus.HistogramVec {
+	result := histogramVecs[name]
+	return result
+}
+
+// InitializeMetrics invokes custom metric functions
 func InitializeMetrics() {
 	log.Info("Init metrics")
 	cpuMetrics()
 	memoryMetrics()
 	userCountMetrics()
 	messageCountMetrics()
+	apiEndpointDurationsMetrics()
 }
 
 const measurementDelay = 5
@@ -94,4 +105,34 @@ func cpuMetrics() {
 			time.Sleep(measurementDelay * time.Second)
 		}
 	}()
+}
+
+func apiEndpointDurationsMetrics() {
+	var (
+		bucketStart = 0.01
+		bucketWidth = 0.05
+		bucketCount = 10
+		endpoints   = []string{
+			"post_api_fllws_username",
+			"get_api_fllws_username",
+			"get_api_latest",
+			"get_api_msgs",
+			"get_api_msgs_username",
+			"post_api_msgs_username",
+			"post_api_register",
+		}
+	)
+
+	for _, e := range endpoints {
+		hist := prometheus.NewHistogramVec(
+			prometheus.HistogramOpts{
+				Name:    fmt.Sprintf("http_request_%s_duration_seconds", e),
+				Help:    fmt.Sprintf("http_request_%s_duration_seconds", e),
+				Buckets: prometheus.LinearBuckets(bucketStart, bucketWidth, bucketCount),
+			},
+			[]string{"status"},
+		)
+		prometheus.MustRegister(hist)
+		histogramVecs[e] = hist
+	}
 }

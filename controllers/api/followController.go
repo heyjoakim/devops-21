@@ -3,12 +3,14 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/heyjoakim/devops-21/helpers"
-	"github.com/heyjoakim/devops-21/models"
-	"github.com/heyjoakim/devops-21/services"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/heyjoakim/devops-21/helpers"
+	"github.com/heyjoakim/devops-21/metrics"
+	"github.com/heyjoakim/devops-21/models"
+	"github.com/heyjoakim/devops-21/services"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,13 +24,16 @@ import (
 // @Failure 500 {string} string response.Error
 // @Router /api/fllws/{username} [post]
 func FollowHandler(w http.ResponseWriter, r *http.Request) {
+	hist := metrics.GetHistogramVec("post_api_fllws_username")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
+
 	updateLatest(r)
 
-	notFromSimResponse := helpers.NotReqFromSimulator(r)
-	if notFromSimResponse != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write(notFromSimResponse)
+	notFromSimResponse := helpers.IsFromSimulator(w, r)
+	if notFromSimResponse {
 		return
 	}
 
@@ -44,33 +49,43 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewDecoder(r.Body).Decode(&followRequest)
 	if followRequest.Follow == "" || followRequest.Unfollow == "" {
 		if followRequest.Follow != "" {
-			followsUserID, err := services.GetUserID(followRequest.Follow)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-				return
-			}
-			follower := models.Follower{WhoID: userID, WhomID: followsUserID}
-			err = services.CreateFollower(follower)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-			w.WriteHeader(http.StatusNoContent)
+			follow(followRequest, userID, w)
 		} else if followRequest.Unfollow != "" {
-			unfollowsUserID, err := services.GetUserID(followRequest.Unfollow)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusNotFound)
-			}
-
-			err = services.UnfollowUser(userID, unfollowsUserID)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-
-			w.WriteHeader(http.StatusNoContent)
+			unfollow(followRequest, userID, w)
 		}
 	} else {
 		http.Error(w, "Invalid input. Can ONLY handle either follow OR unfollow.", http.StatusUnprocessableEntity)
 	}
+}
+
+func follow(followRequest models.FollowRequest, userID uint, w http.ResponseWriter) {
+	followsUserID, err := services.GetUserID(followRequest.Follow)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	follower := models.Follower{WhoID: userID, WhomID: followsUserID}
+	err = services.CreateFollower(follower)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func unfollow(followRequest models.FollowRequest, userID uint, w http.ResponseWriter) {
+	unfollowsUserID, err := services.GetUserID(followRequest.Unfollow)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		log.Println(err)
+	}
+
+	err = services.UnfollowUser(userID, unfollowsUserID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // GetFollowersHandler godoc
@@ -85,13 +100,16 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string response.Error
 // @Router /api/fllws/{username} [get]
 func GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
+	hist := metrics.GetHistogramVec("get_api_fllws_username")
+	if hist != nil {
+		timer := createEndpointTimer(hist)
+		defer timer.ObserveDuration()
+	}
+
 	updateLatest(r)
 
-	notFromSimResponse := helpers.NotReqFromSimulator(r)
-	if notFromSimResponse != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write(notFromSimResponse)
+	notFromSimResponse := helpers.IsFromSimulator(w, r)
+	if notFromSimResponse {
 		return
 	}
 
