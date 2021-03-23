@@ -28,11 +28,8 @@ func MessagesHandler(w http.ResponseWriter, r *http.Request) {
 
 	updateLatest(r)
 
-	notFromSimResponse := helpers.NotReqFromSimulator(r)
-	if notFromSimResponse != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write(notFromSimResponse)
+	notFromSimResponse := helpers.IsFromSimulator(w, r)
+	if notFromSimResponse {
 		return
 	}
 
@@ -73,11 +70,8 @@ func GetMessagesFromUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := services.GetUserID(username)
 
-	notFromSimResponse := helpers.NotReqFromSimulator(r)
-	if notFromSimResponse != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write(notFromSimResponse)
+	notFromSimResponse := helpers.IsFromSimulator(w, r)
+	if notFromSimResponse {
 		return
 	}
 
@@ -126,11 +120,8 @@ func PostMessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := services.GetUserID(username)
 
-	notFromSimResponse := helpers.NotReqFromSimulator(r)
-	if notFromSimResponse != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write(notFromSimResponse)
+	notFromSimResponse := helpers.IsFromSimulator(w, r)
+	if notFromSimResponse {
 		return
 	}
 
