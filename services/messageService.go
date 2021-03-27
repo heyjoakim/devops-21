@@ -9,7 +9,7 @@ import (
 // "user" is a reserved word in postgres, so it needs to be quoted in the queries
 func GetPublicMessages(numberOfMessages int) []models.MessageDto {
 	var results []models.MessageDto
-	GetPublicMessagesErr :=  d.db.Model(&models.Message{}).
+	GetPublicMessagesErr := d.db.Model(&models.Message{}).
 		Select("message.text, message.pub_date, \"user\".username, \"user\".email").
 		Joins("left join \"user\" on message.author_id = \"user\".user_id").
 		Where("message.flagged=0").
@@ -20,7 +20,7 @@ func GetPublicMessages(numberOfMessages int) []models.MessageDto {
 	if GetPublicMessagesErr != nil {
 		log.WithFields(log.Fields{
 			"GetPublicMessagesErr": GetPublicMessagesErr,
-			"numberOfMessages": numberOfMessages,
+			"numberOfMessages":     numberOfMessages,
 		}).Error("GetPublicMessages: DB err")
 	}
 
@@ -42,8 +42,8 @@ func GetMessagesForUser(numberOfMessages int, userID uint) []models.MessageDto {
 
 	if er != nil {
 		log.WithFields(log.Fields{
-			"err": er,
-			"message": userID,
+			"err":              er,
+			"message":          userID,
 			"numberOfMessages": numberOfMessages,
 		}).Error("GetMessagesForUser: DB err")
 	}
@@ -56,7 +56,7 @@ func CreateMessage(message models.Message) error {
 	err := d.db.Create(&message).Error
 	if err != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"err":     err,
 			"message": message,
 		}).Error("CreateMessage: DB err")
 	}
