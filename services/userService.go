@@ -13,7 +13,7 @@ func GetUserID(username string) (uint, error) {
 	getUserIDErr := d.db.First(&user, "username = ?", username).Error
 	if getUserIDErr != nil {
 		log.WithFields(log.Fields{
-			"err": getUserIDErr,
+			"err":      getUserIDErr,
 			"username": username,
 		}).Error("Error in GetUserID")
 	}
@@ -25,7 +25,7 @@ func GetUserFromUsername(username string) (models.User, error) {
 	err := d.db.Where("username = ?", username).First(&user).Error
 	if err != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"err":      err,
 			"username": username,
 		}).Error("GetUserFromUsername error")
 	}
@@ -38,7 +38,7 @@ func GetUser(userID uint) models.User {
 	if getUserErr != nil {
 		log.WithFields(log.Fields{
 			"getUserErr": getUserErr,
-			"userID": userID,
+			"userID":     userID,
 		}).Error("GetUser error")
 	}
 	return user
@@ -50,7 +50,7 @@ func CreateUser(user models.User) error {
 	if createUserErr != nil {
 		log.WithFields(log.Fields{
 			"createUserErr": createUserErr,
-			"userObject": user,
+			"userObject":    user,
 		}).Error("CreateUser error")
 	}
 	return createUserErr
