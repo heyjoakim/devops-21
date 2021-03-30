@@ -1,9 +1,21 @@
 version: '3.9'
 
 services:
-  go:
+  minitwut-app:
+    image: svopper/minitwut-compose:latest
     build:
       context: .
-      dockerfile: './dockerfile'
     ports:
       - '8000:8000'
+  datadog:
+    links:
+     - minitwut-app # Connect the Datadog Agent container to the Go container
+    image: gcr.io/datadoghq/agent:latest
+    environment:
+     - DD_API_KEY=56deea3f02f87c950b9fec570c8a4a63
+     - DD_SITE=datadoghq.com
+     - DD_DOGSTATSD_NON_LOCAL_TRAFFIC="true"
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock:ro
+     - /proc/:/host/proc/:ro
+     - /sys/fs/cgroup:/host/sys/fs/cgroup:ro

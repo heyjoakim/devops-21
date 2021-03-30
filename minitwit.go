@@ -14,10 +14,11 @@ import (
 )
 
 func main() {
-	metrics.InitializeMetrics()
-
+	fmt.Println("First")
 	// Log as JSON instead of the default ASCII formatter.
 	log.SetFormatter(&log.JSONFormatter{})
+
+	metrics.InitializeMetrics()
 
 	router := mux.NewRouter()
 	s := http.StripPrefix("/static/", http.FileServer(http.Dir("./static/")))

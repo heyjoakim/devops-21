@@ -7,9 +7,9 @@ import (
 
 func CreateFollower(follower models.Follower) error {
 	err := d.db.Create(&follower).Error
-	if (err != nil) {
+	if err != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"err":      err,
 			"follower": follower,
 		}).Error("CreateFollower: DB err")
 	}
@@ -22,9 +22,9 @@ func UnfollowUser(followingUsersID uint, userToUnfollowID uint) error {
 		Where("whom_id = ?", userToUnfollowID).
 		Delete(&follower).
 		Error
-	if (err != nil) {
+	if err != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"err":              err,
 			"followingUsersID": followingUsersID,
 			"userToUnfollowID": userToUnfollowID,
 		}).Error("UnfollowUser: DB err")
@@ -41,10 +41,10 @@ func GetAllUsersFollowers(userID uint, noFollowers int) []string {
 		Limit(noFollowers).
 		Scan(&users).Error
 
-	if (err != nil) {
+	if err != nil {
 		log.WithFields(log.Fields{
-			"err": err,
-			"userID": userID,
+			"err":         err,
+			"userID":      userID,
 			"noFollowers": noFollowers,
 		}).Error("UnfollowUser: DB err")
 	}
@@ -54,9 +54,9 @@ func GetAllUsersFollowers(userID uint, noFollowers int) []string {
 func GetUsersFollowedBy(userID uint) []models.Follower {
 	var followers []models.Follower
 	err := d.db.Where("who_id = ?", userID).Find(&followers).Error
-	if (err != nil) {
+	if err != nil {
 		log.WithFields(log.Fields{
-			"err": err,
+			"err":    err,
 			"userID": userID,
 		}).Error("GetUsersFollowedBy: DB err")
 	}
@@ -69,10 +69,10 @@ func IsUserFollower(userID uint, followedID uint) bool {
 		Where("whom_id = ?", followedID).
 		Find(&follower).Error
 
-	if (err != nil) {
+	if err != nil {
 		log.WithFields(log.Fields{
-			"err": err,
-			"userID": userID,
+			"err":        err,
+			"userID":     userID,
 			"followedID": followedID,
 		}).Error("IsUserFollower: DB err")
 	}

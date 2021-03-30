@@ -7,6 +7,7 @@ import (
 	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/joho/godotenv"
+	gorm_logrus "github.com/onrik/gorm-logrus"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -71,6 +72,7 @@ func (d *DBContext) connectDB() (*gorm.DB, error) {
 	case "develop":
 		log.Info("Using local SQLite db")
 		return gorm.Open(sqlite.Open("./tmp/minitwit.db"), &gorm.Config{
+			Logger: gorm_logrus.New(),
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
 			},
@@ -84,6 +86,7 @@ func (d *DBContext) connectDB() (*gorm.DB, error) {
 				PreferSimpleProtocol: true, // disables implicit prepared statement usage
 			}),
 			&gorm.Config{
+				Logger: gorm_logrus.New(),
 				NamingStrategy: schema.NamingStrategy{
 					SingularTable: true,
 				},
@@ -92,6 +95,7 @@ func (d *DBContext) connectDB() (*gorm.DB, error) {
 		log.Info("Using in memory SQLite db")
 
 		return gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+			Logger: gorm_logrus.New(),
 			NamingStrategy: schema.NamingStrategy{
 				SingularTable: true,
 			},

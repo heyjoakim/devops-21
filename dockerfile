@@ -19,7 +19,7 @@ COPY . /src/.
 # Make port 80 available to the host
 # Make port 2222 available for SSH from Azure
 # Make port 21 available for FTPS to access logs 
-EXPOSE 80 2222 21
+EXPOSE 8000 2222 21
 
 # Build and run the server when the container is started
 RUN go build /src/minitwit.go
