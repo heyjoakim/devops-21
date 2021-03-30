@@ -20,3 +20,8 @@ jobs:
             cd src
             git clone git@github.com:heyjoakim/devops-21.git
             echo 'Deployment successful to Digital Ocean : mt-cmp'
+
+      - name: Build and push Docker images
+        with:
+          tags: heyjoakim/mt-cmp:latest
+          push: true
