@@ -33,5 +33,6 @@ jobs:
             cd src
             git clone git@github.com:heyjoakim/devops-21.git
             echo 'Deployment successful to Digital Ocean : mt-cmp'
+            cd devios.21
             docker-compose up
 
