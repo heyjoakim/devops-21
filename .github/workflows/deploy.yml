@@ -28,21 +28,21 @@ jobs:
         run: echo ${{ steps.docker_build.outputs.digest }}
       
 
-#      -
-#        name: Deploy GO app
-#        uses: appleboy/ssh-action@v0.1.2
-#        with:
-#          host: ${{secrets.SSH_HOST}}
-#          key: ${{secrets.SSH_KEY}}
-#          username: ${{secrets.SSH_USERNAME}}
-#          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-#          
-#          script: |
-#            mkdir src
-#            cd src
-#           git clone git@github.com:heyjoakim/devops-21.git
-#           cd devops-21
-#           docker-compose pull
-#            docker-compose up -d
+      -
+        name: Deploy GO app
+        uses: appleboy/ssh-action@v0.1.2
+        with:
+          host: ${{secrets.SSH_HOST}}
+          key: ${{secrets.SSH_KEY}}
+          username: ${{secrets.SSH_USERNAME}}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          
+          script: |
+            mkdir src
+            cd src
+            git clone git@github.com:heyjoakim/devops-21.git
+            cd devops-21
+            docker-compose pull
+            docker-compose up --build -d
       
 
