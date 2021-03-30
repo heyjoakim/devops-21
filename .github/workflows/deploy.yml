@@ -7,7 +7,20 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy GO app
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push Docker images
+        uses: docker/build-push-action@v2.3.0
+        with:
+          tags: heyjoakim/mt-cmp:latest
+          push: true
+      -
+        name: Deploy GO app
         uses: appleboy/ssh-action@v0.1.2
         with:
           host: ${{secrets.SSH_HOST}}
@@ -20,9 +33,3 @@ jobs:
             cd src
             git clone git@github.com:heyjoakim/devops-21.git
             echo 'Deployment successful to Digital Ocean : mt-cmp'
-
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v2.3.0
-        with:
-          tags: heyjoakim/mt-cmp:latest
-          push: true
