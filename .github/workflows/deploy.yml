@@ -1,7 +1,7 @@
 name: Build & Deploy
 on:
   push:
-    branches: [jh-compose]
+    branches: [feature/jh-compose]
 
 jobs:
   deploy:
