@@ -22,6 +22,7 @@ jobs:
             echo 'Deployment successful to Digital Ocean : mt-cmp'
 
       - name: Build and push Docker images
+        uses: docker/build-push-action@v2.3.0
         with:
           tags: heyjoakim/mt-cmp:latest
           push: true
