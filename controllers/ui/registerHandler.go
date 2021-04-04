@@ -45,7 +45,7 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 					} else if _, err := services.GetUserID(r.FormValue("username")); err == nil {
 						registerError = "The username is already taken"
 	} else {
-		hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("passwords")), bcrypt.DefaultCost)
+		hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
 		if err != nil {
 			log.WithField("err", err).Error("Hashing error in PostRegisterUserHandler")
 			return

@@ -6,6 +6,7 @@ import (
 
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -38,8 +39,9 @@ func PostLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("passwords"))); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PwHash + "a"), []byte(r.FormValue("user"))); err != nil {
 		loginError = "Invalid password"
+		log.WithField("err", err).Error("Password hashes are different")
 		data := models.PageData{
 			"error":    loginError,
 			"username": session.Values["username"],
