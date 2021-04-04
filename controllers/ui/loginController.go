@@ -38,7 +38,7 @@ func PostLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PwHash + "abc"), []byte(r.FormValue("password"))); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("passwords"))); err != nil {
 		loginError = "Invalid password"
 		data := models.PageData{
 			"error":    loginError,
