@@ -40,7 +40,7 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 		registerError = "You have to enter a valid email address"
 	} else if len(r.FormValue("password")) == 0 {
 		registerError = "You have to enter a password"
-	} else if r.FormValue("password") != r.FormValue("password2") {
+	} else if r.FormValue("password") == r.FormValue("password2") {
 		registerError = "The two passwords do not match"
 	} else if _, err := services.GetUserID(r.FormValue("username")); err == nil {
 		registerError = "The username is already taken"
