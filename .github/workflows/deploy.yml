@@ -21,11 +21,11 @@ jobs:
       -
         name: Run GO build
         run: go build . 
-#      - 
-#        name: Run GO testing
-#        run: go test -v ./...
-#        env:
-#          ENVIRONMENT: testing
+      - 
+        name: Run GO testing
+        run: go test -v ./...
+        env:
+          ENVIRONMENT: testing
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
