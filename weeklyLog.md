@@ -311,6 +311,9 @@ When this is being written, a member has introduced an error somewhere in the ap
 
 Looking at the logs, this error shows up:
 
+![Screenshot from 2021-04-04 17-40-24](https://user-images.githubusercontent.com/43805989/113514120-21719d80-956d-11eb-9cf0-ae5304a4107a.png)
+
+
 ```
 
 { err crypto/bcrypt: hashedPassword is not the hash of the given password
