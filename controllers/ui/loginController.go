@@ -39,7 +39,10 @@ func PostLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PwHash + "a"), []byte(r.FormValue("user"))); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("password"))); err != nil {
+		fmt.Println([]byte(user.PwHash))
+		fmt.Println([]byte(r.FormValue("user")))
+
 		loginError = "Invalid password"
 		log.WithField("err", err).Error("Password hashes are different")
 		data := models.PageData{
