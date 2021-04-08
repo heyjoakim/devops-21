@@ -5,18 +5,29 @@ services:
     image: heyjoakim/mt-cmp:latest
     build:
       context: .
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "minitwit-app"}]'
     ports:
       - '8000:8000'
     environment:
+      - ENVIORNMENT=${ENVIRONMENT}
       - DATADOG_HOST=datadog
+      - DD_API_KEY=${DATADOG_API_KEY}
   datadog:
     image: datadog/agent
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "minitwit-app"}]'
     links:
       - minitwut-app # Connect the Datadog Agent container to the Go container
     environment:
       - DD_API_KEY=${DATADOG_API_KEY}
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_DOCKER_CONTAINER_USE_FILE=true
       - DD_SITE=datadoghq.com
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /proc/:/host/proc/:ro
       - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+    ports:
+      - "8125:8125/udp"
