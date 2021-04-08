@@ -1,3 +1,8 @@
 logs_enabled: true
-site: datadoghq.eu
-
+listeners:
+  - name: docker
+config_providers:
+  - name: docker
+    polling: true
+logs_config:
+  container_collect_all: true
