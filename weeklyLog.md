@@ -295,9 +295,9 @@ The adoption of this new strategy means that branches are to be made from the `m
 
 ## Week 08 Logging
 
-- [] Add Logging to Your Systems
-- [] Test that Your Logging Works
-- [] Write an SLA for Your Own API
+- [ ] Add Logging to Your Systems
+- [ ] Test that Your Logging Works
+- [ ] Write an SLA for Your Own API
 
 ### Add Logging to Your Systems
 
@@ -307,7 +307,45 @@ We had some problems with the EFK stack and started exploring other possiblities
 
 ### Test that Your Logging Works
 
-To be completed
+When this is being written, a member has introduced an error somewhere in the application, and now another member will investigate by viewing the logs.
+
+Looking at the logs, this error shows up:
+
+![Screenshot from 2021-04-04 17-40-24](https://user-images.githubusercontent.com/43805989/113514120-21719d80-956d-11eb-9cf0-ae5304a4107a.png)
+
+
+```
+
+{ err crypto/bcrypt: hashedPassword is not the hash of the given password
+  level error
+  time 2021-04-04T13:30:58Z
+}
+```
+
+This looks rather strange. The errors occurs in conjunction with a error-level log regarding log-in. Therefore I assume that this hashing error occurs in connection with login.
+
+Now, I'll attempt to recreate the error in production. For doing this, I create a user with the following credentials:
+
+- username : Testuser
+- email : usr@email.com
+- Password : pw
+
+And then attempt to log in with these credentials. This throws the same error and I cannot login. The message "Invalid Password" is shown.
+
+I start looking around in the controller for logins. In line 42 I find this code, where the digest of the incoming password is compared to the stored password.
+
+```
+if err := bcrypt.CompareHashAndPassword([]byte(user.PwHash + "a"), []byte(r.FormValue("user"))); err != nil {
+
+```
+
+An "a" is appended to the end of the digest from the database. This seems strange. I try removing the "a".
+
+Trying to test this in localhost, the problem still occurs.
+I then notice that this error is reading the "user" field from the formvalue, I change it to "password".
+
+It now works nicely as it should.
+
 
 ### Write an SLA for Your Own API
 
