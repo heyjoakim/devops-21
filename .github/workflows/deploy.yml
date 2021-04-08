@@ -62,6 +62,6 @@ jobs:
             cd devops-21
             git pull
             docker-compose pull
-            docker-compose up --build -d
+            docker-compose up -d
       
 
