@@ -9,7 +9,7 @@ import (
 // "user" is a reserved word in postgres, so it needs to be quoted in the queries
 func GetPublicMessages(numberOfMessages int) []models.MessageDto {
 	var results []models.MessageDto
-	GetPublicMessagesErr := d.db.Model(&models.Message{}).
+	GetPublicMessagesErr := GetDBInstance().db.Model(&models.Message{}).
 		Select("message.text, message.pub_date, \"user\".username, \"user\".email").
 		Joins("left join \"user\" on message.author_id = \"user\".user_id").
 		Where("message.flagged=0").
@@ -32,7 +32,7 @@ func GetPublicMessages(numberOfMessages int) []models.MessageDto {
 // "user" is a reserved word in postgres, so it needs to be quoted in the queries
 func GetMessagesForUser(numberOfMessages int, userID uint) []models.MessageDto {
 	var results []models.MessageDto
-	er := d.db.Model(models.Message{}).
+	er := GetDBInstance().db.Model(models.Message{}).
 		Order("pub_date desc").
 		Select("message.text,message.pub_date, \"user\".email, \"user\".username").
 		Joins("left join \"user\" on \"user\".user_id = message.author_id").
@@ -53,7 +53,7 @@ func GetMessagesForUser(numberOfMessages int, userID uint) []models.MessageDto {
 
 // CreateMessage creates a message in the database
 func CreateMessage(message models.Message) error {
-	err := d.db.Create(&message).Error
+	err := GetDBInstance().db.Create(&message).Error
 	if err != nil {
 		log.WithFields(log.Fields{
 			"err":     err,
@@ -66,7 +66,7 @@ func CreateMessage(message models.Message) error {
 // GetMessageCount returns the number of messages in the system
 func GetMessageCount() int64 {
 	var count int64
-	GetMessageCountErr := d.db.Find(&models.Message{}).Count(&count).Error
+	GetMessageCountErr := GetDBInstance().db.Find(&models.Message{}).Count(&count).Error
 	if GetMessageCountErr != nil {
 		log.WithFields(log.Fields{
 			"GetMessageCountErr": GetMessageCountErr,

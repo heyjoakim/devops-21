@@ -104,7 +104,7 @@ func (d *DBContext) connectDB() (*gorm.DB, error) {
 
 // initDB creates the database tables.
 func (d *DBContext) initDB() {
-	err := d.db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{}, &models.Config{})
+	err := GetDBInstance().db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{}, &models.Config{})
 	if err != nil {
 		log.Fatal("Migration error:", err)
 	}

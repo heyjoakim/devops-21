@@ -5,12 +5,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var d = GetDBInstance()
-
 // GetUserID returns user ID for username
 func GetUserID(username string) (uint, error) {
 	var user models.User
-	getUserIDErr := d.db.First(&user, "username = ?", username).Error
+	getUserIDErr := GetDBInstance().db.First(&user, "username = ?", username).Error
 	if getUserIDErr != nil {
 		log.WithFields(log.Fields{
 			"err":      getUserIDErr,
@@ -22,7 +20,7 @@ func GetUserID(username string) (uint, error) {
 
 func GetUserFromUsername(username string) (models.User, error) {
 	var user models.User
-	err := d.db.Where("username = ?", username).First(&user).Error
+	err := GetDBInstance().db.Where("username = ?", username).First(&user).Error
 	if err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -34,7 +32,7 @@ func GetUserFromUsername(username string) (models.User, error) {
 
 func GetUser(userID uint) models.User {
 	var user models.User
-	getUserErr := d.db.First(&user, "user_id = ?", userID).Error
+	getUserErr := GetDBInstance().db.First(&user, "user_id = ?", userID).Error
 	if getUserErr != nil {
 		log.WithFields(log.Fields{
 			"getUserErr": getUserErr,
@@ -46,7 +44,7 @@ func GetUser(userID uint) models.User {
 
 // CreateUser creates a new user in the database
 func CreateUser(user models.User) error {
-	createUserErr := d.db.Create(&user).Error
+	createUserErr := GetDBInstance().db.Create(&user).Error
 	if createUserErr != nil {
 		log.WithFields(log.Fields{
 			"createUserErr": createUserErr,
@@ -59,7 +57,7 @@ func CreateUser(user models.User) error {
 // GetUserCount returns the number of users reigstered in the system
 func GetUserCount() int64 {
 	var count int64
-	countErr := d.db.Find(&models.User{}).Count(&count).Error
+	countErr := GetDBInstance().db.Find(&models.User{}).Count(&count).Error
 	if countErr != nil {
 		log.WithFields(log.Fields{
 			"GetUserCountErr": countErr,
