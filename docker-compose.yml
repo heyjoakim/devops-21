@@ -10,11 +10,11 @@ services:
   datadog:
    links:
     - minitwut-app # Connect the Datadog Agent container to the Go container
-   image: gcr.io/datadoghq/agent:latest
+   image: datadog/agent:latest
    labels:
     com.datadoghq.ad.logs: '[<LOGS_CONFIG>]'  
    environment:
-    - DD_API_KEY=9c64667415632470399733edbdc94bb3
+    - DD_API_KEY=${DATADOG_API_KEY}
     - DD_LOGS_ENABLED=true
     - DD_CONTAINER_EXCLUDE_LOGS="name:datadog-agent"
     - DD_SITE=datadoghq.com
