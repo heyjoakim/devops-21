@@ -8,14 +8,12 @@ services:
     ports:
       - '8000:8000'
   datadog:
+    image: datadog/agent
    links:
     - minitwut-app # Connect the Datadog Agent container to the Go container
-   image: gcr.io/datadoghq/agent:latest
    environment:
-    - DD_API_KEY=${DD_API_KEY}
-    - DD_LOGS_ENABLED=true
+    - DD_API_KEY=${DATADOG_API_KEY}
     - DD_SITE=datadoghq.com
-    - DD_DOGSTATSD_NON_LOCAL_TRAFFIC="true"
    volumes:
     - /var/run/docker.sock:/var/run/docker.sock:ro
     - /proc/:/host/proc/:ro
