@@ -9,10 +9,8 @@ services:
       com.datadoghq.ad.logs: '[{"source": "minitwit-app"}]'
     ports:
       - '8000:8000'
-    environment:
-      - ENVIORNMENT=${ENVIRONMENT}
-      - DATADOG_HOST=datadog
-      - DD_API_KEY=${DATADOG_API_KEY}
+    env_file:
+      - .env
   datadog:
     image: datadog/agent
     labels:
