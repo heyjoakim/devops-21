@@ -7,14 +7,16 @@ services:
       context: .
     ports:
       - '8000:8000'
+    environment:
+      - DATADOG_HOST=datadog
   datadog:
     image: datadog/agent
-   links:
-    - minitwut-app # Connect the Datadog Agent container to the Go container
-   environment:
-    - DD_API_KEY=${DATADOG_API_KEY}
-    - DD_SITE=datadoghq.com
-   volumes:
-    - /var/run/docker.sock:/var/run/docker.sock:ro
-    - /proc/:/host/proc/:ro
-    - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+    links:
+      - minitwut-app # Connect the Datadog Agent container to the Go container
+    environment:
+      - DD_API_KEY=${DATADOG_API_KEY}
+      - DD_SITE=datadoghq.com
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
