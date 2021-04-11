@@ -77,6 +77,11 @@ go get -u github.com/alecthomas/template
 
 Also make sure your `$GOPATH/bin` is added to your $PATH to be able to run `swag`, else you will be prompted with something like `zsh: command not found: swag`.
 
+#### License
+
+Licensed by the [MIT License ](LICENSE)
+
+
 ## Authors
 
 _Joakim Hey Hinnerskov (jhhi), Ask Harup Sejsbo (asse), Kasper Olsen (kols), Petya Buchkova (pebu) and Thomas Tyge Andersen (thta)._
