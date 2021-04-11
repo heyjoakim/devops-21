@@ -80,3 +80,8 @@ Also make sure your `$GOPATH/bin` is added to your $PATH to be able to run `swag
 ## Authors
 
 _Joakim Hey Hinnerskov (jhhi), Ask Harup Sejsbo (asse), Kasper Olsen (kols), Petya Buchkova (pebu) and Thomas Tyge Andersen (thta)._
+
+
+## License
+
+Licensed by the [MIT License ](LICENSE)

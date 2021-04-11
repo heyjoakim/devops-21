@@ -350,3 +350,10 @@ It now works nicely as it should.
 ### Write an SLA for Your Own API
 
 To be completed
+
+
+### Adding a license file
+
+Regarding the choice of a license file, we chose the MIT license. This license seems to be the most widely used open-source license, which is also reflected in our dependencies. With the MIT license, we are not requiring that people modifying our application also are open-sourced. 
+
+Having this license, we also ensure that we comply with any gpl-licenses of our dependencies that would require us to be be open source in any capacity.
