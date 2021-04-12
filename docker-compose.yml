@@ -1,30 +1,31 @@
 version: '3.9'
 
-networks:
-  main:
-    name: itu-minitwit-network
-
 services:
-  go:
+  minitwut-app:
+    image: heyjoakim/mt-cmp:latest
     build:
       context: .
-      dockerfile: './dockerfile'
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "minitwit-app"}]'
     ports:
       - '8000:8000'
-    networks:
-      - main
-    depends_on:
-      - grafana
-
-  grafana:
-    build:
-      context: .
-      dockerfile: './grafana/Dockerfile'
-    ports:
-      - '3000:3000'
-    networks:
-      - main
+    env_file:
+      - .env
+  datadog:
+    image: datadog/agent
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "minitwit-app"}]'
+    links:
+      - minitwut-app # Connect the Datadog Agent container to the Go container
+    environment:
+      - DD_API_KEY=${DATADOG_API_KEY}
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_DOCKER_CONTAINER_USE_FILE=true
+      - DD_SITE=datadoghq.com
     volumes:
-      - grafana_data:/var/lib/grafana
-volumes:
-  grafana_data: {}
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+    ports:
+      - "8125:8125/udp"
