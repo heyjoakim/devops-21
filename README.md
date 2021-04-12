@@ -1,6 +1,6 @@
 # DevOps, Software Evolution and Software Maintenance
 
-[![Build Status](https://dev.azure.com/kols/devops-21/_apis/build/status/CI%20Build?branchName=main)](https://dev.azure.com/kols/devops-21/_build/latest?definitionId=19&branchName=main)
+[![Build & Deploy](https://github.com/heyjoakim/devops-21/actions/workflows/deploy.yml/badge.svg)](https://github.com/heyjoakim/devops-21/actions/workflows/deploy.yml)
 
 > This project revolves around a forum application called minitwit. The functionalities includes signing up, logging in, posting messages, following other users. The forum has a public timeline where all messages are displayed. Furthermore, if a user is signed in, a personal timeline exists that displays a users own messages aswell as messages of followed users.
 
@@ -22,7 +22,7 @@ To execute unit tests `go test -v`
 
 ## Remote access
 
-The latest release is running in the cloud with Azure at <https://minitwut.azurewebsites.net/public>
+The latest release is running in the cloud with Digital Ocean at <206.189.14.172:8000/>
 
 ## Dependencies
 
@@ -44,7 +44,7 @@ The latest release is running in the cloud with Azure at <https://minitwut.azure
 
 | **Service**      | **Provider**    | **Description**                |
 | ---------------- | --------------- | ------------------------------ |
-| App Service      | Microsoft Azure | Hosting of web application     |
+| Droplet     | Digital Ocean | Hosting of web application     |
 | Docker Container | Docker          | Containerizing of applications |
 
 ## API
@@ -61,7 +61,7 @@ When annotations have been added or updated, run the command `swag init -g minit
 
 Prometheus server `http://142.93.103.26:9090`
 
-Minitwit metrics from prometheus + custom `https://minitwut.azurewebsites.net/metrics`
+Minitwit metrics from prometheus + custom `206.189.14.172:8000//metrics`
 
 Grafana consuming prometheus `http://164.90.165.111:3000/d/JJQvP88Mz/prometheus-2-0-stats`, requires credentials
 
