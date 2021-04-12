@@ -2,8 +2,9 @@ trigger: none
 pr:
   branches:
     include:
-    - main
+    - nopip
     exclude:
+    - main
     - hotfix/*
     - feature/*
 
