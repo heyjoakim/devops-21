@@ -6,7 +6,7 @@ import (
 )
 
 func CreateFollower(follower models.Follower) error {
-	err := d.db.Create(&follower).Error
+	err := GetDBInstance().db.Create(&follower).Error
 	if err != nil {
 		log.WithFields(log.Fields{
 			"err":      err,
@@ -18,7 +18,7 @@ func CreateFollower(follower models.Follower) error {
 
 func UnfollowUser(followingUsersID uint, userToUnfollowID uint) error {
 	var follower models.Follower
-	err := d.db.Where("who_id = ?", followingUsersID).
+	err := GetDBInstance().db.Where("who_id = ?", followingUsersID).
 		Where("whom_id = ?", userToUnfollowID).
 		Delete(&follower).
 		Error
@@ -34,7 +34,7 @@ func UnfollowUser(followingUsersID uint, userToUnfollowID uint) error {
 
 func GetAllUsersFollowers(userID uint, noFollowers int) []string {
 	var users []string
-	err := d.db.Model(&models.User{}).
+	err := GetDBInstance().db.Model(&models.User{}).
 		Select("\"user\".username").
 		Joins("LEFT JOIN follower ON (follower.whom_id = \"user\".user_id)").
 		Where("follower.who_id=?", userID).
@@ -53,7 +53,7 @@ func GetAllUsersFollowers(userID uint, noFollowers int) []string {
 
 func GetUsersFollowedBy(userID uint) []models.Follower {
 	var followers []models.Follower
-	err := d.db.Where("who_id = ?", userID).Find(&followers).Error
+	err := GetDBInstance().db.Where("who_id = ?", userID).Find(&followers).Error
 	if err != nil {
 		log.WithFields(log.Fields{
 			"err":    err,
@@ -65,7 +65,7 @@ func GetUsersFollowedBy(userID uint) []models.Follower {
 
 func IsUserFollower(userID uint, followedID uint) bool {
 	var follower models.Follower
-	err := d.db.Where("who_id = ?", userID).
+	err := GetDBInstance().db.Where("who_id = ?", userID).
 		Where("whom_id = ?", followedID).
 		Find(&follower).Error
 
