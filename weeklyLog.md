@@ -295,8 +295,8 @@ The adoption of this new strategy means that branches are to be made from the `m
 
 ## Week 08 Logging
 
-- [ ] Add Logging to Your Systems
-- [ ] Test that Your Logging Works
+- [x] Add Logging to Your Systems
+- [x] Test that Your Logging Works
 - [ ] Write an SLA for Your Own API
 
 ### Add Logging to Your Systems
@@ -312,7 +312,6 @@ When this is being written, a member has introduced an error somewhere in the ap
 Looking at the logs, this error shows up:
 
 ![Screenshot from 2021-04-04 17-40-24](https://user-images.githubusercontent.com/43805989/113514120-21719d80-956d-11eb-9cf0-ae5304a4107a.png)
-
 
 ```
 
@@ -346,16 +345,49 @@ I then notice that this error is reading the "user" field from the formvalue, I 
 
 It now works nicely as it should.
 
-
 ### Write an SLA for Your Own API
 
 To be completed
 
+## Week 09 Scailing
+
+- [ ] Add Scaling to your projects
+- [x] Software Licensing
+- [x] Software Maintenance
+- [x] Logging with DataDog
+- [x] Extra: Migrating from Azure to Digital Ocean
 
 ### Adding a license file
 
-Regarding the choice of a license file, we chose the MIT license. This license seems to be the most widely used open-source license, which is also reflected in our dependencies. With the MIT license, we are not requiring that people modifying our application also are open-sourced. 
+Regarding the choice of a license file, we chose the MIT license. This license seems to be the most widely used open-source license, which is also reflected in our dependencies. With the MIT license, we are not requiring that people modifying our application also are open-sourced.
 
 Having this license, we also ensure that we comply with any gpl-licenses of our dependencies that would require us to be be open source in any capacity.
 
+### Logging with DataDog
 
+Due to issue with the ELK stack and our current setup with Microsoft Azure, which was imposing limitations due to the inability (or our lack of knowledge) to open new ports and have more control over the server setup, we decided to use DataDog.
+
+### Migrating from Azure to Digital Ocean
+
+At the beginning of this project we argued our choice for Microsoft Azure, however further into the project we ended up in a vendor lock-in, where our Docker image was hosted in the Azure Container Registry, our pipeline was in Azure DevOps, our PostgreSQL database was hosted in Azure. Once we ran out of the free-tier student credits and we realised we need to switch to another cloud provider that does not charge us so much for the same services and we can use more student credits, it became hard for us to migrate to another provider. We have had prior experience with Digital ocean for our monitoring when we initially started considering switching providers. Based on the experience we have already acquired and the exchange with the other Masters groups in the course, Digital Ocean was the safe choice to switch to.
+
+When switching we considered a setup that will not impede us in the future from moving to another provider:
+
+- We had to change the publishing of our Docker image from Azure Container Registry to DockerHub, this way - regardless of the provider, we can always pull our iamge free of charge
+- We switched from Azure DevOps to Github Actions, thus allowing us to swap the target server to deploy to, and our pipeline will not be broken
+- We also migrated our Postgres database do digital ocean, as the hosting in Azure was becoming quite expensive. The database is hosted seperately, so it is not tied to a service or a provider - can be easily imported in another storage provider.
+
+Inevitably, we lost data in the migration process. And the logging system we setup last week was very useful when we encountered migration issues and we could quickly find the problem in our system.
+
+App url: http://206.189.14.172:8000/public
+Server url: http://206.189.14.172:8000/api
+
+## Week 10 Scailing
+
+- [ ] Add Scaling to your projects
+- [ ] Software Licensing
+- [x] Software Maintenance
+
+### Adding scailing with XXX
+
+### Software Licensing
