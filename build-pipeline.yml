@@ -5,10 +5,11 @@
 trigger: 
  branches:
     include:
-    - main
+    - NOPIP
     exclude:
     - hotfix/*
     - feature/*
+    - main
 pr: none
 
 resources:
