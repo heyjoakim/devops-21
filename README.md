@@ -22,7 +22,7 @@ To execute unit tests `go test -v`
 
 ## Remote access
 
-The latest release is running in the cloud with Digital Ocean at <206.189.14.172:8000/>
+The latest release is running in the cloud with Digital Ocean at <206.189.14.172:8000>
 
 ## Dependencies
 
