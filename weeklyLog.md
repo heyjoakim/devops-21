@@ -367,6 +367,9 @@ Having this license, we also ensure that we comply with any gpl-licenses of our 
 
 Due to issue with the ELK stack and our current setup with Microsoft Azure, which was imposing limitations due to the inability (or our lack of knowledge) to open new ports and have more control over the server setup, we decided to use DataDog.
 
+We looked into license scanning tools for avoiding licensing issues. We firstly looked into the suggested Scancode toolkit tool, but it was discarded for being slow, being cumbersome in it's setup, and for outputting files, which would mean that we would be adding overhead for reading these output files for every pull request. 
+We instead found another tool called "license CI" which we added by way of gthub action. This tool allows us to whitelist licenses from our dependencies, and stop pull requests if a new recourse is used that has a bad license, or if a preexisting dependency changes it's dependency.
+
 ### Migrating from Azure to Digital Ocean
 
 At the beginning of this project we argued our choice for Microsoft Azure, however further into the project we ended up in a vendor lock-in, where our Docker image was hosted in the Azure Container Registry, our pipeline was in Azure DevOps, our PostgreSQL database was hosted in Azure. Once we ran out of the free-tier student credits and we realised we need to switch to another cloud provider that does not charge us so much for the same services and we can use more student credits, it became hard for us to migrate to another provider. We have had prior experience with Digital ocean for our monitoring when we initially started considering switching providers. Based on the experience we have already acquired and the exchange with the other Masters groups in the course, Digital Ocean was the safe choice to switch to.
