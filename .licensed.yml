@@ -1,0 +1,73 @@
+allowed:
+  - mit 
+  - apache-2.0
+  - bsd-2-clause
+  - bsd-3-clause
+  - cc0-1.0
+  - isc
+
+reviewed:
+  go:
+    - github.com/gorilla/* # works
+    - github.com/swaggo/* #works
+    - github.com/shirou/gopsutil/internal/common/* # does not work
+
+    - golang.org/x/crypto/blowfish
+    - github.com/shirou/gopsutil/cpu
+    - github.com/shirou/gopsutil/mem
+    - golang.org/x/net/webdav
+    - golang.org/x/net/webdav/internal/xml
+    
+    - golang.org/x/net/webdav
+    - golang.org/x/sys/unix
+    - golang.org/x/text/cases
+    - golang.org/x/text/internal
+    - golang.org/x/text/internal/language
+    - golang.org/x/text/internal/language/compact
+    - golang.org/x/text/internal/tag
+    - golang.org/x/text/language
+    - golang.org/x/text/runes
+    - golang.org/x/text/secure/precis
+    - golang.org/x/text/width
+    - golang.org/x/tools/go/ast/astutil
+    - golang.org/x/tools/go/buildutil
+    - golang.org/x/tools/go/internal/cgo
+    - golang.org/x/tools/go/loader
+    - golang.org/x/xerrors
+    - golang.org/x/xerrors/internal
+    - google.golang.org/protobuf/encoding/prototext
+    - google.golang.org/protobuf/encoding/protowire
+    - google.golang.org/protobuf/internal/descfmt
+    - google.golang.org/protobuf/internal/descopts
+    - google.golang.org/protobuf/internal/detrand
+    - google.golang.org/protobuf/internal/encoding/defval
+    - google.golang.org/protobuf/internal/encoding/messageset
+    - google.golang.org/protobuf/internal/encoding/tag
+    - google.golang.org/protobuf/internal/encoding/text
+    - google.golang.org/protobuf/internal/errors
+    - google.golang.org/protobuf/internal/fieldnum
+    - google.golang.org/protobuf/internal/fieldsort
+    - google.golang.org/protobuf/internal/filedesc
+    - google.golang.org/protobuf/internal/filetype
+    - google.golang.org/protobuf/internal/filetype
+    - google.golang.org/protobuf/internal/flags
+    - google.golang.org/protobuf/internal/genname
+    - google.golang.org/protobuf/internal/impl
+    - google.golang.org/protobuf/internal/mapsort
+    - google.golang.org/protobuf/internal/pragma
+    - google.golang.org/protobuf/internal/set
+    - google.golang.org/protobuf/internal/strs
+    - github.com/shirou/gopsutil/internal/common
+    - golang.org/x/crypto/bcrypt
+    - golang.org/x/crypto/pbkdf2
+    - golang.org/x/sys/internal/unsafeheader
+    - google.golang.org/protobuf/internal/version
+    - google.golang.org/protobuf/proto
+    - google.golang.org/protobuf/reflect/protoreflect
+    - google.golang.org/protobuf/reflect/protoregistry
+    - google.golang.org/protobuf/runtime/protoiface
+    - google.golang.org/protobuf/runtime/protoimpl
+    - google.golang.org/protobuf/types/known/anypb
+    - google.golang.org/protobuf/types/known/durationpb
+    - google.golang.org/protobuf/types/known/timestamppb
+    - gopkg.in/yaml.v2
