@@ -363,12 +363,14 @@ Regarding the choice of a license file, we chose the MIT license. This license s
 
 Having this license, we also ensure that we comply with any gpl-licenses of our dependencies that would require us to be be open source in any capacity.
 
+### CI licensing 
+We looked into license scanning tools for avoiding licensing issues. We firstly looked into the suggested Scancode toolkit tool, but it was discarded for being slow, being cumbersome in it's setup, and for outputting files, which would mean that we would be adding overhead for reading these output files for every pull request. 
+We instead found another tool called "license CI" which we added by way of gthub action. This tool allows us to whitelist licenses from our dependencies, and stop pull requests if a new resource is used that has a bad license, or if a preexisting dependency changes it's dependency.
+
 ### Logging with DataDog
 
 Due to issue with the ELK stack and our current setup with Microsoft Azure, which was imposing limitations due to the inability (or our lack of knowledge) to open new ports and have more control over the server setup, we decided to use DataDog.
 
-We looked into license scanning tools for avoiding licensing issues. We firstly looked into the suggested Scancode toolkit tool, but it was discarded for being slow, being cumbersome in it's setup, and for outputting files, which would mean that we would be adding overhead for reading these output files for every pull request. 
-We instead found another tool called "license CI" which we added by way of gthub action. This tool allows us to whitelist licenses from our dependencies, and stop pull requests if a new recourse is used that has a bad license, or if a preexisting dependency changes it's dependency.
 
 ### Migrating from Azure to Digital Ocean
 
