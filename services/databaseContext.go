@@ -68,6 +68,8 @@ func (d *DBContext) initialize() {
 }
 
 func (d *DBContext) connectDB() (*gorm.DB, error) {
+	// debug.PrintStack()
+
 	switch environment {
 	case "develop":
 		log.Info("Using local SQLite db")

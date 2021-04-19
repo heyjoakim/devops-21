@@ -41,7 +41,6 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := services.GetUserID(username)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("User not found: %s", username), http.StatusNotFound)
-		log.Error(fmt.Sprintf("FollowHandler: User not found: %s", username))
 		return
 	}
 
