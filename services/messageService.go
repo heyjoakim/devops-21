@@ -74,7 +74,6 @@ func GetMessageCount() int64 {
 		LogError(models.Log{
 			Message: GetMessageCountErr.Error(),
 		})
-
 	}
 	return count
 }
