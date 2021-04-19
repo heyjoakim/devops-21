@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 
@@ -44,10 +43,11 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		} else if _, err := services.GetUserID(registerRequest.Username); err == nil {
 			registerError = "The username is already taken"
 		} else {
+			// TODO move to service
 			hash, err := bcrypt.GenerateFromPassword([]byte(registerRequest.Password), bcrypt.DefaultCost)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
-				log.Print(err)
+				return
 			}
 
 			user := models.User{Username: registerRequest.Username, Email: registerRequest.Email, PwHash: string(hash)}

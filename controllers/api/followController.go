@@ -11,7 +11,6 @@ import (
 	"github.com/heyjoakim/devops-21/metrics"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
-	log "github.com/sirupsen/logrus"
 )
 
 // FollowHandler godoc
@@ -75,13 +74,11 @@ func unfollow(followRequest models.FollowRequest, userID uint, w http.ResponseWr
 	unfollowsUserID, err := services.GetUserID(followRequest.Unfollow)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
-		log.Println(err)
 	}
 
 	err = services.UnfollowUser(userID, unfollowsUserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
 	}
 
 	w.WriteHeader(http.StatusNoContent)
