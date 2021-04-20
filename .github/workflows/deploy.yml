@@ -62,7 +62,7 @@ jobs:
             cd devops-21
             git pull
             docker-compose pull
-            docker-compose up -d
+            docker service update --force devops-21_minitwut-swarm_minitwut-app
       - 
         name: Create Release
         id: create_release
