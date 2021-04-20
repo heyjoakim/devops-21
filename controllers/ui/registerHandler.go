@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// GetRegisterUserHandler returns the register page.
+// GetRegisterUserHandler returns the register page..
 func GetRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	session := GetSession(w, r)
 	if ok := session.Values["user_id"] != nil; ok {
