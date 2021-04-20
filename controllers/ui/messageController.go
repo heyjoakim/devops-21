@@ -1,6 +1,5 @@
 package ui
 
-
 import (
 	"net/http"
 	"time"
@@ -15,10 +14,9 @@ func AddMessageHandler(w http.ResponseWriter, r *http.Request) {
 	message := models.Message{AuthorID: userID, Text: r.FormValue("text"), PubDate: time.Now().Unix(), Flagged: 0}
 	err := services.CreateMessage(message)
 	if err != nil {
-		
 		services.LogError(models.Log{
 			Message: err.Error(),
-			Data:  message,
+			Data:    message,
 		})
 		return
 	}

@@ -19,8 +19,8 @@ func GetPublicMessages(numberOfMessages int) []models.MessageDto {
 	if GetPublicMessagesErr != nil {
 		LogError(models.Log{
 			Message: GetPublicMessagesErr.Error(),
-			Data:  map[string]int{
-				"no. of public messages: " : numberOfMessages,
+			Data: map[string]int{
+				"noOfMessages": numberOfMessages,
 			},
 		})
 	}
@@ -44,9 +44,9 @@ func GetMessagesForUser(numberOfMessages int, userID uint) []models.MessageDto {
 	if er != nil {
 		LogError(models.Log{
 			Message: er.Error(),
-			Data:  map[string]interface{}{
-				"no. of public messages: " : numberOfMessages,
-				"userID" : userID,
+			Data: map[string]interface{}{
+				"noOfMessages": numberOfMessages,
+				"userID":       userID,
 			},
 		})
 	}
@@ -60,7 +60,7 @@ func CreateMessage(message models.Message) error {
 	if err != nil {
 		LogError(models.Log{
 			Message: err.Error(),
-			Data: message,
+			Data:    message,
 		})
 	}
 	return err

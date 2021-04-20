@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
 	"golang.org/x/crypto/bcrypt"
+	log "github.com/sirupsen/logrus"
 )
 
-// GetRegisterUserHandler returns the register page.
+// GetRegisterUserHandler returns the register page..
 func GetRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	session := GetSession(w, r)
 	if ok := session.Values["user_id"] != nil; ok {
@@ -46,13 +46,7 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
 		if err != nil {
-			services.LogError(models.Log{
-				Message: err.Error(),
-				Data:  map[string]interface{}{
-					"description:" : "Hashing error in PostRegisterUserHandler",
-					"userID" : session.Values["user_id"],
-				},
-			})
+			log.WithField("err", err).Error("Hashing error in PostRegisterUserHandler")
 			return
 		}
 		username := r.FormValue("username")

@@ -11,7 +11,7 @@ func LogInfo(message string) {
 	log.Info(message)
 }
 
-func LogPanic(message string){
+func LogPanic(message string) {
 	log.Panic(message)
 }
 
@@ -19,30 +19,23 @@ func LogWarn() {
 	log.Warn("warn")
 }
 
-
-
 func LogError(logObj models.Log) {
-	stacktrace := string(debug.Stack())
-	logFields := log.Fields{
-		"message":        logObj.Message,
-		"data":           logObj.Data,
-		"additionalInfo": logObj.AdditionalInfo,
-		"stacktrace":     stacktrace,
-	}
+	logFields := makeLogFields(logObj)
 	log.WithFields(logFields).Error(logObj.Message)
 }
 
-func LogFatal(logObj models.Log){
-	stacktrace := string(debug.Stack())
-	logFields := log.Fields{
-		"message":        logObj.Message,
-		"data":           logObj.Data,
-		"additionalInfo": logObj.AdditionalInfo,
-		"stacktrace":     stacktrace,
-	}
+func LogFatal(logObj models.Log) {
+	logFields := makeLogFields(logObj)
 	log.WithFields(logFields).Fatal(logObj.Message)
 }
 
-// func executeLog(logFunc func(...interface{}), message models.Log) {
-// 	logFunc(message)
-// }
+func makeLogFields(msg models.Log) log.Fields {
+	stacktrace := string(debug.Stack())
+	logFields := log.Fields{
+		"message":        msg.Message,
+		"data":           msg.Data,
+		"additionalInfo": msg.AdditionalInfo,
+		"stacktrace":     stacktrace,
+	}
+	return logFields
+}
