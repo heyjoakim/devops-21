@@ -7,6 +7,7 @@ import (
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
 	"golang.org/x/crypto/bcrypt"
+	log "github.com/sirupsen/logrus"
 )
 
 // GetRegisterUserHandler returns the register page..
