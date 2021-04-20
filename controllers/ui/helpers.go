@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"text/template"
 
+	"github.com/heyjoakim/devops-21/models"
+	"github.com/heyjoakim/devops-21/services"
 	"github.com/gorilla/sessions"
-	log "github.com/sirupsen/logrus"
 )
 
 // AddFlash add a flash to the session
@@ -18,7 +19,9 @@ func AddFlash(session *sessions.Session, w http.ResponseWriter, r *http.Request,
 func LoadTemplate(path string) *template.Template {
 	tmpl, err := template.ParseFiles(path, LayoutPath)
 	if err != nil {
-		log.Error(err)
+		services.LogError(models.Log{
+			Message: err.Error(),
+		})
 	}
 	return tmpl
 }

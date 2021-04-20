@@ -7,7 +7,6 @@ import (
 
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -47,7 +46,13 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
 		if err != nil {
-			log.WithField("err", err).Error("Hashing error in PostRegisterUserHandler")
+			services.LogError(models.Log{
+				Message: err.Error(),
+				Data:  map[string]interface{}{
+					"description:" : "Hashing error in PostRegisterUserHandler",
+					"userID" : session.Values["user_id"],
+				},
+			})
 			return
 		}
 		username := r.FormValue("username")

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/heyjoakim/devops-21/services"
-	log "github.com/sirupsen/logrus"
 )
 
 // BeforeRequest checks if the user is logged in.
@@ -28,7 +27,7 @@ func BeforeRequest(next http.Handler) http.Handler {
 // AfterRequest logs endpoint requests.
 func AfterRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Info(fmt.Sprintf("[%s] --> %s", r.Method, r.RequestURI))
+		services.LogInfo(fmt.Sprintf("[%s] --> %s", r.Method, r.RequestURI))
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})
