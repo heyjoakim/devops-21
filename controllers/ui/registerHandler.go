@@ -36,14 +36,18 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	var registerError string
 	if len(r.FormValue("username")) == 0 {
 		registerError = "You have to enter a username"
-		} else if len(r.FormValue("email")) == 0 || !strings.Contains(r.FormValue("email"), "@") {
-			registerError = "You have to enter a valid email address"
-			} else if len(r.FormValue("password")) == 0 {
-				registerError = "You have to enter a password"
-				} else if r.FormValue("password") != r.FormValue("password2") {
-					registerError = "The two passwords do not match"
-					} else if _, err := services.GetUserID(r.FormValue("username")); err == nil {
-						registerError = "The username is already taken"
+		} else if len(r.FormValue("username")) > 20 {
+			registerError = "Username cannot be longer than 20 characters"
+		} else if len(r.FormValue("password")) > 20 {
+			registerError = "password cannot be longer than 20 characters"
+			}else if len(r.FormValue("email")) == 0 || !strings.Contains(r.FormValue("email"), "@") || len(r.FormValue("email")) > 30 {
+				registerError = "You have to enter a valid email address"
+				} else if len(r.FormValue("password")) == 0 {
+					registerError = "You have to enter a password"
+					} else if r.FormValue("password") != r.FormValue("password2") {
+						registerError = "The two passwords do not match"
+						} else if _, err := services.GetUserID(r.FormValue("username")); err == nil {
+							registerError = "The username is already taken"
 	} else {
 		hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
 		if err != nil {
@@ -70,6 +74,7 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func redirectToRegister(w http.ResponseWriter, data models.PageData) {
+	fmt.Println("redirectToRegister")
 	tmpl := LoadTemplate(RegisterPath)
 	_ = tmpl.Execute(w, data)
 }
