@@ -143,7 +143,7 @@ Our current idea is to follow the overall structure proposed [here](https://gith
 
 ## Week 05 Finalizing development stage
 
-- [ ] Add API tests to CI
+- [X] Add API tests to CI
 - [x] DevOps - the "Three Ways"
 - [x] Software Maintenance || - Group B
 
@@ -297,7 +297,7 @@ The adoption of this new strategy means that branches are to be made from the `m
 
 - [x] Add Logging to Your Systems
 - [x] Test that Your Logging Works
-- [ ] Write an SLA for Your Own API
+- [X] Write an SLA for Your Own API
 
 ### Add Logging to Your Systems
 
@@ -351,7 +351,7 @@ To be completed
 
 ## Week 09 Scailing
 
-- [ ] Add Scaling to your projects
+- [X] Add Scaling to your projects
 - [x] Software Licensing
 - [x] Software Maintenance
 - [x] Logging with DataDog
@@ -389,10 +389,32 @@ Server url: http://206.189.14.172:8000/api
 
 ## Week 10 Scailing
 
-- [ ] Add Scaling to your projects
-- [ ] Software Licensing
+- [X] Add Scaling to your projects
+- [X] Software Licensing
 - [x] Software Maintenance
 
-### Adding scailing with XXX
+### Adding scailing with Docker Swarm
+
+Force updating the swarm with new image: `docker service update --force --image heyjoakim/mt-cmp:latest devops-21_minitwut-swarm_minitwut-app`
 
 ### Software Licensing
+
+## Week 11
+
+1. Do a security assessment
+   1. Risk Intification
+      - [ ] Identifiy assets (e.g. web application)
+      - [ ] Construct risk scenarios (e.g. Attacker performs SQL injection on web application to download sensitive user data)
+   1. Risk Analysis 
+      - [ ] Determine likelihood
+      - [ ] Determine impact
+      - [ ] Use a Risk Matrix to prioritize risk of scenarios
+      - [ ] Discuss what are you going to do about each of the scenarios
+
+2. Pentest your system
+   - [ ] Try to find a vulnerability in your project by using wmap, zaproxy, or any of the tools in the list of OWASP vulnerability scanning tools)
+   - [ ] Fix the vulnerabilities that you find
+   - [ ] Can you find the traces of the pen test in the logs?
+
+3. Whitehat attack opponent team
+   - [ ] Try to help your fellow colleagues by pen-testing their system (group a-> group b, b->c, etc.). Remember that the goal is to help not to hinder. Send them a report of what you find.
