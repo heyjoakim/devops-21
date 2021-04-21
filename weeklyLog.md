@@ -395,6 +395,8 @@ Server url: http://206.189.14.172:8000/api
 
 ### Adding scailing with Docker Swarm
 
+Force updating the swarm with new image: `docker service update --force --image heyjoakim/mt-cmp:latest devops-21_minitwut-swarm_minitwut-app`
+
 ### Software Licensing
 
 ## Week 11
