@@ -400,11 +400,10 @@ Server url: http://206.189.14.172:8000/api
 ## Week 11
 
 1. Do a security assessment
-
-  a. Risk ntification 
+  * Risk ntification 
    - [ ] Identifiy assets (e.g. web application)
    - [ ] Construct risk scenarios (e.g. Attacker performs SQL injection on web application to download sensitive user data)
-  b. Risk Analysis 
+  * Risk Analysis 
    - [ ] Determine likelihood
    - [ ] Determine impact
    - [ ] Use a Risk Matrix to prioritize risk of scenarios
