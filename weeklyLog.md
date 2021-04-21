@@ -143,7 +143,7 @@ Our current idea is to follow the overall structure proposed [here](https://gith
 
 ## Week 05 Finalizing development stage
 
-- [ ] Add API tests to CI
+- [X] Add API tests to CI
 - [x] DevOps - the "Three Ways"
 - [x] Software Maintenance || - Group B
 
@@ -297,7 +297,7 @@ The adoption of this new strategy means that branches are to be made from the `m
 
 - [x] Add Logging to Your Systems
 - [x] Test that Your Logging Works
-- [ ] Write an SLA for Your Own API
+- [X] Write an SLA for Your Own API
 
 ### Add Logging to Your Systems
 
@@ -351,7 +351,7 @@ To be completed
 
 ## Week 09 Scailing
 
-- [ ] Add Scaling to your projects
+- [X] Add Scaling to your projects
 - [x] Software Licensing
 - [x] Software Maintenance
 - [x] Logging with DataDog
@@ -401,7 +401,7 @@ Server url: http://206.189.14.172:8000/api
 
 1. Do a security assessment
 
-a. Risk ntification 
+  a. Risk ntification 
    - [ ] Identifiy assets (e.g. web application)
    - [ ] Construct risk scenarios (e.g. Attacker performs SQL injection on web application to download sensitive user data)
   b. Risk Analysis 
@@ -416,4 +416,4 @@ a. Risk ntification
   - [ ] Can you find the traces of the pen test in the logs?
 
 3. Whitehat attack opponent team
-- [ ] Try to help your fellow colleagues by pen-testing their system (group a-> group b, b->c, etc.). Remember that the goal is to help not to hinder. Send them a report of what you find.
+  - [ ] Try to help your fellow colleagues by pen-testing their system (group a-> group b, b->c, etc.). Remember that the goal is to help not to hinder. Send them a report of what you find.
