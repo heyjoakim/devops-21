@@ -389,10 +389,31 @@ Server url: http://206.189.14.172:8000/api
 
 ## Week 10 Scailing
 
-- [ ] Add Scaling to your projects
-- [ ] Software Licensing
+- [X] Add Scaling to your projects
+- [X] Software Licensing
 - [x] Software Maintenance
 
-### Adding scailing with XXX
+### Adding scailing with Docker Swarm
 
 ### Software Licensing
+
+## Week 11
+
+1. Do a security assessment
+
+a. Risk ntification 
+   - [ ] Identifiy assets (e.g. web application)
+   - [ ] Construct risk scenarios (e.g. Attacker performs SQL injection on web application to download sensitive user data)
+  b. Risk Analysis 
+   - [ ] Determine likelihood
+   - [ ] Determine impact
+   - [ ] Use a Risk Matrix to prioritize risk of scenarios
+   - [ ] Discuss what are you going to do about each of the scenarios
+
+2. Pentest your system
+  - [ ] Try to find a vulnerability in your project by using wmap, zaproxy, or any of the tools in the list of OWASP vulnerability scanning tools)
+  - [ ] Fix the vulnerabilities that you find
+  - [ ] Can you find the traces of the pen test in the logs?
+
+3. Whitehat attack opponent team
+- [ ] Try to help your fellow colleagues by pen-testing their system (group a-> group b, b->c, etc.). Remember that the goal is to help not to hinder. Send them a report of what you find.
