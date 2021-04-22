@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/heyjoakim/devops-21/models"
@@ -69,6 +70,20 @@ func GetUserCount() int64 {
 		})
 	}
 	return count
+}
+
+func LoginUser(loginRequest models.LoginRequest) (models.User, error) {
+	user, err := GetUserFromUsername(loginRequest.Username)
+	if err != nil {
+		LogWarn(fmt.Sprintf("Login attempt with unknown user: %s", loginRequest.Username))
+		return models.User{}, errors.New("error in username or password")
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(loginRequest.Password)); err != nil {
+		LogWarn(fmt.Sprintf("Login attempt with wrong password for user: %s", loginRequest.Username))
+		return models.User{}, errors.New("error in username or password")
+	}
+
+	return user, nil
 }
 
 func logUserErr(err error, data interface{}) {
