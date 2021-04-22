@@ -8,7 +8,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	cpu "github.com/shirou/gopsutil/cpu"
 	mem "github.com/shirou/gopsutil/mem"
-	log "github.com/sirupsen/logrus"
 )
 
 var histogramVecs = make(map[string]*prometheus.HistogramVec)
@@ -21,7 +20,7 @@ func GetHistogramVec(name string) *prometheus.HistogramVec {
 
 // InitializeMetrics invokes custom metric functions
 func InitializeMetrics() {
-	log.Info("Init metrics")
+	services.LogInfo("Init metrics")
 	cpuMetrics()
 	memoryMetrics()
 	userCountMetrics()

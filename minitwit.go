@@ -14,7 +14,6 @@ import (
 )
 
 func main() {
-	fmt.Println("First")
 	// Log as JSON instead of the default ASCII formatter.
 	log.SetFormatter(&log.JSONFormatter{})
 

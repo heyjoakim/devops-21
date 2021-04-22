@@ -8,7 +8,6 @@ import (
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/joho/godotenv"
 	gorm_logrus "github.com/onrik/gorm-logrus"
-	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -32,7 +31,9 @@ func configureEnv() {
 	envFilePath := helpers.GetFullPath("../.env")
 	err := godotenv.Load(envFilePath)
 	if err != nil {
-		log.Error("Error loading .env file - using system variables.")
+		LogError(models.Log{
+			Message: err.Error(),
+		})
 	}
 
 	environment = os.Getenv("ENVIRONMENT")
@@ -43,7 +44,9 @@ func (d *DBContext) initialize() {
 	configureEnv()
 	db, err := d.connectDB()
 	if err != nil {
-		log.Error(err)
+		LogError(models.Log{
+			Message: err.Error(),
+		})
 	}
 
 	var (
@@ -61,16 +64,20 @@ func (d *DBContext) initialize() {
 	}))
 
 	if err != nil {
-		log.Println("Could not register prometheus logger.")
+		LogError(models.Log{
+			Message: err.Error(),
+		})
 	}
 
 	d.db = db
 }
 
 func (d *DBContext) connectDB() (*gorm.DB, error) {
+	// debug.PrintStack()
+
 	switch environment {
 	case "develop":
-		log.Info("Using local SQLite db")
+		LogInfo("Using local SQLite db")
 		return gorm.Open(sqlite.Open("./tmp/minitwit.db"), &gorm.Config{
 			Logger: gorm_logrus.New(),
 			NamingStrategy: schema.NamingStrategy{
@@ -79,7 +86,7 @@ func (d *DBContext) connectDB() (*gorm.DB, error) {
 			DisableForeignKeyConstraintWhenMigrating: true,
 		})
 	case "production":
-		log.Info("Using remote postgres db")
+		LogInfo("Using remote postgres db")
 		return gorm.Open(postgres.New(
 			postgres.Config{
 				DSN:                  dsn,
@@ -92,7 +99,7 @@ func (d *DBContext) connectDB() (*gorm.DB, error) {
 				},
 			})
 	case "testing":
-		log.Info("Using in memory SQLite db")
+		LogInfo("Using in memory SQLite db")
 
 		return gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
 			Logger: gorm_logrus.New(),
@@ -102,7 +109,7 @@ func (d *DBContext) connectDB() (*gorm.DB, error) {
 			DisableForeignKeyConstraintWhenMigrating: true,
 		})
 	}
-	log.Panic("Environment is not specified in the .env file")
+	LogPanic("Environment is not specified in the .env file")
 	return nil, nil
 }
 
@@ -110,7 +117,10 @@ func (d *DBContext) connectDB() (*gorm.DB, error) {
 func (d *DBContext) initDB() {
 	err := GetDBInstance().db.AutoMigrate(&models.User{}, &models.Follower{}, &models.Message{}, &models.Config{})
 	if err != nil {
-		log.Fatal("Migration error:", err)
+		LogFatal(models.Log{
+			Message: "Migration error",
+			Data:  err,
+		})
 	}
 }
 
@@ -120,7 +130,7 @@ func GetDBInstance() DBContext {
 		lock.Lock()
 		defer lock.Unlock()
 		if dbContext.db == nil {
-			log.Info("Creating Single Instance Now")
+			LogInfo("Creating Single Instance Now")
 			dbContext.initialize()
 			dbContext.initDB() // AutoMigrate
 		}
