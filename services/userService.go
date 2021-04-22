@@ -94,28 +94,50 @@ func logUserErr(err error, data interface{}) {
 }
 
 func validateUserCreateRequest(user models.UserCreateRequest) error {
+	if err := validateUsername(user.Username); err != nil {
+		return err
+	}
+	if err := validateEmail(user.Email); err != nil {
+		return err
+	}
+	if err := validatePassword(user.Password, user.Password2); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateUsername(username string) error {
 	const charLimit = 20
-	const emailLimit = 30
-	if len(user.Username) == 0 {
+	if len(username) == 0 {
 		return errors.New("you have to enter a username")
 	}
-	if len(user.Username) > charLimit {
+	if len(username) > charLimit {
 		return errors.New("username cannot be longer than 20 characters")
 	}
-	if len(user.Password) > charLimit {
+	if _, err := GetUserID(username); err == nil {
+		return errors.New("the username is already taken")
+	}
+	return nil
+}
+
+func validatePassword(password string, password2 string) error {
+	const charLimit = 20
+	if len(password) > charLimit {
 		return errors.New("password cannot be longer than 20 characters")
 	}
-	if len(user.Email) == 0 || !strings.Contains(user.Email, "@") || len(user.Email) > emailLimit {
-		return errors.New("you have to enter a valid email address")
-	}
-	if len(user.Password) == 0 {
+	if len(password) == 0 {
 		return errors.New("you have to enter a password")
 	}
-	if user.Password != user.Password2 {
+	if password != password2 {
 		return errors.New("the two passwords do not match")
 	}
-	if _, err := GetUserID(user.Username); err == nil {
-		return errors.New("the username is already taken")
+	return nil
+}
+
+func validateEmail(email string) error {
+	const emailLimit = 30
+	if len(email) == 0 || !strings.Contains(email, "@") || len(email) > emailLimit {
+		return errors.New("you have to enter a valid email address")
 	}
 	return nil
 }
