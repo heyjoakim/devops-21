@@ -55,7 +55,6 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func redirectToRegister(w http.ResponseWriter, data models.PageData) {
-	fmt.Println("redirectToRegister")
 	tmpl := LoadTemplate(RegisterPath)
 	_ = tmpl.Execute(w, data)
 }
