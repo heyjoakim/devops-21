@@ -32,15 +32,18 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 		routeName := fmt.Sprintf("/%s", session.Values["username"])
 		http.Redirect(w, r, routeName, http.StatusFound)
 	}
-
+	const charLimit = 20
+	const emailLimit = 30
 	var registerError string
 	if len(r.FormValue("username")) == 0 {
 		registerError = "You have to enter a username"
-	} else if len(r.FormValue("username")) > 20 {
+	} else if len(r.FormValue("username")) > charLimit {
 		registerError = "Username cannot be longer than 20 characters"
-	} else if len(r.FormValue("password")) > 20 {
+	} else if len(r.FormValue("password")) > charLimit {
 		registerError = "password cannot be longer than 20 characters"
-	} else if len(r.FormValue("email")) == 0 || !strings.Contains(r.FormValue("email"), "@") || len(r.FormValue("email")) > 30 {
+	} else if len(r.FormValue("email")) == 0 ||
+		!strings.Contains(r.FormValue("email"), "@") ||
+		len(r.FormValue("email")) > emailLimit {
 		registerError = "You have to enter a valid email address"
 	} else if len(r.FormValue("password")) == 0 {
 		registerError = "You have to enter a password"

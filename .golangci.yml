@@ -30,7 +30,7 @@ linters:
     - nakedret
     - nolintlint
     - rowserrcheck
-    - scopelint
+    #- scopelint
     - staticcheck
     - structcheck
     - stylecheck
