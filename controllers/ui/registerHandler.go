@@ -36,7 +36,11 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	var registerError string
 	if len(r.FormValue("username")) == 0 {
 		registerError = "You have to enter a username"
-	} else if len(r.FormValue("email")) == 0 || !strings.Contains(r.FormValue("email"), "@") {
+	} else if len(r.FormValue("username")) > 20 {
+		registerError = "Username cannot be longer than 20 characters"
+	} else if len(r.FormValue("password")) > 20 {
+		registerError = "password cannot be longer than 20 characters"
+	} else if len(r.FormValue("email")) == 0 || !strings.Contains(r.FormValue("email"), "@") || len(r.FormValue("email")) > 30 {
 		registerError = "You have to enter a valid email address"
 	} else if len(r.FormValue("password")) == 0 {
 		registerError = "You have to enter a password"
@@ -70,6 +74,7 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func redirectToRegister(w http.ResponseWriter, data models.PageData) {
+	fmt.Println("redirectToRegister")
 	tmpl := LoadTemplate(RegisterPath)
 	_ = tmpl.Execute(w, data)
 }
