@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
-	"golang.org/x/crypto/bcrypt"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // GetRegisterUserHandler returns the register page..
@@ -35,14 +36,14 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	var registerError string
 	if len(r.FormValue("username")) == 0 {
 		registerError = "You have to enter a username"
-		} else if len(r.FormValue("email")) == 0 || !strings.Contains(r.FormValue("email"), "@") {
-			registerError = "You have to enter a valid email address"
-			} else if len(r.FormValue("password")) == 0 {
-				registerError = "You have to enter a password"
-				} else if r.FormValue("password") != r.FormValue("password2") {
-					registerError = "The two passwords do not match"
-					} else if _, err := services.GetUserID(r.FormValue("username")); err == nil {
-						registerError = "The username is already taken"
+	} else if len(r.FormValue("email")) == 0 || !strings.Contains(r.FormValue("email"), "@") {
+		registerError = "You have to enter a valid email address"
+	} else if len(r.FormValue("password")) == 0 {
+		registerError = "You have to enter a password"
+	} else if r.FormValue("password") != r.FormValue("password2") {
+		registerError = "The two passwords do not match"
+	} else if _, err := services.GetUserID(r.FormValue("username")); err == nil {
+		registerError = "The username is already taken"
 	} else {
 		hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
 		if err != nil {
