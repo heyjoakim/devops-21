@@ -2,8 +2,8 @@ package ui
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
-	"text/template"
 
 	"github.com/gorilla/mux"
 	"github.com/heyjoakim/devops-21/helpers"
