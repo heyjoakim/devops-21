@@ -143,7 +143,7 @@ Our current idea is to follow the overall structure proposed [here](https://gith
 
 ## Week 05 Finalizing development stage
 
-- [X] Add API tests to CI
+- [x] Add API tests to CI
 - [x] DevOps - the "Three Ways"
 - [x] Software Maintenance || - Group B
 
@@ -297,7 +297,7 @@ The adoption of this new strategy means that branches are to be made from the `m
 
 - [x] Add Logging to Your Systems
 - [x] Test that Your Logging Works
-- [X] Write an SLA for Your Own API
+- [x] Write an SLA for Your Own API
 
 ### Add Logging to Your Systems
 
@@ -351,7 +351,7 @@ To be completed
 
 ## Week 09 Scailing
 
-- [X] Add Scaling to your projects
+- [x] Add Scaling to your projects
 - [x] Software Licensing
 - [x] Software Maintenance
 - [x] Logging with DataDog
@@ -363,14 +363,14 @@ Regarding the choice of a license file, we chose the MIT license. This license s
 
 Having this license, we also ensure that we comply with any gpl-licenses of our dependencies that would require us to be be open source in any capacity.
 
-### CI licensing 
-We looked into license scanning tools for avoiding licensing issues. We firstly looked into the suggested Scancode toolkit tool, but it was discarded for being slow, being cumbersome in it's setup, and for outputting files, which would mean that we would be adding overhead for reading these output files for every pull request. 
+### CI licensing
+
+We looked into license scanning tools for avoiding licensing issues. We firstly looked into the suggested Scancode toolkit tool, but it was discarded for being slow, being cumbersome in it's setup, and for outputting files, which would mean that we would be adding overhead for reading these output files for every pull request.
 We instead found another tool called "license CI" which we added by way of gthub action. This tool allows us to whitelist licenses from our dependencies, and stop pull requests if a new resource is used that has a bad license, or if a preexisting dependency changes it's dependency.
 
 ### Logging with DataDog
 
 Due to issue with the ELK stack and our current setup with Microsoft Azure, which was imposing limitations due to the inability (or our lack of knowledge) to open new ports and have more control over the server setup, we decided to use DataDog.
-
 
 ### Migrating from Azure to Digital Ocean
 
@@ -389,32 +389,140 @@ Server url: http://206.189.14.172:8000/api
 
 ## Week 10 Scailing
 
-- [X] Add Scaling to your projects
-- [X] Software Licensing
+- [x] Add Scaling to your projects
+- [x] Software Licensing
 - [x] Software Maintenance
 
-### Adding scailing with Docker Swarm
+### Creating new droplets for the swarm
 
-Force updating the swarm with new image: `docker service update --force --image heyjoakim/mt-cmp:latest devops-21_minitwut-swarm_minitwut-app`
+Ran the following command to create node 0:
+
+```console
+  docker-machine create --driver digitalocean \
+  --digitalocean-image ubuntu-18-04-x64 \
+  --digitalocean-region "fra1" \
+  --digitalocean-access-token $my_token \
+  --engine-install-url "https://releases.rancher.com/install-docker/19.03.9.sh" \
+  node-0
+```
+
+We created 3 new nodes to use as workers.
+
+### Configure firewall settings
+
+We opened the [specified ports](https://www.digitalocean.com/community/tutorials/how-to-configure-the-linux-firewall-for-docker-swarm-on-ubuntu-16-04) on our existing Digital ocean droplet and the new nodes that we created.
+
+### Creating a new swarm in digital ocean with a master node
+
+We made our server the master of the swarm by running:
+
+```console
+  docker swarm init --advertise-addr node_ip_address
+```
+
+### Start the application with docker stack
+
+We reused our docker compose file by passing the --compose-file flag.
+
+```console
+  docker stack deploy --compose-file=docker-compose.yml
+```
+
+### Scailing up the application
+
+We scaled the minitwit app and the datadog service accross the 4 nodes - 1 master and 3 workers.
+
+```console
+  docker service scale devops-21_minitwut-swarm_minitwut-app=4
+  docker service scale devops-21_minitwut-swarm_datadog=4
+```
+
+And our logs were now also reflecting the new setup, by having a label from which node the log is comming.
+
+### We updated our CI pipeling
+
+We researched here a lot how to update our swarm with the latest code without excessive downtime. We found that updating the swarm by forcing with the new image will allow us to do that.
+
+```console
+  docker service update --force --image heyjoakim/mt-cmp:latest devops-21_minitwut-swarm_minitwut-app
+```
 
 ### Software Licensing
+
+// TODO: write what we did
 
 ## Week 11
 
 1. Do a security assessment
-   1. Risk Intification
-      - [ ] Identifiy assets (e.g. web application)
-      - [ ] Construct risk scenarios (e.g. Attacker performs SQL injection on web application to download sensitive user data)
-   1. Risk Analysis 
-      - [ ] Determine likelihood
-      - [ ] Determine impact
-      - [ ] Use a Risk Matrix to prioritize risk of scenarios
-      - [ ] Discuss what are you going to do about each of the scenarios
+
+   1.1. Risk Identification
+
+   - [x] Identifiy assets (e.g. web application)
+   - [x] Identify threat sources (e.g. SQL injection)
+   - [x] Construct risk scenarios (e.g. Attacker performs SQL injection on web application to download sensitive user data)
+
+     1.2. Risk Analysis
+
+   - [x] Determine likelihood
+   - [x] Determine impact
+   - [x] Use a Risk Matrix to prioritize risk of scenarios
+   - [x] Discuss what are you going to do about each of the scenarios
 
 2. Pentest your system
+
    - [ ] Try to find a vulnerability in your project by using wmap, zaproxy, or any of the tools in the list of OWASP vulnerability scanning tools)
    - [ ] Fix the vulnerabilities that you find
-   - [ ] Can you find the traces of the pen test in the logs?
+   - [x] Can you find the traces of the pen test in the logs?
 
 3. Whitehat attack opponent team
-   - [ ] Try to help your fellow colleagues by pen-testing their system (group a-> group b, b->c, etc.). Remember that the goal is to help not to hinder. Send them a report of what you find.
+   - [x] Try to help your fellow colleagues by pen-testing their system (group a-> group b, b->c, etc.). Remember that the goal is to help not to hinder. Send them a report of what you find.
+
+## Security assessment
+
+### Risk Identification
+
+#### Identify Assets
+
+Our assets include:
+
+- Minitwit Web application
+- Minitwit Web API
+- Minitwit Postgres Database
+- Datadog logs
+- Digital Ocean droplets
+
+#### Identify threat sources
+
+Based on our assets, we identified the following threat sources:
+
+- SQL injection
+- cross-site scripting
+- fuzzing attack
+- path traversal attack
+- DDoS attack
+- Man-In-The-Middle attack
+- brute force attack
+- social engineering attack (phishing)
+
+#### Construct risk scenarios
+
+We have outlined few risk scenarios as the following:
+
+- Attacker performs SQL injection on the web application to download sensitive user data
+- Attacker performs cross-site scripting on the web application form to redirect users to another website
+- Attacker performs fuzzing attack to find and exploit vulnerabilities in our webapp or server
+- Attacker performs path traversal to gain access to the files on the same physical server
+- Attacker performs DDoS attack to render our website or API unresponsive
+- Attacker performs Man-In-The-Middle attack to gather sensitive information
+- Attacker performs brute-force attack to gain access to a user’s account
+- Attacker performs a social engineering attack to a system user or administrator to gain sensitive information
+
+### Risk Analysis
+
+The full risk anaylsis with the metrix used can be found [here](bit.ly/3sMZ1Vb)
+
+## Pentest your system
+
+## Whitehat attack opponent team
+
+We tried SQL injection and cross-site scripting on an opponent team.
