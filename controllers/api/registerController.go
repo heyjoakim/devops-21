@@ -3,13 +3,11 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/heyjoakim/devops-21/helpers"
 	"github.com/heyjoakim/devops-21/metrics"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // Messages godoc
@@ -21,6 +19,7 @@ import (
 // @Failure 400 {string} string "unauthorized"
 // @Router /api/register [post]
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	updateLatest(r)
 	hist := metrics.GetHistogramVec("post_api_register")
 	if hist != nil {
 		timer := createEndpointTimer(hist)
@@ -30,49 +29,26 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO Consider if this functionality can be shared with ui controller. Logic should probably be in service.
 	var registerRequest models.RegisterRequest
 	_ = json.NewDecoder(r.Body).Decode(&registerRequest)
-
-	updateLatest(r)
-	var registerError string
-	if r.Method == "POST" {
-		if len(registerRequest.Username) == 0 {
-			registerError = "You have to enter a username"
-		} else if len(registerRequest.Email) == 0 || !strings.Contains(registerRequest.Email, "@") {
-			registerError = "You have to enter a valid email address"
-		} else if len(registerRequest.Password) == 0 {
-			registerError = "You have to enter a password"
-		} else if _, err := services.GetUserID(registerRequest.Username); err == nil {
-			registerError = "The username is already taken"
-		} else {
-			// TODO move to service
-			hash, err := bcrypt.GenerateFromPassword([]byte(registerRequest.Password), bcrypt.DefaultCost)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			user := models.User{Username: registerRequest.Username, Email: registerRequest.Email, PwHash: string(hash)}
-			err = services.CreateUser(user)
-
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+	user := models.UserCreateRequest{
+		Username:  registerRequest.Username,
+		Email:     registerRequest.Email,
+		Password:  registerRequest.Password,
+		Password2: registerRequest.Password,
+	}
+	err := services.CreateUser(user)
+	if err != nil {
+		var errorCode = 400
+		error := map[string]interface{}{
+			"status":    errorCode,
+			"error_msg": err.Error(),
 		}
-		if registerError != "" {
-			var errorCode = 400
-			error := map[string]interface{}{
-				"status":    errorCode,
-				"error_msg": registerError,
-			}
-			jsonData, _ := helpers.Serialize(error)
-
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write(jsonData)
-			return
-		}
+		jsonData, _ := helpers.Serialize(error)
 
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNoContent)
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write(jsonData)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
 }

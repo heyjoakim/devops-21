@@ -16,8 +16,6 @@ linters:
     - goconst
     - gocritic
     - gocyclo
-    #- gofmt
-    #- goimports
     - golint
     - gomnd
     - goprintffuncname
@@ -30,7 +28,6 @@ linters:
     - nakedret
     - nolintlint
     - rowserrcheck
-    - scopelint
     - staticcheck
     - structcheck
     - stylecheck
@@ -41,24 +38,6 @@ linters:
     - varcheck
     - whitespace
     - gocognit
-  
-  # don't enable:
-  # - asciicheck
-  # - bodyclose
-  # - gochecknoglobals
-  # - godot
-  # - godox
-  # - goerr113
-  # - interfacer
-  # - maligned
-  # - nestif
-  # - noctx
-  # - prealloc
-  # - testpackage
-  # - revive
-  # - wsl
-
-
 
 run:
   skip-dirs:

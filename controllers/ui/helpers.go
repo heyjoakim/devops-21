@@ -1,12 +1,12 @@
 package ui
 
 import (
+	"html/template"
 	"net/http"
-	"text/template"
 
+	"github.com/gorilla/sessions"
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
-	"github.com/gorilla/sessions"
 )
 
 // AddFlash add a flash to the session

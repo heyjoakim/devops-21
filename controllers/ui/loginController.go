@@ -6,8 +6,6 @@ import (
 
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
-	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // GetLoginHandler returns the login page
@@ -28,26 +26,17 @@ func GetLoginHandler(w http.ResponseWriter, r *http.Request) {
 func PostLoginHandler(w http.ResponseWriter, r *http.Request) {
 	session := GetSession(w, r)
 
-	var loginError string
-	user, err := services.GetUserFromUsername(r.FormValue("username"))
-	if err != nil {
-		loginError = "Unknown username"
-		data := models.PageData{
-			"error": loginError,
-		}
-		redirectToLogin(w, data)
-		return
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+	loginRequest := models.LoginRequest{
+		Username: username,
+		Password: password,
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PwHash), []byte(r.FormValue("password"))); err != nil {
-		fmt.Println([]byte(user.PwHash))
-		fmt.Println([]byte(r.FormValue("user")))
-
-		loginError = "Invalid password"
-		log.WithField("err", err).Error("Password hashes are different")
+	user, loginErr := services.LoginUser(loginRequest)
+	if loginErr != nil {
 		data := models.PageData{
-			"error":    loginError,
-			"username": session.Values["username"],
+			"error": loginErr,
 		}
 		redirectToLogin(w, data)
 		return

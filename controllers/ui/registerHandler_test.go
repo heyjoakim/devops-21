@@ -31,14 +31,14 @@ func TestMemoryRegister(t *testing.T) {
 	// // Test missing username
 	resp = MemoryRegisterHelper(mock)
 	body, _ = ioutil.ReadAll(resp.Body)
-	assert.Contains(t, string(body), "You have to enter a username")
+	assert.Contains(t, string(body), "you have to enter a username")
 
 	// Test wrong email
 	mock.Add("username", defaultUser.Username)
 	mock.Add("email", "wrong_email")
 	resp = MemoryRegisterHelper(mock)
 	body, _ = ioutil.ReadAll(resp.Body)
-	assert.Contains(t, string(body), "You have to enter a valid email address")
+	assert.Contains(t, string(body), "you have to enter a valid email address")
 
 	// Test missing and/or non matching passwords
 	mock.Set("email", defaultUser.Email)
@@ -46,7 +46,7 @@ func TestMemoryRegister(t *testing.T) {
 	mock.Add("password2", "wrong"+defaultUser.PwHash)
 	resp = MemoryRegisterHelper(mock)
 	body, _ = ioutil.ReadAll(resp.Body)
-	assert.Contains(t, string(body), "The two passwords do not match")
+	assert.Contains(t, string(body), "the two passwords do not match")
 
 	// Test successful register
 	mock.Set("password2", defaultUser.PwHash)

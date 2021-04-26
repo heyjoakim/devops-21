@@ -3,11 +3,9 @@ package ui
 import (
 	"fmt"
 	"net/http"
-	"strings"
+
 	"github.com/heyjoakim/devops-21/models"
 	"github.com/heyjoakim/devops-21/services"
-	"golang.org/x/crypto/bcrypt"
-	log "github.com/sirupsen/logrus"
 )
 
 // GetRegisterUserHandler returns the register page..
@@ -31,49 +29,32 @@ func PostRegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 		routeName := fmt.Sprintf("/%s", session.Values["username"])
 		http.Redirect(w, r, routeName, http.StatusFound)
 	}
+	username := r.FormValue("username")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+	password2 := r.FormValue("password2")
 
-	var registerError string
-	if len(r.FormValue("username")) == 0 {
-		registerError = "You have to enter a username"
-		} else if len(r.FormValue("username")) > 20 {
-			registerError = "Username cannot be longer than 20 characters"
-		} else if len(r.FormValue("password")) > 20 {
-			registerError = "password cannot be longer than 20 characters"
-			}else if len(r.FormValue("email")) == 0 || !strings.Contains(r.FormValue("email"), "@") || len(r.FormValue("email")) > 30 {
-				registerError = "You have to enter a valid email address"
-				} else if len(r.FormValue("password")) == 0 {
-					registerError = "You have to enter a password"
-					} else if r.FormValue("password") != r.FormValue("password2") {
-						registerError = "The two passwords do not match"
-						} else if _, err := services.GetUserID(r.FormValue("username")); err == nil {
-							registerError = "The username is already taken"
-	} else {
-		hash, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
-		if err != nil {
-			log.WithField("err", err).Error("Hashing error in PostRegisterUserHandler")
-			return
+	user := models.UserCreateRequest{
+		Username:  username,
+		Email:     email,
+		Password:  password,
+		Password2: password2,
+	}
+	err := services.CreateUser(user)
+
+	if err != nil {
+		data := models.PageData{
+			"error": err,
 		}
-		username := r.FormValue("username")
-		email := r.FormValue("email")
-		user := models.User{Username: username, Email: email, PwHash: string(hash)}
-		error := services.CreateUser(user)
-
-		if error != nil {
-			registerError = "Error while creating user"
-		}
-
-		AddFlash(session, w, r, "You are now registered ?", username)
-		http.Redirect(w, r, "/login", http.StatusFound)
+		redirectToRegister(w, data)
+		return
 	}
 
-	data := models.PageData{
-		"error": registerError,
-	}
-	redirectToRegister(w, data)
+	AddFlash(session, w, r, "You are now registered ?", username)
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 func redirectToRegister(w http.ResponseWriter, data models.PageData) {
-	fmt.Println("redirectToRegister")
 	tmpl := LoadTemplate(RegisterPath)
 	_ = tmpl.Execute(w, data)
 }

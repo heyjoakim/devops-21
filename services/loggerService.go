@@ -15,8 +15,8 @@ func LogPanic(message string) {
 	log.Panic(message)
 }
 
-func LogWarn() {
-	log.Warn("warn")
+func LogWarn(message string) {
+	log.Warn(message)
 }
 
 func LogError(logObj models.Log) {
