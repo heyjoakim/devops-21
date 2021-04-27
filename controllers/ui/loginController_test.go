@@ -35,14 +35,14 @@ func TestMemoryLoginHelper(t *testing.T) {
 	mock.Add("username", "wrong_username")
 	resp = MemoryLoginHelper(mock)
 	body, _ = ioutil.ReadAll(resp.Body)
-	assert.Contains(t, string(body), "Unknown username")
+	assert.Contains(t, string(body), "error in username or password")
 
 	// Test missing password
 	mock.Set("username", loginUser.Username)
 	mock.Add("password", "wrong_password")
 	resp = MemoryLoginHelper(mock)
 	body, _ = ioutil.ReadAll(resp.Body)
-	assert.Contains(t, string(body), "Invalid password")
+	assert.Contains(t, string(body), "error in username or password")
 
 	// Test successful login
 	mock.Set("password", loginUser.PwHash)
