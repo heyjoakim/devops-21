@@ -525,4 +525,44 @@ The full risk anaylsis with the metrix used can be found [here](bit.ly/3sMZ1Vb)
 
 ## Whitehat attack opponent team
 
-We tried SQL injection and cross-site scripting on an opponent team.
+**Information gathering**
+- nmap -v -A -sV 161.35.214.217
+
+| PORT | SERVICE      | STATE    | VERSION                                                               |
+|------|--------------|----------|-----------------------------------------------------------------------|
+| 21   | FTP          | open     | -                                                                     |
+| 22   | SSH          | open     | OpenSSH 8.2p1 Ubuntu 4ubuntu0.2 (Ubuntu Linux; protocol 2.0)          |
+| 554  | RTSP         | open     | -                                                                     |
+| 646  | Idp          | filtered | -                                                                     |
+| 1723 | ??           | open     | -                                                                     |
+| 3000 | http         | open     | nginx 1.18.0                                                          |
+| 3001 | nessus?      | open     | -                                                                     |
+| 5000 | http         | open     | Node.js Express framework                                             |
+| 5001 | complex-link | open     | -                                                                     |
+| 9090 | http         | open     | Golang net/http server (Go-IPFS json-rpc or InfluxDB API)(Prometheus) |
+
+
+**Sniffing**
+- No https (password sniffing with wireshark)
+
+```
+JavaScript Object Notation: application/json
+   Object
+     Member key: Username
+       String value: ackerh
+       Key: Username
+     Member key: password
+       String value: s3cret
+       Key: Password 
+```
+       
+**Simple XSS**
+ - Not present (<script>alert(‘XSS’)</script>)
+
+**Simple SQL injection**
+- Not present (′or1=1−−)
+- Hello'); delete from user where username='kalle'; -- (No direct effect)
+
+**Other comments:**
+We did not try any automated tools like sqlmap because we were afraid that your site could not handle this. It became quite unresponsive with simple sql injection tries. 
+You need to review your open ports. 
