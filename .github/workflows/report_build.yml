@@ -13,9 +13,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout git repository
     - uses: actions/checkout@v2
-
-    - name: Build report
-      run: |
-        cd report/build/
-        make main.pdf
+    - name: Github Action for LaTeX
+      uses: xu-cheng/latex-action@v2
+      with:
+        root_file: main.tex
+    - name: Upload
+      uses: actions/upload-artifact@master
+      with:
+        name: main
+        path: main
