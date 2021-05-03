@@ -2,9 +2,9 @@ name: Go
 
 on:
   push:
-    branches: [  final/report ]
+    branches: [final/*]
   pull_request:
-    branches: [  final/report ]
+    branches: [final/report]
 
 jobs:
 
