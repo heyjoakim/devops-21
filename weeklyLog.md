@@ -566,3 +566,55 @@ JavaScript Object Notation: application/json
 **Other comments:**
 We did not try any automated tools like sqlmap because we were afraid that your site could not handle this. It became quite unresponsive with simple sql injection tries. 
 You need to review your open ports. 
+
+
+### Pentesting own system 
+
+#### **Nmap**
+
+First, we nmap our own IP:
+
+
+
+
+```
+nmap -v -A -sV 161.35.214.217
+
+```
+Which render the result:
+
+| Port    	| State  	| Service    	| Version 	|
+|---------	|--------	|------------	|---------	|
+| 22/tcp  	| open   	| tcpwrapped 	|         	|
+| 80/tcp  	| open   	| tcpwrapped 	|         	|
+| 443/tcp 	| closed 	| https      	|         	|
+
+
+Both ports that we use show up as having "tcpwrapped" as their service. We are a bit unsure exactly why this is, but in any case we are not able to see the service running using this call to nmap.
+
+We are However able to decipher from the server header that port 80 is running nginx/1.18.0. A quick search for vulnerabilities on this module does reveal a few dos vulnerabilities. However we do feel somewhat safe with our strict access controls on our ports.
+
+[comment]: <> ( is the last part complete gibberish?)
+
+#### Wmap
+
+#### XSS and injections 
+
+We attempted the following sql injections for both login and signup flow:
+
+
+- Not present (′or1=1−−)
+- ' or 1=1 or ''='
+- hi') or ('a'='a
+- hi') or ('a'='a
+- ' or 1=1 or ''='
+
+et cetera. 
+we also tried quite a few standard xss inputs:
+
+- '`"><\x3Cscript>javascript:alert(1)</script>     
+- <script\x20type="text/javascript">javascript:alert(1);</script> 
+- <a onmouseover="console.log(document)" href="https://google.com">Harmless Link</a>
+- <script\x20type="text/javascript">javascript:alert(1);</script> 
+
+And many other along the same lines
