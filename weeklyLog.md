@@ -594,9 +594,21 @@ Both ports that we use show up as having "tcpwrapped" as their service. We are a
 
 We are However able to decipher from the server header that port 80 is running nginx/1.18.0. A quick search for vulnerabilities on this module does reveal a few dos vulnerabilities. However we do feel somewhat safe with our strict access controls on our ports.
 
-[comment]: <> ( is the last part complete gibberish?)
+#### SQLmap
+We also made an attempt at using sqlmap for pentesting ourselves. As mentioned earlier in relation to the pentest of the opponent-system, we were a bit concerned with accidentally performing denial of service on ourselves. For that reason, we set a delay to half a second between each request, making the scan very slow.
 
-#### Wmap
+```
+sqlmap -r package.txt -p username,password --dbms=SQLite --risk=3 --level=3 --delay=0.5
+```
+We let the scan run for quite a while. No openings seemed to show up. We played around a bit with changing the risk and level flags to different values, but this had no effect.
+
+```
+[17:46:52] [WARNING] POST parameter 'username' does not seem to be injectable
+
+[17:50:28] [WARNING] POST parameter 'password' does not seem to be injectable
+```
+
+During the scan, a message was shown, that indicated that 'suspicious' requests were being dropped at the address. We assume digitalocean was doing some firewalling for us.
 
 #### XSS and injections 
 
