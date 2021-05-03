@@ -16,5 +16,6 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Build report
-      run: cd report/build/
-      run: make main.pdf
+      run: |
+        cd report/build/
+        make main.pdf
