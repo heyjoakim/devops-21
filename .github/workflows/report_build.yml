@@ -2,7 +2,7 @@ name: Build report
 
 on:
   push:
-    branches: [report/*]
+    branches: [main/*]
   pull_request:
     branches: [report/*]
     
