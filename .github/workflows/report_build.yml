@@ -1,0 +1,19 @@
+name: Build report
+
+on:
+  push:
+    branches: [final/*]
+  pull_request:
+    branches: [final/*]
+    
+  workflow_dispatch:
+  
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build report
+      run: pwd
