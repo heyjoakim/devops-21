@@ -1,11 +1,13 @@
-name: Go
+name: Build report
 
 on:
   push:
     branches: [final/*]
   pull_request:
-    branches: [final/report]
-
+    branches: [final/*]
+    
+  workflow_dispatch:
+  
 jobs:
 
   build:
