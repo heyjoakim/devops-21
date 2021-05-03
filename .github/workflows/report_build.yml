@@ -16,4 +16,5 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Build report
-      run: pwd
+      run: cd report/build/
+      run: make main.pdf
