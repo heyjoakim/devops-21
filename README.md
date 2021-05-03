@@ -2,7 +2,6 @@
 
 [![Build & Deploy](https://github.com/heyjoakim/devops-21/actions/workflows/deploy.yml/badge.svg)](https://github.com/heyjoakim/devops-21/actions/workflows/deploy.yml)
 [![Tests](https://github.com/heyjoakim/devops-21/actions/workflows/build_test.yml/badge.svg)](https://github.com/heyjoakim/devops-21/actions/workflows/build_test.yml)
- [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > This project revolves around a forum application called minitwit. The functionalities includes signing up, logging in, posting messages, following other users. The forum has a public timeline where all messages are displayed. Furthermore, if a user is signed in, a personal timeline exists that displays a users own messages aswell as messages of followed users.
 
