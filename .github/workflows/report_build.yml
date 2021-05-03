@@ -13,7 +13,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout git repository
     - uses: actions/checkout@v2
     - name: Github Action for LaTeX
       uses: xu-cheng/latex-action@v2
