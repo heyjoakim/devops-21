@@ -19,9 +19,7 @@ jobs:
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
       - run: |
           echo hello > 01ab.txt
-          ls
-          pwd
-          cat 01ab.txt
+          git add 01ab.txt
       - name: Commit files
         run: |
           git config --global user.email "joakimhey@gmail.com"
