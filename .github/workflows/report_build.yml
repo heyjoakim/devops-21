@@ -15,24 +15,12 @@ jobs:
     - 
       uses: actions/checkout@v2
     - 
-      name: Build latex file
+      name: Create artifact files
       run: |
-        cd report/build
-        pwd
-        make main.pdf
-        pwd
-        ls
-    - 
-      name: Upload
-      uses: actions/upload-artifact@master
+        mkdir -p path/to/dir-1
+        echo "Lorem ipsum dolor sit amet" > path/to/dir-1/file1.txt
+    - name: 'Upload artifact #1'
+      uses: ./
       with:
-        name: main
-        path: report/build/main.pdf
-    - 
-     name: Download a Build Artifact
-     uses: actions/download-artifact@v2.0.9
-     with:
-      name: main
-      path: report/build/
-      run: ls -R
-      working-directory: path/to/artifact
+        name: 'Artifact-A'
+        path: path/to/dir-1/file1.txt
