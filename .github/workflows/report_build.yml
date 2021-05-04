@@ -27,4 +27,4 @@ jobs:
           git commit -am "Automated report"
           git push origin :refs/tags/refs/heads/master
           git tag -d refs/heads/main
-          git push https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          git push
