@@ -18,7 +18,7 @@ jobs:
       name: Build latex file
       run: |
         cd report/build
-        make main.pd
+        make main.pdf
     - 
       name: Upload
       uses: actions/upload-artifact@master
