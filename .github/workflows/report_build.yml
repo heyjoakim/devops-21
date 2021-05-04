@@ -28,7 +28,7 @@ jobs:
           git config --local user.name "heyjoakim"
           git add -A
           git commit -m "Add changes" -a
-          git push
+          git push origin --delete refs/heads/master
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
