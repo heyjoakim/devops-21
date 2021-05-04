@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-         cd report/build
+         cd report/build/
          pwd
          ls
          pdlatex main.pdf
