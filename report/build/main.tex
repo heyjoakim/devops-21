@@ -1,0 +1,52 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{mathptmx} % Times new roman
+\usepackage{graphicx}
+\usepackage[colorlinks=true,urlcolor=black, linkcolor=black]{hyperref}
+\usepackage{hyperref}
+\usepackage{enumerate}
+\usepackage{dirtree}
+\usepackage{enumitem}
+\setlist[itemize]{align=parleft,left=0pt..1em}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily,
+  mathescape
+}
+\usepackage
+[
+        a4paper,
+        left=3.3cm,
+        right=3.3cm,
+        top=6cm,
+        bottom=4cm,
+]
+{geometry}
+
+\title{DevOps, Software Evolution and Software Maintenance \\ 
+\bigskip \large \textbf{IT University of Copenhagen}}
+
+\author{Thomas Tyge Andersen\\
+    \href{mailto:thta@itu.dk}{\texttt{thta@itu.dk}} 
+\and Ask Harup Sejsbo\\
+    \href{mailto:asse@itu.dk}{\texttt{asse@itu.dk}}
+\and Joakim Hinnerskov\\
+    \href{mailto:jhhi@itu.dk}{\texttt{jhhi@itu.dk}}
+\and   Petya Buchkova\\
+    \href{mailto:Petya Buchkova}{\texttt{pebu@itu.dk}}
+\and   Kasper Olsen\\
+    \href{mailto:kols@itu.dk}{\texttt{kols@itu.dk}}
+    }
+
+\begin{document}
+\maketitle
+\newpage
+\newgeometry{top=3.3cm,bottom=4cm,right=3cm,left=3cm}
+\tableofcontents
+
+\include{systems_perspective}
+\include{process_perspective}
+\include{lessons_learned}
+
+\end{document}
+
