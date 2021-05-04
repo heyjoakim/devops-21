@@ -9,16 +9,24 @@ on:
   workflow_dispatch:
   
 jobs:
-  report:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Create report file
-        run: echo hello2 > report.txt
-      - name: Commit report
-        run: |
-          git config --global user.name 'heyjoakim'
-          git config --global user.email 'joakimhey@gmail.com'
-          git add report.txt
-          git commit -m "Automated report"
-          git push
+    - uses: actions/checkout@v2
+      with:
+        persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+        fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+    - name: Create local changes
+      run: |
+        echo hello3 > abcd.txt
+    - name: Commit files
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add abcd.txt
+        git commit -m "Add changes" -a
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
