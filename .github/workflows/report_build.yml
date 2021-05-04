@@ -18,6 +18,7 @@ jobs:
         pwd
         ls
         cat world.txt
+        git pull
         git add world.txt
     - name: GitHub Push
       uses: ad-m/github-push-action@v0.6.0
