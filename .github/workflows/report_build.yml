@@ -25,5 +25,4 @@ jobs:
           git config --global user.email 'heyjoakim@users.noreply.github.com'
           git add -A
           git commit -am "Automated report"
-          git push origin :refs/tags/refs/heads/master
-          https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          git push
