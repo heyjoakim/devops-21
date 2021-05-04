@@ -19,17 +19,10 @@ jobs:
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
       - run: |
           echo hello > 01ab.txt
-      - name: Commit files
+      - name: Commit report
         run: |
-          git config --global user.email "joakimhey@gmail.com"
-          git config --global user.name "heyjoakim"
-          git add .
-          git status
-          git commit -m "Add changes" -a
-          git push https://github.com/heyjoakim/devops-21.git
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.head_ref }}
-          repository: heyjoakim/devops-21
+          git config --global user.name 'Your Name'
+          git config --global user.email 'your-username@users.noreply.github.com'
+          git add -A
+          git commit -am "Automated report"
+          git push
