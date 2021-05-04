@@ -14,11 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: mkdir -p path/to/artifact
+    - run: mkdir -p a1/s1
 
-    - run: echo hello > path/to/artifact/world.txt
+    - run: echo hello > world.txt
 
     - uses: actions/upload-artifact@v2
       with:
         name: my-artifact
-        path: path/to/artifact/world.txt
+        path: world.txt
