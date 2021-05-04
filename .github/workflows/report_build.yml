@@ -15,7 +15,8 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@v2
       - run: |
-          echo hello > 01ab.txt
+          cd report/build
+          make main.pdf
       - name: Commit report
         run: |
           git config --global user.name 'heyjoakim'
