@@ -21,6 +21,9 @@ jobs:
           latexmk_use_xelatex: true
       - name: Push to repository
         run: |
+          git config --global user.email "joakimhey@gmail.com"
+          git config --global user.name "heyjoakim"
+          git add -A
           git commit -m "Automated report build"
           git push
     
