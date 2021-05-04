@@ -19,8 +19,9 @@ jobs:
       run: |
         cd report/build
         pwd
-        make main.pdf
+        make main.tex
         pwd
+        ls
     - 
       name: Upload
       uses: actions/upload-artifact@master
