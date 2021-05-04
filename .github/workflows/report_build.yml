@@ -21,8 +21,8 @@ jobs:
         echo hello3 > abcd.txt
     - name: Commit files
       run: |
-        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
+        git config --local user.email "joakimhey@gmail.com"
+        git config --local user.name "heyjoakim"
         git add abcd.txt
         git commit -m "Add changes" -a
     - name: Push changes
@@ -30,4 +30,3 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: ${{ github.ref }}
-        force: true
