@@ -21,8 +21,8 @@ jobs:
           echo hello > 01ab.txt
       - name: Commit report
         run: |
-          git config --global user.name 'Your Name'
-          git config --global user.email 'your-username@users.noreply.github.com'
+          git config --global user.name 'heyjoakim'
+          git config --global user.email 'heyjoakim@users.noreply.github.com'
           git add -A
           git commit -am "Automated report"
-          git push
+          git push origin main
