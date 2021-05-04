@@ -28,3 +28,11 @@ jobs:
       with:
         name: main
         path: report/build/main.pdf
+    - 
+     name: Download a Build Artifact
+     uses: actions/download-artifact@v2.0.9
+     with:
+      name: main
+      path: report/build/
+      run: ls -R
+      working-directory: path/to/artifact
