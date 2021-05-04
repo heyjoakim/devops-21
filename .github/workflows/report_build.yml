@@ -29,7 +29,7 @@ jobs:
           git pull
           git add -A
           git commit -m "Add changes" -a
-          git push origin HEAD:master
+          git push origin --delete refs/heads/main
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
