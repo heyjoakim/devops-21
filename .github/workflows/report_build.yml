@@ -15,7 +15,7 @@ jobs:
       - run: |
          pwd
          ls
-         cd report/build
+         cd report/build/
       - name: Commit report
         run: |
           git config --global user.name 'heyjoakim'
