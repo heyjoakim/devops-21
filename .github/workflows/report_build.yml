@@ -2,23 +2,25 @@ name: Build report
 
 on:
   push:
-    branches: [main/*]
+    branches: [report/*]
   pull_request:
     branches: [report/*]
     
   workflow_dispatch:
   
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Github Action for LaTeX
-      uses: xu-cheng/latex-action@v2
-      with:
-        root_file: main.tex
-    - name: Upload
+    - 
+      uses: actions/checkout@v2
+    - 
+      name: Build latex file
+      run: |
+        cd report/build
+        make main.pd
+    - 
+      name: Upload
       uses: actions/upload-artifact@master
       with:
         name: main
