@@ -19,7 +19,7 @@ jobs:
       run: |
         cd report/build
         pwd
-        make main.tex
+        make main.pdf
         pwd
         ls
     - 
