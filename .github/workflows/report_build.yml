@@ -12,13 +12,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Git repository
-        uses: actions/checkout@v2
-      - name: Compile LaTeX document
-        uses: xu-cheng/latex-action@v2
-        with:
-          root_file: report/build/main.tex
-          latexmk_use_xelatex: true
+      - run: |
+         cd report/build
+         pwd
+         ls
+         pdlatex main.pdf
       - name: Commit report
         run: |
           git config --global user.name 'heyjoakim'
