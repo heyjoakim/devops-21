@@ -12,10 +12,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v2
       - run: |
          pwd
          ls
          cd report/build/
+         pdflatex main.pdf
       - name: Commit report
         run: |
           git config --global user.name 'heyjoakim'
