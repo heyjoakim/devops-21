@@ -26,6 +26,8 @@ jobs:
         run: |
           git config --global user.email "joakimhey@gmail.com"
           git config --global user.name "heyjoakim"
+          git add .
+          git commit -m "Automated CI report build"
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
