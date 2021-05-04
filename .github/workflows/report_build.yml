@@ -14,11 +14,15 @@ jobs:
     steps:
       - name: Set up Git repository
         uses: actions/checkout@v2
-      - run: |
-         pwd
-         ls
-         cd report/build/
-         pdflatex main.pdf
+      - name: Github Action for LaTeX
+        uses: xu-cheng/latex-action@v2
+        with:
+          # The root LaTeX file to be compiled
+          root_file: report/build/main.tex
+          # The working directory for the LaTeX engine
+          working_directory: report/build/
+
+     
       - name: Commit report
         run: |
           git config --global user.name 'heyjoakim'
