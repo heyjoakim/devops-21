@@ -24,4 +24,3 @@ jobs:
       uses: actions/upload-artifact@master
       with:
         name: main.pdf
-        path: main
