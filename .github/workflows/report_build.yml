@@ -26,6 +26,7 @@ jobs:
           git add .
           git status
           git commit -m "Add changes" -a
+          git push origin main
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
