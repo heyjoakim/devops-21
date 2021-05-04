@@ -18,9 +18,8 @@ jobs:
         uses: xu-cheng/latex-action@v2
         with:
           # The root LaTeX file to be compiled
-          root_file: |
-           report/build/main.tex
-           report/build/systems_perspective.tex
+          root_file: main.tex
+          working_directory: report/build/
      
       - name: Commit report
         run: |
