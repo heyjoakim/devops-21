@@ -15,7 +15,9 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@v2
       - run: |
-          cd report/build
+          cd report/build/
+          pwd
+          ls
           make main.pdf
       - name: Commit report
         run: |
