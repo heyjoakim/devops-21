@@ -1,4 +1,4 @@
-# DevOps, Software Evolution and Software Maintenance T
+# DevOps, Software Evolution and Software Maintenance
 
 [![Build & Deploy](https://github.com/heyjoakim/devops-21/actions/workflows/deploy.yml/badge.svg)](https://github.com/heyjoakim/devops-21/actions/workflows/deploy.yml)
 [![Tests](https://github.com/heyjoakim/devops-21/actions/workflows/build_test.yml/badge.svg)](https://github.com/heyjoakim/devops-21/actions/workflows/build_test.yml)
