@@ -2,9 +2,7 @@ name: Build report
 
 on:
   push:
-    branches: [report/*]
-  pull_request:
-    branches: [report/*]
+    branches: [main]
     
   workflow_dispatch:
   
