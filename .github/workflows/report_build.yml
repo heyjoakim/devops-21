@@ -9,15 +9,15 @@ on:
   workflow_dispatch:
   
 jobs:
-  build:
+  report:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - run: | 
-        echo hello > world.txt
-        pwd
-        ls
-        cat world.txt
-        git pull
-        git add world.txt
-        git push
+      - uses: actions/checkout@v2
+      - name: Create report file
+        run: echo hello2 > report.txt
+      - name: Commit report
+        run: |
+          git config --global user.name 'heyjoakim'
+          git config --global user.email 'joakimhey@gmail.com'
+          git commit -am "Automated report"
+          git push
