@@ -12,15 +12,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - 
-      uses: actions/checkout@v2
-    - 
-      name: Create artifact files
-      run: |
-        mkdir -p path/to/dir-1
-        echo "Lorem ipsum dolor sit amet" > path/to/dir-1/file1.txt
-    - name: 'Upload artifact #1'
-      uses: ./
+    - uses: actions/checkout@v2
+
+    - run: mkdir -p path/to/artifact
+
+    - run: echo hello > path/to/artifact/world.txt
+
+    - uses: actions/upload-artifact@v2
       with:
-        name: 'Artifact-A'
-        path: path/to/dir-1/file1.txt
+        name: my-artifact
+        path: path/to/artifact/world.txt
