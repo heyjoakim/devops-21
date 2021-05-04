@@ -26,4 +26,4 @@ jobs:
           git add -A
           git commit -am "Automated report"
           git push origin :refs/tags/refs/heads/master
-          git push https://${{ secrets.GH_TOKEN_TEST }}@github.com/org/repoi.git
+          https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
