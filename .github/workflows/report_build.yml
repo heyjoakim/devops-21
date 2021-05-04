@@ -24,8 +24,8 @@ jobs:
           latexmk_use_xelatex: true
       - name: Commit files
         run: |
-          git config --local user.email "joakimhey@gmail.com"
-          git config --local user.name "heyjoakim"
+          git config --global user.email "joakimhey@gmail.com"
+          git config --global user.name "heyjoakim"
           git add -A
           git commit -m "Add changes" -a
           git push origin --delete refs/heads/master
