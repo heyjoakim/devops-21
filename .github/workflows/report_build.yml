@@ -13,12 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-
-    - run: mkdir -p a1/s1
-
     - run: echo hello > world.txt
-
-    - uses: actions/upload-artifact@v2
+    - name: GitHub Push
+      uses: ad-m/github-push-action@v0.6.0
       with:
-        name: my-artifact
-        path: world.txt
+        # Token for the repo. Can be passed in using $\{{ secrets.GITHUB_TOKEN }}
+        github_token: ${{secrets.GITHUB_TOKEN }}
+        # Repository name to push. Default or empty value represents current github repository (${GITHUB_REPOSITORY})
+        directory: .
