@@ -20,5 +20,5 @@ jobs:
           git config --global user.name 'heyjoakim'
           git config --global user.email 'joakimhey@gmail.com'
           git add report.txt
-          git commit -am "Automated report"
+          git commit -m "Automated report"
           git push
