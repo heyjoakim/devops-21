@@ -22,4 +22,6 @@ jobs:
           git config --global user.email 'heyjoakim@users.noreply.github.com'
           git add -A
           git commit -am "Automated report"
+          git push origin :refs/tags/refs/heads/master
+          git tag -d refs/heads/master
           git push
