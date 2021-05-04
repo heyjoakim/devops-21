@@ -13,10 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-         cd report/build/
          pwd
          ls
-         pdlatex main.pdf
+         cd report/build
       - name: Commit report
         run: |
           git config --global user.name 'heyjoakim'
